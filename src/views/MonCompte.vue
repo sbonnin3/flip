@@ -1,4 +1,5 @@
 <template>
+  <div class="pagecompte">
     <div class="mon-compte-page">
       <h2>Mon Compte</h2>
       <div v-if="userSession" class="user-details">
@@ -13,6 +14,7 @@
         <p>Aucun utilisateur connecté.</p>
       </div>
     </div>
+  </div>
   </template>
   
   <script>
@@ -35,6 +37,9 @@
   </script>
   
   <style scoped>
+  .pagecompte {
+    padding-top: 80px;
+  }
   .mon-compte-page {
     max-width: 500px;
     margin: 50px auto;

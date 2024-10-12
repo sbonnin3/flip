@@ -44,8 +44,8 @@ export default {
     displayedTitles() {
       return this.titles.map((title, index) => {
         // Remplace l'onglet Connexion par Mon Compte si l'utilisateur est connecté
-        if (index === 4) {
-          return this.userSession ? { ...title, text: "Mon Compte" } : title;
+        if (index === 4 && this.userSession) {
+          return { ...title, text: "Mon Compte" };
         }
         return title;
       });
