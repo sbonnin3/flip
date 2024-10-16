@@ -6,7 +6,7 @@ export const stands = [
         nom: 'Boutique',
         type: "boutique",
         image: require('@/assets/images/stand_blackrock.png'),
-        emplacement: "coordonnées",
+        idPoint: 12,
         comptes: [12345],
         articles: [
             {nom: "Gobbit", prix: 10}
@@ -17,7 +17,7 @@ export const stands = [
         nom: 'Mie Caline',
         type: "restaurants",
         image: require('@/assets/images/stand_blackrock.png'),
-        emplacement: "coordonnées",
+        idPoint: 10,
         comptes: [12342],
         articles: [
             {nom: "burger", prix: 8, stock: 564},
