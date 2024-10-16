@@ -7,7 +7,6 @@
             </div>
 
             <div v-if="isLogin">
-                <!-- Formulaire de Connexion -->
                 <h2>Connexion</h2>
                 <form @submit.prevent="login">
                     <div>
@@ -24,7 +23,6 @@
             </div>
 
             <div v-else>
-                <!-- Formulaire d'Inscription -->
                 <h2>Inscription</h2>
                 <form @submit.prevent="register">
                     <div>
@@ -50,8 +48,8 @@
                             <option value="restaurateur">Restaurateur</option>
                             <option value="organisateur">Organisateur</option>
                             <option value="vendeur">Vendeur</option>
-                            <option value="createur">Créateur</option> <!-- Nouveau rôle Créateur -->
-                            <option value="administrateur">Administrateur</option> <!-- Nouveau rôle Administrateur -->
+                            <option value="createur">Créateur</option>
+                            <option value="administrateur">Administrateur</option>
                         </select>
                     </div>
                     <button type="submit">S'inscrire</button>
@@ -69,12 +67,12 @@ export default {
     name: "PageInscription",
     data() {
         return {
-            isLogin: true, // État qui détermine si le formulaire de connexion ou d'inscription est affiché
+            isLogin: true,
             nom: "",
             prenom: "",
             identifiant: "",
             motDePasse: "",
-            role: "utilisateur", // Valeur par défaut pour le rôle lors de l'inscription
+            role: "utilisateur",
             errorMessage: ""
         };
     },
@@ -82,8 +80,8 @@ export default {
         ...mapActions(['setUserSession', 'addCompte']),
 
         toggleForm(formType) {
-            this.isLogin = formType === 'login'; // Bascule entre Connexion et Inscription
-            this.errorMessage = ""; // Réinitialise le message d'erreur
+            this.isLogin = formType === 'login';
+            this.errorMessage = "";
         },
 
         login() {
@@ -92,7 +90,7 @@ export default {
             );
             if (user) {
                 this.setUserSession(user);
-                this.$router.push("/MonCompte"); // Redirection après la connexion
+                this.$router.push("/MonCompte");
             } else {
                 this.errorMessage = "Identifiant ou mot de passe incorrect.";
             }
@@ -112,17 +110,14 @@ export default {
                     identifiant: this.identifiant,
                     motDePasse: this.motDePasse,
                     role: this.role,
-                    telephone: "0102030405", // Exemple de valeur par défaut
-                    photoProfil: "https://via.placeholder.com/150", // Image par défaut
+                    telephone: "0102030405",
+                    photoProfil: "https://via.placeholder.com/150",
                 };
 
-                // Ajouter le nouveau compte dans le store
                 this.addCompte(newAccount);
 
-                // Connecter automatiquement l'utilisateur après l'inscription
                 this.setUserSession(newAccount);
 
-                // Rediriger vers la page MonCompte après l'inscription et la connexion
                 this.$router.push("/MonCompte");
             }
         }

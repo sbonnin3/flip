@@ -21,16 +21,39 @@ export default {
         { text: "Activités" },
         { text: "Carte" },
         { text: "Prestataires" },
-        { text: "Connexion" }
       ],
     };
   },
   computed: {
-    ...mapGetters(["userSession"]), // Récupère l'état de la session utilisateur depuis le store
+    ...mapGetters(["userSession"]),
+  },
+  watch: {
+    userSession: {
+      handler() {
+        this.updateNavTitles();
+      },
+      immediate: true,
+    },
   },
   methods: {
+    updateNavTitles() {
+      this.navTitles = [
+        { text: "Accueil" },
+        { text: "Activités" },
+        { text: "Carte" },
+        { text: "Prestataires" },
+      ];
+
+      if (this.userSession && this.userSession.role === 'utilisateur') {
+        this.navTitles.push({ text: "Mes Commandes" });
+        this.navTitles.push({ text: "Mon Compte" });
+      } else if (this.userSession) {
+        this.navTitles.push({ text: "Mon Compte" });
+      } else {
+        this.navTitles.push({ text: "Connexion" });
+      }
+    },
     handleMenuClick(index) {
-      // Redirection en fonction du menu sélectionné
       let route = "";
       if (index === 0) {
         route = "/Accueil";
@@ -40,14 +63,19 @@ export default {
         route = "/Carte";
       } else if (index === 3) {
         route = "/Prestataires";
-      } else if (index === 4) {
-        route = this.userSession ? "/MonCompte" : "/Connexion"; // Si connecté, redirige vers MonCompte, sinon vers Connexion
+      } else if (index === 4 && this.userSession && this.userSession.role === 'utilisateur') {
+        route = "/MesCommandes";
+      } else if (index === 4 || (index === 5 && this.userSession)) {
+        route = this.userSession ? "/MonCompte" : "/Connexion";
       }
 
       if (this.$route.path !== route) {
         this.$router.push(route);
       }
     },
+  },
+  mounted() {
+    this.updateNavTitles();
   },
 };
 </script>

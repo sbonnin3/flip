@@ -1,18 +1,11 @@
 <template>
   <div class="navbar-container">
-    <nav
-      class="navbar"
-      :class="{ 'navbar-transparent': !isScrolled && isOnHomePage, 'navbar-visible': isScrolled || !isOnHomePage }"
-    >
+    <nav class="navbar"
+      :class="{ 'navbar-transparent': !isScrolled && isOnHomePage, 'navbar-visible': isScrolled || !isOnHomePage }">
       <div class="nav-titles">
         <img src="../assets/images/logo.png" alt="logo" width="100px" height="80px" />
-        <p
-          v-for="(title, index) in displayedTitles"
-          :key="index"
-          :style="{ color: title.color }"
-          @click="emitMenuClicked(index)"
-          class="nav-item"
-        >
+        <p v-for="(title, index) in displayedTitles" :key="index" :style="{ color: title.color }"
+          @click="emitMenuClicked(index)" class="nav-item">
           {{ title.text }}
         </p>
       </div>
@@ -30,59 +23,51 @@ export default {
     },
     userSession: {
       type: Object,
-      default: null, // Par défaut, l'utilisateur n'est pas connecté
+      default: null,
     },
   },
   data() {
     return {
-      isScrolled: false, // Indicateur pour suivre si la page est défilée
-      isOnHomePage: false, // Indicateur pour savoir si l'utilisateur est sur la page d'accueil
+      isScrolled: false,
+      isOnHomePage: false,
     };
   },
   computed: {
-    // Afficher dynamiquement les titres en fonction de l'état de connexion
     displayedTitles() {
       return this.titles.map((title, index) => {
-        // Remplace l'onglet Connexion par Mon Compte si l'utilisateur est connecté
         if (index === 4 && this.userSession) {
-          return { ...title, text: "Mon Compte" };
+          return { ...title };
         }
         return title;
       });
     },
   },
   mounted() {
-    this.checkIfOnHomePage(); // Vérifier si on est sur la page d'accueil lors du montage
-    this.startScrollListener(); // Activer l'écouteur de défilement
+    this.checkIfOnHomePage();
+    this.startScrollListener();
   },
   beforeDestroy() {
-    this.stopScrollListener(); // Supprimer l'écouteur avant de détruire le composant
+    this.stopScrollListener();
   },
   watch: {
-    // Surveiller les changements de la route pour mettre à jour la navbar
     $route() {
-      this.checkIfOnHomePage(); // Vérifier si l'utilisateur est sur la page d'accueil à chaque changement de route
+      this.checkIfOnHomePage();
     },
   },
   methods: {
-    // Vérifie si l'utilisateur est sur la page d'accueil
     checkIfOnHomePage() {
       this.isOnHomePage = this.$route.path === "/Accueil";
-      this.isScrolled = !this.isOnHomePage; // Forcer la barre visible par défaut si pas sur la page d'accueil
+      this.isScrolled = !this.isOnHomePage;
     },
-    // Méthode pour mettre à jour l'état `isScrolled` en fonction du défilement de la page
     handleScroll() {
-      this.isScrolled = window.scrollY > 0; // Si le scroll est supérieur à 0, la barre de navigation devient visible
+      this.isScrolled = window.scrollY > 0;
     },
-    // Activer l'écouteur de défilement
     startScrollListener() {
       window.addEventListener("scroll", this.handleScroll);
     },
-    // Désactiver l'écouteur de défilement
     stopScrollListener() {
       window.removeEventListener("scroll", this.handleScroll);
     },
-    // Méthode pour émettre l'événement de menu cliqué
     emitMenuClicked(index) {
       this.$emit("menu-clicked", index);
     },
@@ -104,13 +89,12 @@ export default {
   box-shadow: 0 6px 4px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   height: 80px;
-  transition: background-color 0.40s ease-in-out; /* Transition douce entre les styles */
+  transition: background-color 0.40s ease-in-out;
 }
 
-/* Styles pour la navbar transparente */
 .navbar-transparent {
-  background-color: transparent; /* Transparent lorsque `isScrolled` est faux */
-  box-shadow: none; /* Supprimer l'ombre */
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .navbar-transparent p.nav-item {
@@ -118,13 +102,11 @@ export default {
   text-shadow: black 0px 0px 5px;
 }
 
-/* Styles pour la navbar visible */
 .navbar-visible {
-  background-color: #ffffff; /* Background par défaut lorsqu'on descend la page */
-  box-shadow: 0 6px 4px rgba(0, 0, 0, 0.1); /* Ajoute une ombre pour la visibilité */
+  background-color: #ffffff;
+  box-shadow: 0 6px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Styles des titres dans la navbar */
 .nav-titles {
   display: flex;
   justify-content: center;
@@ -133,7 +115,6 @@ export default {
   margin-left: 50px;
 }
 
-/* Styles des éléments de navigation */
 p.nav-item {
   margin-top: 10px;
   margin-left: 60px;
@@ -148,7 +129,6 @@ p.nav-item {
   color: black;
 }
 
-/* Effet hover pour les éléments de navigation */
 p.nav-item::after {
   content: '';
   position: absolute;

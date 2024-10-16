@@ -56,7 +56,7 @@ export const points = [
     {
         idPoint: 10,
         category: 'Emplacement',
-        disponible: true,
+        disponible: false,
         coordinates: [46.647235, -0.24759],
     },
     {

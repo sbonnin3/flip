@@ -1,6 +1,5 @@
 <template>
   <div class="accueilpage">
-    <!-- Introduction container with changing text -->
     <div class="introduction-container">
       <div class="text-container" :class="{ 'fade-in-text': fadeText, 'fade-out-text': !fadeText }">
         <h1>{{ currentSlide.title }}</h1>
@@ -8,7 +7,6 @@
       </div>
     </div>
     <h1 class="midh1">Pourquoi venir au FLIP ?</h1>
-    <!-- Up-container with carousel -->
     <div class="up-container">
       <div class="leftuptextcontainer" :class="{ 'fade-in': fadeText }">
         <h1>{{ currentCarouselSlide.title }}</h1>
@@ -16,26 +14,24 @@
         <h5>{{ currentCarouselSlide.description }}</h5>
         <button type="submit" class="login-button">En savoir plus</button>
       </div>
-      <img class="festivalimages" :class="{ 'slide-in': fadeImage }" :src="currentCarouselSlide.image" alt="imagefestival">
+      <img class="festivalimages" :class="{ 'slide-in': fadeImage }" :src="currentCarouselSlide.image"
+        alt="imagefestival">
     </div>
 
     <div class="carousel-indicators">
-      <span
-          v-for="(slide, index) in carouselSlides"
-          :key="index"
-          :class="{ active: currentCarouselIndex === index }"
-          class="indicator"
-      ></span>
+      <span v-for="(slide, index) in carouselSlides" :key="index" :class="{ active: currentCarouselIndex === index }"
+        class="indicator"></span>
     </div>
 
-    <!-- Mid-container -->
-
-      <h1 class="down-container-title">Interessé ? plus d'informations qui vous donneront encore plus envie !</h1>
+    <h1 class="down-container-title">Interessé ? plus d'informations qui vous donneront encore plus envie !</h1>
     <h3 class="down-container-uptitle">Lorem ipsum supreme</h3>
     <div class="down-container">
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
+        magna aliqua.
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
+        aute irure
+        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+        cupidatat non
         proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
       </p>
       <img src="../assets/images/backgroundaccueil_3.jpg" width="470" height="310" class="down-container-image1">
@@ -43,18 +39,24 @@
     <h3 class="down-container-uptitleright">Lorem ipsum supreme</h3>
     <div class="down-containertwo">
       <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
+        magna aliqua.
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
+        aute irure
+        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+        cupidatat non
         proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
       </p>
       <img src="../assets/images/backgroundaccueil_3.jpg" width="470" height="310" class="down-container-image1">
     </div>
     <h3 class="down-container-uptitle">Lorem ipsum supreme</h3>
     <div class="down-container">
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
+        magna aliqua.
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
+        aute irure
+        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+        cupidatat non
         proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
       </p>
       <img src="../assets/images/backgroundaccueil_3.jpg" width="470" height="310" class="down-container-image1">
@@ -69,8 +71,8 @@ export default {
   name: "PageAccueil",
   data() {
     return {
-      currentIndex: 0, // Pour le texte d'introduction
-      currentCarouselIndex: 0, // Pour le carousel du milieu
+      currentIndex: 0,
+      currentCarouselIndex: 0,
       fadeText: true,
       fadeImage: true,
       slides: [
@@ -125,8 +127,8 @@ export default {
         setTimeout(() => {
           this.currentIndex = (this.currentIndex + 1) % this.slides.length;
           this.fadeText = true;
-        }, 1000); // Wait 1 second for fade-out to complete
-      }, 4000); // Change every 4 seconds
+        }, 1000);
+      }, 4000);
     },
     startCarouselTransition() {
       setInterval(() => {
@@ -135,8 +137,8 @@ export default {
         setTimeout(() => {
           this.currentCarouselIndex = (this.currentCarouselIndex + 1) % this.carouselSlides.length;
           this.fadeImage = true;
-        }, 1000); // Wait 1 second for fade-out to complete
-      }, 4000); // Change every 4 seconds
+        }, 1000);
+      }, 4000);
     },
   },
   computed: {

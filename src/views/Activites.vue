@@ -2,23 +2,19 @@
     <div class="tournois-container">
         <h1 class="page-title">Page d'activités</h1>
 
-        <!-- Onglets pour basculer entre Jeux et Tournois -->
         <div class="tab-container">
             <button @click="selectTab('Jeux')" :class="{ active: selectedTab === 'Jeux' }">Jeux</button>
             <button @click="selectTab('Tournois')" :class="{ active: selectedTab === 'Tournois' }">Tournois</button>
         </div>
 
-        <!-- Section Jeux -->
         <div v-show="selectedTab === 'Jeux'">
-            <!-- Recherche et filtres pour les jeux avec mise en forme -->
             <div class="search-container">
-                <!-- Ligne 1 : Nom de jeu -->
                 <div class="search-row">
                     <label for="searchName" class="search-label">Nom de jeu :</label>
-                    <input id="searchName" type="text" v-model="searchName" placeholder="Rechercher par nom de jeu" class="search-input" />
+                    <input id="searchName" type="text" v-model="searchName" placeholder="Rechercher par nom de jeu"
+                        class="search-input" />
                 </div>
 
-                <!-- Ligne 2 : Types de jeux (Checkbox) -->
                 <div class="search-row">
                     <label class="search-label">Type de jeu :</label>
                     <div class="checkbox-container">
@@ -28,30 +24,32 @@
                     </div>
                 </div>
 
-                <!-- Ligne 3 : Nombre de joueurs, âge minimum, durée maximum -->
                 <div class="search-row">
                     <label for="searchPlayers" class="search-label">Nombre de joueurs :</label>
-                    <input id="searchPlayers" type="number" v-model="searchPlayers" min="1" placeholder="Nombre de joueurs" class="search-input" />
+                    <input id="searchPlayers" type="number" v-model="searchPlayers" min="1"
+                        placeholder="Nombre de joueurs" class="search-input" />
 
                     <label for="searchAge" class="search-label">Âge minimum :</label>
-                    <input id="searchAge" type="number" v-model="searchAge" min="1" placeholder="Âge minimum" class="search-input" />
+                    <input id="searchAge" type="number" v-model="searchAge" min="1" placeholder="Âge minimum"
+                        class="search-input" />
 
                     <label for="searchDuration" class="search-label">Durée max (min) :</label>
-                    <input id="searchDuration" type="number" v-model="searchDuration" min="1" placeholder="Durée max (minutes)" class="search-input" />
+                    <input id="searchDuration" type="number" v-model="searchDuration" min="1"
+                        placeholder="Durée max (minutes)" class="search-input" />
                 </div>
 
-                <!-- Ligne 4 : Nom de stand et Réinitialisation -->
                 <div class="search-row">
                     <label for="searchEditeur" class="search-label">Nom de l'éditeur :</label>
-                    <input id="searchEditeur" type="text" v-model="searchEditeur" placeholder="Rechercher par nom d'éditeur" class="search-input" />
+                    <input id="searchEditeur" type="text" v-model="searchEditeur"
+                        placeholder="Rechercher par nom d'éditeur" class="search-input" />
                     <label for="searchStand" class="search-label">Nom de stand :</label>
-                    <input id="searchStand" type="text" v-model="searchStand" placeholder="Rechercher par nom de stand" class="search-input" />
+                    <input id="searchStand" type="text" v-model="searchStand" placeholder="Rechercher par nom de stand"
+                        class="search-input" />
                 </div>
 
                 <button @click="resetFilters" class="reset-button">Réinitialiser les filtres</button>
             </div>
 
-            <!-- Affichage des jeux filtrés sous forme de cartes -->
             <div class="cards-container" v-if="filteredJeux.length">
                 <div v-for="jeu in filteredJeux" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
                     <img :src="jeu.image" alt="Image du jeu" class="card-image" />
@@ -68,7 +66,6 @@
             <p v-else>Aucun jeu disponible.</p>
         </div>
 
-        <!-- Section Tournois -->
         <div v-show="selectedTab === 'Tournois'">
             <div class="cards-container" v-if="tournois.length">
                 <div v-for="tournoi in tournois" :key="tournoi._id" class="card" @click="openModal(tournoi)">
@@ -78,14 +75,14 @@
                         <p class="card-location">{{ tournoi.lieu }}</p>
                         <p class="card-date">{{ formatDate(tournoi.dates) }}</p>
                         <p class="card-price">Prix: {{ tournoi.prix }}€</p>
-                        <p class="card-places">Places restantes: {{ getPlacesRestantes(tournoi._id, tournoi.placesLimite) }}</p>
+                        <p class="card-places">Places restantes: {{ getPlacesRestantes(tournoi._id,
+                            tournoi.placesLimite) }}</p>
                     </div>
                 </div>
             </div>
             <p v-else>Aucun tournoi disponible.</p>
         </div>
 
-        <!-- Fenêtre modale pour les détails des jeux -->
         <div v-if="selectedJeu" class="modal">
             <div class="modal-content">
                 <span class="close-button" @click="closeJeuModal">&times;</span>
@@ -100,7 +97,6 @@
             </div>
         </div>
 
-        <!-- Fenêtre modale pour les détails des tournois -->
         <div v-if="selectedTournoi" class="modal">
             <div class="modal-content">
                 <span class="close-button" @click="closeModal">&times;</span>
@@ -111,12 +107,12 @@
                 <p><strong>Description :</strong> {{ selectedTournoi.description }}</p>
                 <p><strong>Prix :</strong> {{ selectedTournoi.prix }}€</p>
                 <p><strong>Nombre de places réservées :</strong> {{ getReservationCount(selectedTournoi._id) }}</p>
-                <p><strong>Places restantes :</strong> {{ getPlacesRestantes(selectedTournoi._id, selectedTournoi.placesLimite) }}</p>
+                <p><strong>Places restantes :</strong> {{ getPlacesRestantes(selectedTournoi._id,
+                    selectedTournoi.placesLimite) }}</p>
                 <button class="reserve-button" @click="openReservationForm">Réserver</button>
             </div>
         </div>
 
-        <!-- Fenêtre du formulaire de réservation -->
         <div v-if="showReservationForm" class="reservation-modal">
             <div class="modal-content">
                 <span class="close-button" @click="closeReservationForm">&times;</span>
@@ -129,7 +125,8 @@
                     <input type="text" v-model="reservationForm.firstName" required />
 
                     <label for="pseudo">Pseudo (facultatif) :</label>
-                    <input type="text" v-model="reservationForm.pseudo" placeholder="Si vide, sera remplacé par le prénom" />
+                    <input type="text" v-model="reservationForm.pseudo"
+                        placeholder="Si vide, sera remplacé par le prénom" />
 
                     <label for="email">Adresse Email:</label>
                     <input type="email" v-model="reservationForm.email" required />
@@ -154,7 +151,7 @@ export default {
     name: 'PageActivites',
     data() {
         return {
-            selectedTab: 'Jeux', // Onglet par défaut
+            selectedTab: 'Jeux',
             selectedJeu: null,
             selectedTournoi: null,
             showReservationForm: false,
@@ -162,32 +159,25 @@ export default {
             reservations,
             tournois,
             jeux,
-            searchName: '', // Recherche par nom de jeu
-            searchPlayers: '', // Recherche par nombre de joueurs
-            searchAge: '', // Recherche par âge minimum
-            searchDuration: '', // Recherche par durée maximum
-            searchEditeur: '', // Recherche par éditeur
-            searchStand: '', // Recherche par nom de stand
-            selectedTypes: [], // Types de jeux sélectionnés
-            jeuTypes: [...new Set(jeux.map(jeu => jeu.type))], // Types de jeux disponibles (extraits des jeux)
+            searchName: '',
+            searchPlayers: '',
+            searchAge: '',
+            searchDuration: '',
+            searchEditeur: '',
+            searchStand: '',
+            selectedTypes: [],
+            jeuTypes: [...new Set(jeux.map(jeu => jeu.type))],
         };
     },
     computed: {
         filteredJeux() {
             return this.jeux.filter(jeu => {
-                // Filtre par nom de jeu
                 const nameMatch = jeu.name.toLowerCase().includes(this.searchName.toLowerCase());
-                // Filtre par type de jeu
                 const typeMatch = this.selectedTypes.length ? this.selectedTypes.includes(jeu.type) : true;
-                // Filtre par nombre de joueurs
                 const playersMatch = this.searchPlayers ? jeu.nombre_de_joueurs.includes(Number(this.searchPlayers)) : true;
-                // Filtre par âge minimum
                 const ageMatch = this.searchAge ? jeu.age_minimum <= Number(this.searchAge) : true;
-                // Filtre par durée maximum
                 const durationMatch = this.searchDuration ? jeu.duree <= Number(this.searchDuration) : true;
-                // Filtre par éditeur
                 const editeurMatch = jeu.editeur.toLowerCase().includes(this.searchEditeur.toLowerCase());
-                // Filtre par nom de stand
                 const standMatch = jeu.nom_stand.toLowerCase().includes(this.searchStand.toLowerCase());
 
                 return nameMatch && typeMatch && playersMatch && ageMatch && durationMatch && editeurMatch && standMatch;
@@ -227,7 +217,6 @@ export default {
             this.resetReservationForm();
         },
         submitReservation() {
-            // Vérification et enregistrement des réservations (à compléter)
         },
         getReservationCount(tournoiId) {
             const reservation = this.reservations.filter(reservation => reservation.tournoiId === tournoiId);
@@ -260,42 +249,39 @@ export default {
 </script>
 
 <style scoped>
-/* Container principal pour les tournois et les jeux */
 .tournois-container {
     padding-top: 100px;
     text-align: center;
 }
 
-/* Titre de la page */
 .page-title {
     font-size: 2em;
     margin-bottom: 20px;
 }
 
 .tab-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
 .tab-container button {
-  padding: 10px 20px;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  background: none;
-  font-size: 1em;
-  margin: 0 10px;
-  transition: color 0.3s ease, border-bottom-color 0.3s ease;
+    padding: 10px 20px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    background: none;
+    font-size: 1em;
+    margin: 0 10px;
+    transition: color 0.3s ease, border-bottom-color 0.3s ease;
 }
 
 .tab-container button:hover,
 .tab-container button.active {
-  color: #d22328;
-  border-bottom-color: #d22328;
+    color: #d22328;
+    border-bottom-color: #d22328;
 }
 
-/* Conteneur pour l'affichage des cartes de jeux et tournois */
 .cards-container {
     display: flex;
     flex-wrap: wrap;
@@ -303,7 +289,6 @@ export default {
     gap: 20px;
 }
 
-/* Style des cartes de jeux et tournois */
 .card {
     background-color: #fff;
     border-radius: 10px;
@@ -320,14 +305,12 @@ export default {
     background-color: #fce012;
 }
 
-/* Image dans chaque carte */
 .card-image {
     width: 100%;
     height: 200px;
     object-fit: cover;
 }
 
-/* Contenu de chaque carte */
 .card-content {
     padding: 15px;
 }
@@ -337,7 +320,6 @@ export default {
     margin: 10px 0;
 }
 
-/* Informations détaillées dans chaque carte */
 .card-type,
 .card-players,
 .card-age,
@@ -352,7 +334,6 @@ export default {
     margin: 5px 0;
 }
 
-/* Style des fenêtres modales */
 .modal,
 .reservation-modal {
     position: fixed;
@@ -384,7 +365,6 @@ export default {
     margin-bottom: 20px;
 }
 
-/* Bouton pour fermer la fenêtre modale */
 .close-button {
     position: absolute;
     top: 10px;
@@ -393,7 +373,6 @@ export default {
     cursor: pointer;
 }
 
-/* Bouton de réservation */
 .reserve-button {
     background-color: #f04e23;
     color: #fff;
@@ -408,7 +387,6 @@ export default {
     background-color: #d83d1a;
 }
 
-/* Style des formulaires de réservation */
 form {
     display: flex;
     flex-direction: column;
@@ -429,7 +407,6 @@ form button {
     align-self: flex-start;
 }
 
-/* Style des inputs de recherche */
 .search-input {
     padding: 10px;
     margin: 5px;
@@ -438,7 +415,6 @@ form button {
     width: 180px;
 }
 
-/* Conteneur des cases à cocher pour les filtres de type de jeu */
 .checkbox-container {
     display: flex;
     gap: 15px;
@@ -447,12 +423,10 @@ form button {
     margin: 10px 0;
 }
 
-/* Style de chaque label de checkbox */
 .checkbox-label {
     margin-right: 15px;
 }
 
-/* Style du bouton de réinitialisation */
 .reset-button {
     background-color: #f04e23;
     color: white;
@@ -468,7 +442,6 @@ form button {
     background-color: #d83d1a;
 }
 
-/* Conteneur global de la recherche */
 .search-container {
     display: flex;
     flex-direction: column;
@@ -479,7 +452,6 @@ form button {
     border-radius: 10px;
 }
 
-/* Style de chaque ligne de recherche */
 .search-row {
     display: flex;
     align-items: center;
@@ -487,7 +459,6 @@ form button {
     gap: 20px;
 }
 
-/* Style des labels de recherche */
 .search-label {
     font-weight: bold;
     margin-right: 10px;
