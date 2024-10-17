@@ -1,6 +1,6 @@
-// store/index.js
 import Vue from 'vue';
 import Vuex from 'vuex';
+import { reservations } from "@/datasource/data";
 import { getAllTournois } from '@/services/tournoisService';
 import { comptes } from '@/datasource/comptes';
 import { getAllSouvenirs } from "@/services/souvenirsService";
@@ -12,50 +12,48 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    tournois: [], // Liste des tournois
-    comptes: comptes, // Liste des comptes utilisateurs
-    userSession: null, // Stocker l'utilisateur connecté (null si déconnecté)
-    souvenirs: [], // Liste des souvenirs
-    nourritures: [], // Liste de la nourriture
-    restaurants: [], // Liste des restaurants
-    boissons: [], // Liste des boissons
+    tournois: [],
+    comptes: comptes,
+    userSession: null,
+    souvenirs: [],
+    nourritures: [],
+    restaurants: [],
+    boissons: [],
+    reservations: reservations,
   },
   mutations: {
-    // Mutation pour définir la liste des tournois
     SET_TOURNOIS(state, tournois) {
       state.tournois = tournois;
     },
-    // Mutation pour définir la session utilisateur
     SET_USER_SESSION(state, user) {
       state.userSession = user;
     },
-    // Mutation pour déconnecter l'utilisateur
     CLEAR_USER_SESSION(state) {
       state.userSession = null;
     },
-    // Mutation pour ajouter un nouveau compte
     ADD_COMPTE(state, nouveauCompte) {
       state.comptes.push(nouveauCompte);
     },
-    // Mutation pour définir tous les souvenirs
+    ADD_RESERVATION(state, reservation) {
+      Vue.set(state.reservations, state.reservations.length, reservation);
+    },
+    SET_RESERVATIONS(state, reservations) {
+      state.reservations = reservations;
+    },
     SET_SOUVENIR(state, souvenirs) {
       state.souvenirs = souvenirs;
     },
-    // Mutation pour définir toute la nourriture
     SET_NOURRITURE(state, nourritures) {
       state.nourritures = nourritures;
     },
-    // Mutation pour définir tous les restaurants
     SET_RESTAURANT(state, restaurants) {
       state.restaurants = restaurants;
     },
-    // Mutation pour définir les boissons
     SET_BOISSON(state, boissons) {
       state.boissons = boissons;
     },
   },
   actions: {
-    // Action pour récupérer tous les tournois
     async getAllTournois({ commit }) {
       try {
         const response = await getAllTournois();
@@ -67,19 +65,23 @@ export default new Vuex.Store({
         console.error("Erreur lors de la récupération des tournois :", error);
       }
     },
-    // Action pour définir la session utilisateur lors de la connexion
+    fetchUserReservations({ commit }, userId) {
+      const userReservations = reservations.filter(reservation => reservation.userId === userId);
+      commit('SET_RESERVATIONS', userReservations);
+    },
     setUserSession({ commit }, user) {
       commit('SET_USER_SESSION', user);
     },
-    // Action pour déconnecter l'utilisateur
     clearUserSession({ commit }) {
       commit('CLEAR_USER_SESSION');
     },
-    // Action pour ajouter un compte utilisateur ou prestataire
     addCompte({ commit }, compte) {
       commit('ADD_COMPTE', compte);
     },
-    // Action pour récupérer tous les souvenirs
+    addReservation({ commit }, reservation) {
+      commit('ADD_RESERVATION', reservation);
+      this.$forceUpdate();
+    },
     async getAllSouvenirs({ commit }) {
       try {
         const response = await getAllSouvenirs();
@@ -91,7 +93,6 @@ export default new Vuex.Store({
         console.error("Erreur lors de la récupération des souvenirs :", error);
       }
     },
-    // Action pour récupérer la nourriture
     async getAllNourritures({ commit }) {
       try {
         const response = await getAllNourritures();
@@ -103,7 +104,6 @@ export default new Vuex.Store({
         console.error("Erreur lors de la récupération de la nourriture :", error);
       }
     },
-    // Action pour récupérer les restaurants
     async getAllRestaurant({ commit }) {
       try {
         const response = await getAllRestaurant();
@@ -115,7 +115,6 @@ export default new Vuex.Store({
         console.error("Erreur lors de la récupération des restaurants :", error);
       }
     },
-    // Action pour récupérer les boissons
     async getAllBoissons({ commit }) {
       try {
         const response = await getAllBoissons();
@@ -129,19 +128,21 @@ export default new Vuex.Store({
     },
   },
   getters: {
-    // Getter pour récupérer tous les tournois
     tournois: (state) => state.tournois,
-    // Getter pour récupérer tous les comptes
     comptes: (state) => state.comptes,
-    // Getter pour récupérer la session utilisateur
     userSession: (state) => state.userSession,
-    // Getter pour récupérer tous les souvenirs
     souvenirs: (state) => state.souvenirs,
-    // Getter pour récupérer la nourriture
     nourritures: (state) => state.nourritures,
-    // Getter pour récupérer les restaurants
     restaurants: (state) => state.restaurants,
-    // Getter pour récupérer les boissons
     boissons: (state) => state.boissons,
+    userReservations: (state) => {
+      console.log("Reservations in state:", state.reservations);
+      if (state.userSession) {
+        return state.reservations.filter(
+          (reservation) => reservation.userId === state.userSession.id
+        );
+      }
+      return [];
+    },
   },
 });
