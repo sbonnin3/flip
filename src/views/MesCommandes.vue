@@ -1,8 +1,6 @@
 <template>
   <div class="mes-commandes">
     <h1 class="page-title">Mes Commandes</h1>
-    
-    <h2 class="section-title">Commandes de l'utilisateur</h2>
     <p v-if="!this.$store.state.tournois.length">Chargement des tournois...</p>
     <div class="cards-container" v-else-if="commandes && commandes.length">
       <div v-for="(commande, index) in commandes" :key="index" class="card">
@@ -47,7 +45,7 @@ export default {
 
 <style scoped>
 .mes-commandes {
-  padding: 20px;
+  padding-top: 100px;
   max-width: 800px;
   margin: auto;
   text-align: center;
@@ -57,12 +55,6 @@ export default {
   font-size: 2em;
   margin-bottom: 20px;
   color: #333;
-}
-
-.section-title {
-  font-size: 1.5em;
-  margin-bottom: 15px;
-  color: #444;
 }
 
 .cards-container {
