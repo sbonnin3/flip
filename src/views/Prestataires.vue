@@ -4,12 +4,12 @@
 
     <div class="tab-container">
       <button @click="selectTab('Restauration')"
-        :class="{ active: selectedTab === 'Restauration' }">Restauration</button>
+              :class="{ active: selectedTab === 'Restauration' }">Restauration</button>
       <button @click="selectTab('Boutique')" :class="{ active: selectedTab === 'Boutique' }">Boutique</button>
       <button @click="selectTab('Créateurs de jeux')" :class="{ active: selectedTab === 'Créateur de jeux' }">Créateur
         de jeux</button>
       <button @click="selectTab('Organisateurs')"
-        :class="{ active: selectedTab === 'Organisateurs' }">Organisateurs</button>
+              :class="{ active: selectedTab === 'Organisateurs' }">Organisateurs</button>
     </div>
 
     <div v-if="selectedTab === 'Restauration'">
@@ -24,14 +24,32 @@
       <p v-else>Aucun restaurants disponible.</p>
     </div>
 
-    <div v-if="selectedModalRestau" class="modal">
+    <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
       <div class="modal-content">
         <span class="close-button" @click="closeModalRestau">&times;</span>
         <h2>{{ selectedModalRestau.name }}</h2>
-        <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image" />
-        <p><strong>Articles :</strong> {{ }}</p>
-        <p><strong>Boissons :</strong> {{ }}</p>
-        <p><strong>Emplacement :</strong> {{ selectedModalRestau.emplacement }}</p>
+        <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image"
+             style=" width: 50%; height: 50%"/>
+        <div v-for="stand in stands.filter(stand => stand.idRestau === selectedModalRestau._id)" :key="stand.id">
+          <p><strong>Nourritures :</strong></p>
+          <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <div v-for="nourriture in stand.nourritures" :key="nourriture.nom" class="article-button">
+              <button @click="addToCart(nourriture)" class="article-button-content">
+                <img :src="nourriture.image" alt="Image de l'article" class="article-image" />
+                {{ nourriture.nom }} - {{ nourriture.prix }}€
+              </button>
+            </div>
+          </div>
+          <p><strong>Boissons :</strong></p>
+          <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <div v-for="boisson in stand.boissons" :key="boisson.nom" class="article-button">
+              <button @click="addToCart(boisson)" class="article-button-content">
+                <img :src="boisson.image" alt="Image de l'article" class="article-image">
+                {{ boisson.nom }} - {{ boisson.prix }}€
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -85,7 +103,7 @@
 
 <script>
 
-import { jeux, restaurants, souvenirs } from '@/datasource/data';
+import { jeux, restaurants, souvenirs, stands } from '@/datasource/data';
 
 export default {
   name: "PagePrestataires",
@@ -97,6 +115,7 @@ export default {
       jeux,
       souvenirs,
       restaurants,
+      stands
     };
   },
   methods: {
@@ -114,6 +133,10 @@ export default {
     },
     closeModalRestau() {
       this.selectedModalRestau = null;
+    },
+    addToCart(article) {
+      console.log('Ajouté au panier :', article);
+      // Plus tard, tu pourras ajouter la logique d'ajout au panier ici.
     },
   },
 };
@@ -247,6 +270,32 @@ export default {
 
 .reserve-button:hover {
   background-color: #d83d1a;
+}
+
+.article-button-content {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  padding: 10px;
+  margin: 5px 0;
+  width: 180px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.article-button-content:hover {
+  background-color: #45a049;
+}
+
+.article-image {
+  width: 40px; /* taille de l'image */
+  height: 40px;
+  margin-right: 10px; /* espacement entre l'image et le texte */
+  border-radius: 5px;
 }
 
 form {
