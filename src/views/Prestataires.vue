@@ -22,6 +22,32 @@
         </div>
       </div>
       <p v-else>Aucun restaurants disponible.</p>
+
+      <div class="cart">
+        <h3>Panier</h3>
+        <div v-for="item in cart" :key="item.nom" class="cart-item">
+          <p>{{ item.nom }} - {{ item.prix }}€ x {{ item.quantite }}</p>
+        </div>
+        <p>Total : {{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€</p>
+        <button class="reserve-button" @click="openCommandConfirmation">Commander</button>
+      </div>
+    </div>
+
+    <div v-if="showConfirmation" class="confirmation-modal">
+      <div class="modal-content">
+        <span class="close-button" @click="closeConfirmation">&times;</span>
+        <h2>Confirmer la commande</h2>
+        <p>Voulez-vous vraiment confirmer la commande du panier ?</p>
+        <button @click="confirmReservation" class="confirm-button">Confirmer</button>
+        <button @click="closeConfirmation" class="cancel-button">Annuler</button>
+      </div>
+    </div>
+
+    <div v-if="commandMessage" class="reservation-message">
+      <div class="modal-content">
+        <p>{{ commandMessage }}</p>
+        <button @click="closeCommandMessage">OK</button>
+      </div>
     </div>
 
     <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
@@ -112,6 +138,9 @@ export default {
       selectedTab: null,
       selectedModalJeu: null,
       selectedModalRestau: null,
+      cart: [],
+      showConfirmation: false,
+      commandMessage: '',
       jeux,
       souvenirs,
       restaurants,
@@ -134,15 +163,83 @@ export default {
     closeModalRestau() {
       this.selectedModalRestau = null;
     },
+    openCommandConfirmation() {
+      this.showConfirmation = true;
+    },
+    closeConfirmation() {
+      this.showConfirmation = false;
+    },
+    confirmReservation() {
+      this.showConfirmation = false;
+
+        const currentUser = this.$store.state.userSession;
+        if (currentUser) {
+          this.commandMessage = 'Votre commande a été confirmée !';
+        } else {
+          this.commandMessage = "Erreur : aucun utilisateur connecté.";
+        }
+    },
+    closeCommandMessage() {
+      this.commandMessage = '';
+    },
     addToCart(article) {
+      // Vérifier si l'article est déjà dans le panier
+      const itemInCart = this.cart.find(item => item.nom === article.nom);
+
+      if (itemInCart) {
+        // Si l'article existe déjà, on augmente la quantité
+        itemInCart.quantite += 1;
+      } else {
+        // Sinon, on ajoute un nouvel article avec une quantité initiale de 1
+        this.cart.push({ ...article, quantite: 1 });
+      }
+
       console.log('Ajouté au panier :', article);
-      // Plus tard, tu pourras ajouter la logique d'ajout au panier ici.
+      console.log('Panier actuel :', this.cart);
     },
   },
 };
 </script>
 
 <style scoped>
+
+.reservation-message {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reservation-message .modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.reservation-message button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.reservation-message button:hover {
+  background-color: #45a049;
+}
+
 .modal,
 .reservation-modal {
   position: fixed;
@@ -156,16 +253,28 @@ export default {
   justify-content: center;
 }
 
-.modal-content {
+.confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmation-modal .modal-content {
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
   width: 80%;
   max-width: 600px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  text-align: left;
-  position: relative;
+  text-align: center;
 }
+
 
 .modal-image {
   width: 100%;
@@ -183,7 +292,7 @@ export default {
 }
 
 .reserve-button {
-  background-color: #f04e23;
+  background-color: #4CAF50;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -193,7 +302,23 @@ export default {
 }
 
 .reserve-button:hover {
-  background-color: #d83d1a;
+  background-color: #45a049;
+}
+
+.confirm-button,
+.cancel-button {
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.confirm-button:hover {
+  background-color: #45a049;
 }
 
 .tab-container {
@@ -256,20 +381,6 @@ export default {
   right: 15px;
   font-size: 24px;
   cursor: pointer;
-}
-
-.reserve-button {
-  background-color: #f04e23;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.reserve-button:hover {
-  background-color: #d83d1a;
 }
 
 .article-button-content {
@@ -416,17 +527,6 @@ form button {
   justify-content: center;
 }
 
-.modal-content {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  width: 80%;
-  max-width: 600px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  text-align: left;
-  position: relative;
-}
-
 .modal-image {
   width: 100%;
   height: 300px;
@@ -440,20 +540,6 @@ form button {
   right: 15px;
   font-size: 24px;
   cursor: pointer;
-}
-
-.reserve-button {
-  background-color: #f04e23;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.reserve-button:hover {
-  background-color: #d83d1a;
 }
 
 form {
