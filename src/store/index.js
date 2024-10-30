@@ -20,6 +20,7 @@ export default new Vuex.Store({
     restaurants: [],
     boissons: [],
     reservations: reservations,
+    userOrders: [],
   },
   mutations: {
     SET_TOURNOIS(state, tournois) {
@@ -52,6 +53,9 @@ export default new Vuex.Store({
     SET_BOISSON(state, boissons) {
       state.boissons = boissons;
     },
+    SET_USER_ORDERS(state, orders) {
+      state.userOrders = orders;
+    }
   },
   actions: {
     async getAllTournois({ commit }) {
@@ -81,6 +85,11 @@ export default new Vuex.Store({
     addReservation({ commit }, reservation) {
       commit('ADD_RESERVATION', reservation);
       this.$forceUpdate();
+    },
+    addArticleOrder({ commit, state}, order) {
+      const updatedOrders = [...state.userOrders, order];
+      commit('SET_USER_ORDERS', updatedOrders);
+      console.log("Commandes d'articles actuelles :", updatedOrders);
     },
     async getAllSouvenirs({ commit }) {
       try {
@@ -135,6 +144,7 @@ export default new Vuex.Store({
     nourritures: (state) => state.nourritures,
     restaurants: (state) => state.restaurants,
     boissons: (state) => state.boissons,
+    userOrders: (state) => state.userOrders,
     userReservations: (state) => {
       console.log("Reservations in state:", state.reservations);
       if (state.userSession) {

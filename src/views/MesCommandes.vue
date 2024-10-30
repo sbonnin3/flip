@@ -1,8 +1,10 @@
 <template>
   <div class="mes-commandes">
     <h1 class="page-title">Mes Commandes</h1>
+
     <p v-if="!this.$store.state.tournois.length">Chargement des tournois...</p>
     <div class="cards-container" v-else-if="commandes && commandes.length">
+      <h2 class="section-title">Commandes de tournois</h2>
       <div v-for="(commande, index) in commandes" :key="index" class="card">
         <div class="card-content">
           <h3 class="card-title">Tournoi: {{ commande.tournoiNom }}</h3>
@@ -11,6 +13,21 @@
         </div>
       </div>
     </div>
+
+    <div class="cards-container" v-if="articleCommandes && articleCommandes.length">
+      <h2 class="section-title">Commandes d'Articles</h2>
+      <div v-for="(articleCommande, index) in articleCommandes" :key="'article-' + index" class="card">
+        <div class="card-content">
+          <h3 class="card-title">Commande d'Article {{ index + 1 }}</h3>
+          <div v-for="article in articleCommande.articles" :key="article.nom" class="article">
+            <p class="article-name">{{ article.nom }} : {{ article.quantite }} </p>
+            <p class="article-price">Prix : {{ article.prix }}€</p>
+          </div>
+          <p class="card-status">Statut : {{ articleCommande.status }}</p>
+        </div>
+      </div>
+    </div>
+
     <p v-else>Aucune commande trouvée.</p>
   </div>
 </template>
@@ -21,7 +38,7 @@ import { mapGetters } from "vuex";
 export default {
   name: "PageMesCommandes",
   computed: {
-    ...mapGetters(['userReservations', 'userSession']),
+    ...mapGetters(['userReservations', 'userOrders', 'userSession']),
     commandes() {
       if (!this.userSession || !this.userReservations) {
         return [];
@@ -35,6 +52,15 @@ export default {
           status: 'Confirmée',
         };
       });
+    },
+    articleCommandes() {
+      if (!this.userSession || !this.userOrders) {
+        return [];
+      }
+      return this.userOrders.map(order => ({
+        ...order,
+        status: 'Confirmée'
+      }));
     }
   },
   mounted() {
@@ -94,5 +120,22 @@ export default {
 .card-status {
   font-size: 1em;
   color: #007bff;
+}
+
+.article {
+  border-bottom: 1px solid #b6afaf;
+  padding: 10px 0;
+}
+
+.article-name {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #333;
+}
+
+.article-price {
+  font-size: 0.95em;
+  color: #666;
+  margin: 5px 0;
 }
 </style>

@@ -130,6 +130,7 @@
 <script>
 
 import { jeux, restaurants, souvenirs, stands } from '@/datasource/data';
+import { mapActions } from 'vuex';
 
 export default {
   name: "PagePrestataires",
@@ -139,6 +140,7 @@ export default {
       selectedModalJeu: null,
       selectedModalRestau: null,
       cart: [],
+      orders: [],
       showConfirmation: false,
       commandMessage: '',
       jeux,
@@ -148,6 +150,9 @@ export default {
     };
   },
   methods: {
+    ...mapActions(['addArticleOrder']),
+
+
     selectTab(tab) {
       this.selectedTab = tab;
     },
@@ -172,12 +177,20 @@ export default {
     confirmReservation() {
       this.showConfirmation = false;
 
-        const currentUser = this.$store.state.userSession;
-        if (currentUser) {
-          this.commandMessage = 'Votre commande a été confirmée !';
-        } else {
-          this.commandMessage = "Erreur : aucun utilisateur connecté.";
-        }
+      const currentUser = this.$store.state.userSession;
+      if (this.cart.length > 0 && currentUser) {
+        // Appelle `addArticleOrder` pour stocker la commande dans le store
+        this.addArticleOrder({
+          articles: [...this.cart],
+          status: 'Confirmée',
+        });
+
+        // Réinitialise le panier et affiche un message de confirmation
+        this.cart = [];
+        this.commandMessage = 'Votre commande a été confirmée !';
+      } else {
+        this.commandMessage = "Erreur : aucun utilisateur connecté.";
+      }
     },
     closeCommandMessage() {
       this.commandMessage = '';
