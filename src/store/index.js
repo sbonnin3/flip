@@ -23,11 +23,14 @@ export default new Vuex.Store({
     userOrders: [],
   },
   mutations: {
-    SET_TOURNOIS(state, tournois) {
-      state.tournois = tournois;
-    },
     SET_USER_SESSION(state, user) {
       state.userSession = user;
+    },
+    REMOVE_COMPTE(state, compteId) {
+      state.comptes = state.comptes.filter(compte => compte.id !== compteId);
+    },
+    SET_TOURNOIS(state, tournois) {
+      state.tournois = tournois;
     },
     CLEAR_USER_SESSION(state) {
       state.userSession = null;
@@ -84,9 +87,8 @@ export default new Vuex.Store({
     },
     addReservation({ commit }, reservation) {
       commit('ADD_RESERVATION', reservation);
-      this.$forceUpdate();
     },
-    addArticleOrder({ commit, state}, order) {
+    addArticleOrder({ commit, state }, order) {
       const updatedOrders = [...state.userOrders, order];
       commit('SET_USER_ORDERS', updatedOrders);
       console.log("Commandes d'articles actuelles :", updatedOrders);

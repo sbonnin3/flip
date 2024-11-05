@@ -61,8 +61,8 @@ export const points = [
     },
     {
         idPoint: 11,
-        category: 'Restauration',
-        name: 'Mie Caline',
+        category: 'Emplacement',
+        disponible: false,
         coordinates: [46.647987, -0.247901],
     },
     {
@@ -70,5 +70,23 @@ export const points = [
         category: 'Emplacement',
         disponible: false,
         coordinates: [46.645, -0.25],
+    },
+    {
+        idPoint: 13,
+        category: 'Emplacement',
+        disponible: false,
+        coordinates: [46.6472, -0.2479],
+    },
+    {
+        idPoint: 14,
+        category: 'Emplacement',
+        disponible: false,
+        coordinates: [46.6481, -0.2488],
+    },
+    {
+        idPoint: 14,
+        category: 'Emplacement',
+        disponible: false,
+        coordinates: [46.6483, -0.2516],
     },
 ];

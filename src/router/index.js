@@ -7,6 +7,8 @@ import Prestataires from '../views/Prestataires.vue';
 import Connexion from '../views/Connexion.vue';
 import MonCompte from '../views/MonCompte.vue';
 import MesCommandes from '../views/MesCommandes.vue';
+import Reservations from '../views/Reservations.vue';
+import PrestatairesCarte from '../views/PrestatairesCarte.vue';
 import store from '../store/index.js';
 
 Vue.use(VueRouter);
@@ -50,6 +52,24 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/Reservations",
+    name: "Reservations",
+    component: Reservations,
+    meta: { requiresAuth: true, requiresOrganizer: true },
+  },
+  {
+    path: '/PrestatairesCarte',
+    name: 'PrestatairesCarte',
+    component: PrestatairesCarte,
+    meta: { requiresAuth: true, requiresPrestataire: true }
+  },
+  {
+    path: '/comptes',
+    name: 'AdminComptes',
+    component: () => import('@/views/AdminComptesView'),
+    meta: { requiresAdmin: true }
+  },
+  {
     path: "/",
     redirect: "/Accueil",
   },
@@ -72,19 +92,36 @@ const router = new VueRouter({
   },
 });
 
+// Ajout de la logique de redirection pour les prestataires
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.getters.userSession) {
-      next({
-        path: '/Connexion',
-        query: { redirect: to.fullPath }
-      });
-    } else {
-      next();
-    }
-  } else {
-    next();
+  const user = store.getters.userSession;
+
+  // Si l'utilisateur n'est pas connecté et que la route nécessite une authentification
+  if (to.meta.requiresAuth && !user) {
+    return next('/Connexion');
   }
+
+  // Redirection pour les prestataires sur la page Carte
+  if (to.path === '/Carte' && user && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
+    return next('/PrestatairesCarte'); // Redirige les prestataires vers leur propre carte
+  }
+
+  // Vérification si la route nécessite des droits administratifs
+  if (to.meta.requiresAdmin && (!user || user.role !== 'administrateur')) {
+    return next('/');
+  }
+
+  // Vérification si l'utilisateur doit être un organisateur
+  if (to.matched.some(record => record.meta.requiresOrganizer) && user.role !== 'organisateur') {
+    return next('/Accueil');
+  }
+
+  // Vérification si la route est réservée aux prestataires
+  if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
+    return next('/Accueil');
+  }
+
+  next();
 });
 
 export default router;

@@ -1,4 +1,5 @@
 <template>
+  <div class="page-reservations">
     <div class="tournois-container">
       <h1 class="page-title">Page d'activités</h1>
   
@@ -119,6 +120,7 @@
         <button @click="closeReservationMessage">OK</button>
       </div>
     </div>
+  </div>
   </template>
   
 <script>

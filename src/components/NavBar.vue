@@ -1,10 +1,10 @@
 <template>
   <div class="navbar-container">
-    <nav class="navbar"
+    <nav class="navbar" 
       :class="{ 'navbar-transparent': !isScrolled && isOnHomePage, 'navbar-visible': isScrolled || !isOnHomePage }">
       <div class="nav-titles">
         <img src="../assets/images/logo.png" alt="logo" width="100px" height="80px" />
-        <p v-for="(title, index) in displayedTitles" :key="index" :style="{ color: title.color }"
+        <p v-for="(title, index) in displayedTitles" :key="index" :style="{ color: title.color }" 
           @click="emitMenuClicked(index)" class="nav-item">
           {{ title.text }}
         </p>
@@ -34,12 +34,17 @@ export default {
   },
   computed: {
     displayedTitles() {
-      return this.titles.map((title, index) => {
-        if (index === 4 && this.userSession) {
-          return { ...title };
+      let modifiedTitles = [...this.titles];
+      
+      // Ajouter l'onglet 'Comptes' uniquement si l'utilisateur est admin
+      if (this.userSession && this.userSession.role === 'administrateur') {
+        const comptesIndex = modifiedTitles.findIndex(title => title.text === 'Comptes');
+        if (comptesIndex === -1) {
+          modifiedTitles.push({ text: 'Comptes', color: 'black' });
         }
-        return title;
-      });
+      }
+      
+      return modifiedTitles;
     },
   },
   mounted() {

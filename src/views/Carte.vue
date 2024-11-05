@@ -1,4 +1,5 @@
 <template>
+  <div class="page-carte">
   <div class="map-container">
     <h1 class="page-title">Carte de Parthenay</h1>
 
@@ -26,6 +27,7 @@
 
     </l-map>
   </div>
+</div>
 </template>
 
 <script>
@@ -157,9 +159,12 @@ export default {
 </script>
 
 <style scoped>
+.page-carte {
+  max-width: 100%;
+}
 .map-container {
   padding-top: 100px;
-  max-width: 95%;
+  max-width: 50%;
   margin: auto;
 }
 
@@ -172,4 +177,5 @@ export default {
 select {
   margin-bottom: 10px;
 }
+
 </style>
