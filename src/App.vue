@@ -116,4 +116,9 @@ body {
   min-height: 100vh;
   padding-bottom: 20px;
 }
+
+body {
+  width: 100vw;
+  overflow-x: hidden;
+}
 </style>
