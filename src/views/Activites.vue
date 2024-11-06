@@ -1,7 +1,7 @@
 <template>
   <div class="page-reservations">
     <div class="tournois-container">
-      <h1 class="page-title">Page d'activités</h1>
+      <h1 class="page-title">Catalogue</h1>
   
       <div class="tab-container">
         <button @click="selectTab('Jeux')" :class="{ active: selectedTab === 'Jeux' }">Jeux</button>

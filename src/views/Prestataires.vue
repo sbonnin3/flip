@@ -1,15 +1,11 @@
 <template>
   <div class="prestataire-container">
-    <h1 class="page-title">Page prestataires</h1>
+    <h1 class="page-title">Produits</h1>
 
     <div class="tab-container">
       <button @click="selectTab('Restauration')"
               :class="{ active: selectedTab === 'Restauration' }">Restauration</button>
       <button @click="selectTab('Boutique')" :class="{ active: selectedTab === 'Boutique' }">Boutique</button>
-      <button @click="selectTab('Créateurs de jeux')" :class="{ active: selectedTab === 'Créateur de jeux' }">Créateur
-        de jeux</button>
-      <button @click="selectTab('Organisateurs')"
-              :class="{ active: selectedTab === 'Organisateurs' }">Organisateurs</button>
     </div>
 
     <div v-if="selectedTab === 'Restauration'">
@@ -117,12 +113,6 @@
         <p><strong>Durée : </strong> {{ selectedModalJeu.duree }} min</p>
         <p><strong>Éditeur :</strong> {{ selectedModalJeu.editeur }}</p>
       </div>
-    </div>
-
-    <div v-if="selectedTab === 'Créateurs de jeux'">
-    </div>
-
-    <div v-if="selectedTab === 'Organisateurs'">
     </div>
   </div>
 </template>

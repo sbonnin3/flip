@@ -35,7 +35,7 @@ export default {
     this.navTitles = [
       { text: "Accueil" },
       { text: "Carte" },
-      { text: "Prestataires" },
+      { text: "Produits" },
     ];
 
     if (this.userSession) {
@@ -76,7 +76,7 @@ export default {
     route = "/Accueil";
   } else if (this.navTitles[index].text === "Activités") {
     route = "/Activites";
-  } else if (this.navTitles[index].text === "Prestataires") {
+  } else if (this.navTitles[index].text === "Produits") {
     route = "/Prestataires";
   } else if (this.navTitles[index].text === "Réservations") {
     route = "/Reservations";
