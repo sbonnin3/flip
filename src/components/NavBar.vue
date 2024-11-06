@@ -143,7 +143,6 @@ p.nav-item {
   margin-left: 60px;
   cursor: pointer;
   font-size: 15px;
-  font-weight: bold;
   text-transform: uppercase;
   display: flex;
   align-items: center;
@@ -153,7 +152,7 @@ p.nav-item {
 }
 
 p.nav-item.active {
-  color: #ff6f61;
+  color: black;
   transform: scale(1.1);
   font-weight: bold;
 }
@@ -174,7 +173,8 @@ p.nav-item:hover::after {
 }
 
 p.nav-item:hover {
-  color: #ff6f61;
+  color: black;
   transform: scale(1.1);
+  font-weight: bold;
 }
 </style>
