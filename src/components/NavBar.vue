@@ -115,6 +115,7 @@ export default {
   transition: background-color 0.40s ease-in-out;
 }
 
+
 .navbar-transparent {
   background-color: transparent;
   box-shadow: none;
