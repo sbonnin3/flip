@@ -77,7 +77,7 @@ export default {
   } else if (this.navTitles[index].text === "Activités") {
     route = "/Activites";
   } else if (this.navTitles[index].text === "Produits") {
-    route = "/Prestataires";
+    route = "/Produits";
   } else if (this.navTitles[index].text === "Réservations") {
     route = "/Reservations";
   } else if (this.navTitles[index].text === "Mon Compte") {
@@ -87,7 +87,7 @@ export default {
   } else if (this.navTitles[index].text === "Comptes") {
     route = "/Comptes";
   } else if (this.navTitles[index].text === "Mes Commandes") {
-    route = "/MesCommandes"; // Route pour "Mes Commandes"
+    route = "/MesCommandes";
   }
 
   if (this.$route.path !== route) {

@@ -3,7 +3,7 @@ import VueRouter from 'vue-router';
 import Accueil from '../views/Accueil.vue';
 import Activites from '../views/Activites.vue';
 import Carte from '../views/Carte.vue';
-import Prestataires from '../views/Prestataires.vue';
+import Produits from '../views/Produits.vue';
 import Connexion from '../views/Connexion.vue';
 import MonCompte from '../views/MonCompte.vue';
 import MesCommandes from '../views/MesCommandes.vue';
@@ -30,9 +30,9 @@ const routes = [
     component: Carte,
   },
   {
-    path: "/Prestataires",
-    name: "Prestataires",
-    component: Prestataires,
+    path: "/Produits",
+    name: "Produits",
+    component: Produits,
   },
   {
     path: "/Connexion",
@@ -64,7 +64,7 @@ const routes = [
     meta: { requiresAuth: true, requiresPrestataire: true }
   },
   {
-    path: '/comptes',
+    path: '/Comptes',
     name: 'AdminComptes',
     component: () => import('@/views/AdminComptesView'),
     meta: { requiresAdmin: true }
