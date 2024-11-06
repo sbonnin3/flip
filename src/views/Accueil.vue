@@ -15,51 +15,42 @@
         <button type="submit" class="login-button">En savoir plus</button>
       </div>
       <img class="festivalimages" :class="{ 'slide-in': fadeImage }" :src="currentCarouselSlide.image"
-        alt="imagefestival">
+           alt="imagefestival">
     </div>
 
     <div class="carousel-indicators">
       <span v-for="(slide, index) in carouselSlides" :key="index" :class="{ active: currentCarouselIndex === index }"
-        class="indicator"></span>
+            class="indicator"></span>
     </div>
 
     <h1 class="down-container-title">Interessé ? plus d'informations qui vous donneront encore plus envie !</h1>
-    <h3 class="down-container-uptitle">Lorem ipsum supreme</h3>
-    <div class="down-container">
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
-        aute irure
-        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-        cupidatat non
-        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </p>
-      <img src="../assets/images/backgroundaccueil_3.jpg" width="470" height="310" class="down-container-image1">
+    <div class="content-container">
+      <div class="section-one">
+        <h2 class="section-title">De multiples jeux et activités</h2>
+        <div class="section-content">
+          <p class="section-text">Jeu de <strong>société</strong>, jeu de <strong>cartes</strong>, jeux <strong>vidéos</strong> (zones dédiées aux <strong>nouvelles technologies</strong> de jeu), jeux <strong>traditionnels</strong>, jeux en <strong>bois</strong>, jeux de <strong>rôles</strong>...</p>
+        </div>
+        <img src="../assets/images/flipgamepicture.jpg" alt="Description de l'image" class="section-image">
+      </div>
+      <div class="section-two">
+        <h2 class="section-title">Boutique et souvenirs</h2>
+        <div class="section-content">
+          <p class="section-text">Le FLIP propose souvent des souvenirs tels que des jeux <strong>exclusifs</strong>, des <strong>tee-shirts</strong>, des <strong>affiches</strong>, et des <strong>goodies</strong>. Des <strong>boutiques</strong> sont également disponibles</p>
+        </div>
+        <img src="../assets/images/flipshoppicture.jpg" alt="Description de l'image" class="section-image">
+      </div>
+      <div class="section-three">
+        <h2 class="section-title">Engagement écologique</h2>
+        <div class="section-content">
+          <p class="section-text">L’événement met en place des actions pour <strong>réduire</strong> son <strong>impact environnemental</strong> (réduction des <strong>déchets</strong>, <strong>sensibilisation au tri</strong>, utilisation de <strong>matériaux recyclables</strong>)</p>
+        </div>
+        <img src="../assets/images/flipenvironnementpicture.jpg" alt="Description de l'image" class="section-image">
+      </div>
     </div>
-    <h3 class="down-container-uptitleright">Lorem ipsum supreme</h3>
-    <div class="down-containertwo">
-      <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
-        aute irure
-        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-        cupidatat non
-        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </p>
-      <img src="../assets/images/backgroundaccueil_3.jpg" width="470" height="310" class="down-container-image1">
+    <div class="down-container-up-part">
     </div>
-    <h3 class="down-container-uptitle">Lorem ipsum supreme</h3>
-    <div class="down-container">
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
-        aute irure
-        dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-        cupidatat non
-        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </p>
-      <img src="../assets/images/backgroundaccueil_3.jpg" width="470" height="310" class="down-container-image1">
+    <div class="down-container-mid-part">
+
     </div>
 
 
@@ -156,7 +147,6 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 .accueilpage {
-  padding-top: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -172,6 +162,7 @@ export default {
   justify-content: flex-start;
   align-items: center;
   position: relative;
+  box-shadow: black 0px 0px 15px;
 }
 
 .text-container {
@@ -209,7 +200,7 @@ export default {
 }
 
 .up-container {
-  background-color: #f9f9f9;
+  background-color: #fbfbfb;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -218,10 +209,18 @@ export default {
 
 .leftuptextcontainer {
   text-align: left;
-  padding-left: 100px;
+  padding-left: 160px;
   opacity: 0;
   transition: opacity 1s ease-in-out;
   color: black;
+}
+
+.leftuptextcontainer > h3 {
+  color: #444444;
+}
+
+.leftuptextcontainer > h5 {
+  color: gray;
 }
 
 .leftuptextcontainer.fade-in {
@@ -282,84 +281,73 @@ button:hover {
   padding-bottom: 10px;
 }
 
-.down-container {
+.content-container {
   display: flex;
+  justify-content: center; /* Centre les sections horizontalement */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 50px;
 }
 
-.down-container p,
-img {
-  padding-right: 50px;
-  padding-left: 80px;
-  color: black;
+.section-one, .section-two, .section-three { /* Ajoute la section trois ici */
+  flex: 0 0 30%; /* Ajustement pour trois sections */
+  margin: 0 60px; /* Espace entre les sections */
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
 }
 
-.down-container p {
-  width: 45%;
-  line-height: 1.6;
-  margin-left: 90px;
-  text-align: justify;
+.section-one:hover, .section-two:hover, .section-three:hover { /* Ajout du hover pour la section 3 */
+  transform: translateY(-5px); /* Effet de levée au survol */
+}
+
+.section-title {
+  margin-bottom: 15px;
+  color: #e63946;
+  border-bottom: 4px solid #e63946;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-size: 24px;
+  display: inline-block;
+}
+
+.section-content {
+  display: flex;
+  align-items: center;
+}
+
+.section-image {
+  width: 100%;
+  margin: 20px 0;
+  box-shadow: black 0px 0px 5px;
+  height: 46%;
+}
+
+.section-text {
+  flex: 1;
+  line-height: 1.7;
   font-size: 18px;
 }
 
-.down-container img {
-  width: 31%;
-  margin-right: 65px;
-  margin-top: 20px;
-}
 
 .down-container-title {
-  color: white;
-  margin-top: 75px;
-  padding: 75px;
-  width: 80%;
-  background-color: black;
-  text-shadow: 2px 2px 4px rgba(128, 128, 128, 0.7);
-}
-
-.down-container-uptitle {
   color: black;
-  padding: 3px;
-  margin-left: 170px;
-  margin-right: auto;
-  text-shadow: 2px 2px 4px rgba(128, 128, 128, 0.7);
+  padding-top: 30px;
+  padding-bottom: 10px;
   border-bottom: red solid 4px;
 }
 
-.down-containertwo {
-  display: flex;
-  margin-bottom: 150px;
+.down-container-up-part {
+  width: 100%;
+  height: 275px;
+  background-image: url("../assets/images/secondbackgroundimage.jpg");
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  box-shadow: black 0px 0px 15px;
 }
 
-.down-containertwo p,
-img {
-  padding-right: 50px;
-  padding-left: 80px;
-}
 
-.down-containertwo img {
-  width: 31%;
-  margin-left: 90px;
-  margin-top: 20px;
-  margin-right: auto;
-  position: absolute;
-}
-
-.down-containertwo p {
-  color: black;
-  width: 45%;
-  text-align: justify;
-  font-size: 18px;
-  margin-right: 65px;
-  line-height: 1.6;
-  margin-left: auto;
-}
-
-.down-container-uptitleright {
-  color: black;
-  margin-left: auto;
-  margin-right: 120px;
-  margin-top: 50px;
-  text-shadow: 2px 2px 4px rgba(128, 128, 128, 0.7);
-  border-bottom: red solid 4px;
-}
 </style>
