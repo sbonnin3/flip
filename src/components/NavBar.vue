@@ -1,11 +1,11 @@
 <template>
   <div class="navbar-container">
     <nav class="navbar"
-      :class="{ 'navbar-transparent': !isScrolled && isOnHomePage, 'navbar-visible': isScrolled || !isOnHomePage }">
+         :class="{ 'navbar-transparent': !isScrolled && isOnHomePage, 'navbar-visible': isScrolled || !isOnHomePage }">
       <div class="nav-titles">
         <img src="../assets/images/logo.png" alt="logo" width="100px" height="80px" />
         <p v-for="(title, index) in displayedTitles" :key="index" :style="{ color: title.color }"
-          @click="emitMenuClicked(index)" :class="['nav-item', { active: activeIndex === index }]">
+           @click="emitMenuClicked(index)" :class="['nav-item', { active: activeIndex === index }]">
           {{ title.text }}
         </p>
       </div>
