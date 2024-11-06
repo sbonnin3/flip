@@ -32,63 +32,68 @@ export default {
   },
   methods: {
     updateNavTitles() {
-      this.navTitles = [
-        { text: "Accueil" },
-        { text: "Carte" },
-        { text: "Prestataires" },
-      ];
+    this.navTitles = [
+      { text: "Accueil" },
+      { text: "Carte" },
+      { text: "Prestataires" },
+    ];
 
-      if (this.userSession) {
-        if (this.userSession.role === "organisateur") {
-          this.navTitles.push({ text: "Réservations" });
-        }
+    if (this.userSession) {
+      // Ajouter "Mes Commandes" pour les utilisateurs réguliers (non-prestataires)
+      if (this.userSession.role === "utilisateur") {
+        this.navTitles.push({ text: "Mes Commandes" });
+      }
 
-        this.navTitles.push({ text: "Mon Compte" });
+      if (this.userSession.role === "organisateur") {
+        this.navTitles.push({ text: "Réservations" });
+      }
 
-        if (!["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
-          this.navTitles.splice(1, 0, { text: "Activités" });
-        }
+      this.navTitles.push({ text: "Mon Compte" });
 
-        if (this.userSession.role === "administrateur") {
-          const comptesIndex = this.navTitles.findIndex(title => title.text === 'Comptes');
-          if (comptesIndex === -1) {
-            this.navTitles.push({ text: "Comptes" });
-          }
-        }
-      } else {
-        this.navTitles.push({ text: "Connexion" });
+      if (!["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
         this.navTitles.splice(1, 0, { text: "Activités" });
       }
-    },
-    handleMenuClick(index) {
-    let route = "";
 
-    // Si l'utilisateur est prestataire et clique sur "Carte", il est redirigé vers la carte des prestataires
-    if (this.navTitles[index].text === "Carte" && this.userSession && ["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
-      route = "/PrestatairesCarte";  // Rediriger les prestataires vers la carte spécifique
-    } else if (this.navTitles[index].text === "Carte") {
-      route = "/Carte"; // Rediriger les autres utilisateurs vers la carte générale
-    } else if (this.navTitles[index].text === "Accueil") {
-      route = "/Accueil";
-    } else if (this.navTitles[index].text === "Activités") {
-      route = "/Activites";
-    } else if (this.navTitles[index].text === "Prestataires") {
-      route = "/Prestataires";
-    } else if (this.navTitles[index].text === "Réservations") {
-      route = "/Reservations";
-    } else if (this.navTitles[index].text === "Mon Compte") {
-      route = "/MonCompte";
-    } else if (this.navTitles[index].text === "Connexion") {
-      route = "/Connexion";
-    } else if (this.navTitles[index].text === "Comptes") {
-      route = "/Comptes";
-    }
-
-    // Redirige uniquement si la route actuelle est différente
-    if (this.$route.path !== route) {
-      this.$router.push(route);
+      if (this.userSession.role === "administrateur") {
+        const comptesIndex = this.navTitles.findIndex(title => title.text === 'Comptes');
+        if (comptesIndex === -1) {
+          this.navTitles.push({ text: "Comptes" });
+        }
+      }
+    } else {
+      this.navTitles.push({ text: "Connexion" });
+      this.navTitles.splice(1, 0, { text: "Activités" });
     }
   },
+  handleMenuClick(index) {
+  let route = "";
+
+  if (this.navTitles[index].text === "Carte" && this.userSession && ["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
+    route = "/PrestatairesCarte";
+  } else if (this.navTitles[index].text === "Carte") {
+    route = "/Carte";
+  } else if (this.navTitles[index].text === "Accueil") {
+    route = "/Accueil";
+  } else if (this.navTitles[index].text === "Activités") {
+    route = "/Activites";
+  } else if (this.navTitles[index].text === "Prestataires") {
+    route = "/Prestataires";
+  } else if (this.navTitles[index].text === "Réservations") {
+    route = "/Reservations";
+  } else if (this.navTitles[index].text === "Mon Compte") {
+    route = "/MonCompte";
+  } else if (this.navTitles[index].text === "Connexion") {
+    route = "/Connexion";
+  } else if (this.navTitles[index].text === "Comptes") {
+    route = "/Comptes";
+  } else if (this.navTitles[index].text === "Mes Commandes") {
+    route = "/MesCommandes"; // Route pour "Mes Commandes"
+  }
+
+  if (this.$route.path !== route) {
+    this.$router.push(route);
+  }
+},
     mounted() {
       this.updateNavTitles();
     },
