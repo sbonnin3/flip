@@ -3,12 +3,13 @@ import VueRouter from 'vue-router';
 import Accueil from '../views/Accueil.vue';
 import Activites from '../views/Activites.vue';
 import Carte from '../views/Carte.vue';
-import Prestataires from '../views/Prestataires.vue';
+import Produits from '../views/Produits.vue';
 import Connexion from '../views/Connexion.vue';
 import MonCompte from '../views/MonCompte.vue';
 import MesCommandes from '../views/MesCommandes.vue';
 import Reservations from '../views/Reservations.vue';
 import PrestatairesCarte from '../views/PrestatairesCarte.vue';
+import MaPrestation from '../views/MaPrestation.vue';
 import store from '../store/index.js';
 
 Vue.use(VueRouter);
@@ -30,9 +31,9 @@ const routes = [
     component: Carte,
   },
   {
-    path: "/Prestataires",
-    name: "Prestataires",
-    component: Prestataires,
+    path: "/Produits",
+    name: "Produits",
+    component: Produits,
   },
   {
     path: "/Connexion",
@@ -58,13 +59,19 @@ const routes = [
     meta: { requiresAuth: true, requiresOrganizer: true },
   },
   {
+    path: "/MaPrestation",
+    name: "MaPrestation",
+    component: MaPrestation,
+    meta: { requiresAuth: true, requiresPrestataire: true }
+  },
+  {
     path: '/PrestatairesCarte',
     name: 'PrestatairesCarte',
     component: PrestatairesCarte,
     meta: { requiresAuth: true, requiresPrestataire: true }
   },
   {
-    path: '/comptes',
+    path: '/Comptes',
     name: 'AdminComptes',
     component: () => import('@/views/AdminComptesView'),
     meta: { requiresAdmin: true }
@@ -100,6 +107,10 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !user) {
     return next('/Connexion');
   }
+
+  if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
+    return next('/Accueil');
+  }  
 
   // Redirection pour les prestataires sur la page Carte
   if (to.path === '/Carte' && user && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {

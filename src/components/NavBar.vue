@@ -1,11 +1,11 @@
 <template>
   <div class="navbar-container">
-    <nav class="navbar" 
-      :class="{ 'navbar-transparent': !isScrolled && isOnHomePage, 'navbar-visible': isScrolled || !isOnHomePage }">
+    <nav class="navbar"
+         :class="{ 'navbar-transparent': !isScrolled && isOnHomePage, 'navbar-visible': isScrolled || !isOnHomePage }">
       <div class="nav-titles">
         <img src="../assets/images/logo.png" alt="logo" width="100px" height="80px" />
-        <p v-for="(title, index) in displayedTitles" :key="index" :style="{ color: title.color }" 
-          @click="emitMenuClicked(index)" class="nav-item">
+        <p v-for="(title, index) in displayedTitles" :key="index" :style="{ color: title.color }"
+           @click="emitMenuClicked(index)" :class="['nav-item', { active: activeIndex === index }]">
           {{ title.text }}
         </p>
       </div>
@@ -35,7 +35,7 @@ export default {
   computed: {
     displayedTitles() {
       let modifiedTitles = [...this.titles];
-      
+
       // Ajouter l'onglet 'Comptes' uniquement si l'utilisateur est admin
       if (this.userSession && this.userSession.role === 'administrateur') {
         const comptesIndex = modifiedTitles.findIndex(title => title.text === 'Comptes');
@@ -43,8 +43,26 @@ export default {
           modifiedTitles.push({ text: 'Comptes', color: 'black' });
         }
       }
-      
+
       return modifiedTitles;
+    },
+    activeIndex() {
+      // Utiliser le chemin de la route actuelle pour trouver l'index actif
+      const currentPath = this.$route.path.toLowerCase();
+      return this.displayedTitles.findIndex(title => {
+        // Mapper chaque titre sur le chemin correspondant
+        const titleToPathMap = {
+          "Accueil": "/Accueil",
+          "Carte": "/Carte",
+          "Activités": "/Activites",
+          "Réservations": "/Reservations",
+          "Mon Compte": "/MonCompte",
+          "Connexion": "/Connexion",
+          "Comptes": "/Comptes",
+          "Produits": "/Produits"
+        };
+        return titleToPathMap[title.text]?.toLowerCase() === currentPath;
+      });
     },
   },
   mounted() {
@@ -97,6 +115,7 @@ export default {
   transition: background-color 0.40s ease-in-out;
 }
 
+
 .navbar-transparent {
   background-color: transparent;
   box-shadow: none;
@@ -125,13 +144,18 @@ p.nav-item {
   margin-left: 60px;
   cursor: pointer;
   font-size: 15px;
-  font-weight: bold;
   text-transform: uppercase;
   display: flex;
   align-items: center;
   position: relative;
   transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
   color: black;
+}
+
+p.nav-item.active {
+  color: black;
+  transform: scale(1.1);
+  font-weight: bold;
 }
 
 p.nav-item::after {
@@ -150,7 +174,8 @@ p.nav-item:hover::after {
 }
 
 p.nav-item:hover {
-  color: #ff6f61;
+  color: black;
   transform: scale(1.1);
+  font-weight: bold;
 }
 </style>

@@ -32,40 +32,49 @@ export default {
   },
   methods: {
     updateNavTitles() {
-    this.navTitles = [
-      { text: "Accueil" },
-      { text: "Carte" },
-      { text: "Prestataires" },
-    ];
+  this.navTitles = [
+    { text: "Accueil" },
+    { text: "Carte" },
+    { text: "Produits" }
+  ];
 
-    if (this.userSession) {
-      // Ajouter "Mes Commandes" pour les utilisateurs réguliers (non-prestataires)
-      if (this.userSession.role === "utilisateur") {
-        this.navTitles.push({ text: "Mes Commandes" });
-      }
+  if (this.userSession) {
+    // Ajouter "Mes Commandes" pour les utilisateurs réguliers (non-prestataires)
+    if (this.userSession.role === "utilisateur") {
+      this.navTitles.push({ text: "Mes Commandes" });
+    }
 
-      if (this.userSession.role === "organisateur") {
-        this.navTitles.push({ text: "Réservations" });
-      }
+    // Ajouter "Réservations" pour les organisateurs
+    if (this.userSession.role === "organisateur") {
+      this.navTitles.push({ text: "Réservations" });
+    }
 
-      this.navTitles.push({ text: "Mon Compte" });
+    // Ajouter "Ma Prestation" pour les prestataires
+    if (["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
+      this.navTitles.push({ text: "Ma Prestation" });
+    }
 
-      if (!["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
-        this.navTitles.splice(1, 0, { text: "Activités" });
-      }
+    // Ajouter "Mon Compte"
+    this.navTitles.push({ text: "Mon Compte" });
 
-      if (this.userSession.role === "administrateur") {
-        const comptesIndex = this.navTitles.findIndex(title => title.text === 'Comptes');
-        if (comptesIndex === -1) {
-          this.navTitles.push({ text: "Comptes" });
-        }
-      }
-    } else {
-      this.navTitles.push({ text: "Connexion" });
+    // Ajouter "Activités" pour les utilisateurs non-prestataires
+    if (!["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
       this.navTitles.splice(1, 0, { text: "Activités" });
     }
-  },
-  handleMenuClick(index) {
+
+    // Ajouter "Comptes" pour les administrateurs
+    if (this.userSession.role === "administrateur") {
+      const comptesIndex = this.navTitles.findIndex(title => title.text === 'Comptes');
+      if (comptesIndex === -1) {
+        this.navTitles.push({ text: "Comptes" });
+      }
+    }
+  } else {
+    this.navTitles.push({ text: "Connexion" });
+    this.navTitles.splice(1, 0, { text: "Activités" });
+  }
+},
+handleMenuClick(index) {
   let route = "";
 
   if (this.navTitles[index].text === "Carte" && this.userSession && ["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
@@ -76,8 +85,8 @@ export default {
     route = "/Accueil";
   } else if (this.navTitles[index].text === "Activités") {
     route = "/Activites";
-  } else if (this.navTitles[index].text === "Prestataires") {
-    route = "/Prestataires";
+  } else if (this.navTitles[index].text === "Produits") {
+    route = "/Produits";
   } else if (this.navTitles[index].text === "Réservations") {
     route = "/Reservations";
   } else if (this.navTitles[index].text === "Mon Compte") {
@@ -87,7 +96,9 @@ export default {
   } else if (this.navTitles[index].text === "Comptes") {
     route = "/Comptes";
   } else if (this.navTitles[index].text === "Mes Commandes") {
-    route = "/MesCommandes"; // Route pour "Mes Commandes"
+    route = "/MesCommandes";
+  } else if (this.navTitles[index].text === "Ma Prestation") {
+    route = "/MaPrestation";
   }
 
   if (this.$route.path !== route) {

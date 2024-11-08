@@ -1,7 +1,7 @@
 <template>
   <div class="page-reservations">
     <div class="tournois-container">
-      <h1 class="page-title">Page d'activités</h1>
+      <h1 class="page-title">Catalogue</h1>
   
       <div class="tab-container">
         <button @click="selectTab('Jeux')" :class="{ active: selectedTab === 'Jeux' }">Jeux</button>
@@ -31,7 +31,7 @@
             <label for="searchAge" class="search-label">Âge minimum :</label>
             <input id="searchAge" type="number" v-model="searchAge" min="1" placeholder="Âge minimum" class="search-input" />
   
-            <label for="searchDuration" class="search-label">Durée max (min) :</label>
+            <label for="searchDuration" class="search-label">Durée max :</label>
             <input id="searchDuration" type="number" v-model="searchDuration" min="1" placeholder="Durée max (minutes)" class="search-input" />
           </div>
   

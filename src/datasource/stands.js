@@ -1,6 +1,14 @@
 import { restaurants } from "./prestataires/restaurants";
 
 export const stands = [
+    // {
+    //     id: int, //= id du stand
+    //     nom: String, //= nom du stand
+    //     type: String, //= type de stand
+    //     image: chemin_image_png, //= lien de l'image du prestataire
+    //     idPoint: int, //= numéro du point sur la carte
+    //     comptes: [int], //= id du compte du prestataire
+    // },
     {
         id: 1234,
         nom: 'Boutique',
