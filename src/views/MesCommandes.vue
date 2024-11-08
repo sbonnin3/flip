@@ -14,20 +14,21 @@
       </div>
     </div>
 
-    <div class="cards-container" v-if="articleCommandes && articleCommandes.length">
       <h2 class="section-title">Commandes d'Articles</h2>
-      <div v-for="(articleCommande, index) in articleCommandes" :key="'article-' + index" class="card">
+    <div class="cards-container" v-if="articleCommandes && articleCommandes.length">
+      <div v-for="(commande, index) in articleCommandes" :key="'commande-' + index" class="card">
         <div class="card-content">
-          <h3 class="card-title">Commande d'Article {{ index + 1 }}</h3>
-          <div v-for="article in articleCommande.articles" :key="article.nom" class="article">
-            <p class="article-name">{{ article.nom }} : {{ article.quantite }} </p>
+          <h3 class="card-title">Commande {{ index + 1 }}</h3>
+          <h4 class="restaurant-name">Restaurant : {{ commande.selectedModalRestau }}</h4>
+          <div v-for="article in commande.articles" :key="article.nom" class="article">
+            <p class="article-name">{{ article.nom }}</p>
+            <p class="article-quantity">Quantité : {{ article.quantite }}</p>
             <p class="article-price">Prix : {{ article.prix }}€</p>
           </div>
-          <p class="card-status">Statut : {{ articleCommande.status }}</p>
+          <p class="card-status">Statut : {{ commande.status }}</p>
         </div>
       </div>
     </div>
-
     <p v-else>Aucune commande trouvée.</p>
   </div>
 </template>
@@ -59,7 +60,7 @@ export default {
       }
       return this.userOrders.map(order => ({
         ...order,
-        status: 'Confirmée'
+        status: 'À régler au stand'
       }));
     }
   },

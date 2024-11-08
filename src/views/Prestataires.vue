@@ -30,6 +30,7 @@
         </div>
         <p>Total : {{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€</p>
         <button class="reserve-button" @click="openCommandConfirmation">Commander</button>
+        <button class="reserve-button" @click="deleteCommand" style="margin-left: 10px">Effacer</button>
       </div>
     </div>
 
@@ -74,6 +75,12 @@
                 {{ boisson.nom }} - {{ boisson.prix }}€
               </button>
             </div>
+          </div>
+        </div>
+        <div v-if="cardCommandMessage" class="reservation-message">
+          <div class="modal-content">
+            <p>{{ cardCommandMessage }}</p>
+            <button @click="closeCardCommandMessage">OK</button>
           </div>
         </div>
       </div>
@@ -143,6 +150,7 @@ export default {
       orders: [],
       showConfirmation: false,
       commandMessage: '',
+      cardCommandMessage: '',
       jeux,
       souvenirs,
       restaurants,
@@ -175,25 +183,43 @@ export default {
       this.showConfirmation = false;
     },
     confirmReservation() {
-      this.showConfirmation = false;
-
       const currentUser = this.$store.state.userSession;
       if (this.cart.length > 0 && currentUser) {
-        // Appelle `addArticleOrder` pour stocker la commande dans le store
-        this.addArticleOrder({
-          articles: [...this.cart],
-          status: 'Confirmée',
+        const orderByRestaurant = this.cart.reduce((acc, article) => {
+          if (!acc[article.restaurantNom]) {
+            acc[article.restaurantNom] = { restaurantNom: article.restaurantNom, articles: [] };
+          }
+          acc[article.restaurantNom].articles.push(article);
+          return acc;
+        }, {});
+
+        // Ajouter chaque restaurant comme une commande séparée dans orders
+        Object.values(orderByRestaurant).forEach(restaurantOrder => {
+          this.addArticleOrder({
+            ...restaurantOrder,
+            status: 'Confirmée',
+          });
         });
 
-        // Réinitialise le panier et affiche un message de confirmation
-        this.cart = [];
+        this.cart = []; // Vider le panier après la commande
+        this.showConfirmation = false;
+        console.log('Commandes passées par restaurant :', this.orders);
         this.commandMessage = 'Votre commande a été confirmée !';
       } else {
         this.commandMessage = "Erreur : aucun utilisateur connecté.";
       }
     },
+
+    deleteCommand(){
+      this.cart = [];
+      this.commandMessage = 'Votre commande a été effacée !'
+      console.log('Panier actuel :', this.cart);
+    },
     closeCommandMessage() {
       this.commandMessage = '';
+    },
+    closeCardCommandMessage() {
+      this.cardCommandMessage = '';
     },
     addToCart(article) {
       // Vérifier si l'article est déjà dans le panier
@@ -202,9 +228,11 @@ export default {
       if (itemInCart) {
         // Si l'article existe déjà, on augmente la quantité
         itemInCart.quantite += 1;
+        this.cardCommandMessage = "Article ajouté dans le panier !"
       } else {
         // Sinon, on ajoute un nouvel article avec une quantité initiale de 1
         this.cart.push({ ...article, quantite: 1 });
+        this.cardCommandMessage = "Article ajouté dans le panier !"
       }
 
       console.log('Ajouté au panier :', article);
