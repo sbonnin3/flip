@@ -22,11 +22,16 @@
         <l-tile-layer :url="layers[selectedLayer].url" :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
         <!-- Marqueurs avec les icônes appropriées -->
-        <l-marker v-for="(point, index) in filteredPoints" :key="index" :lat-lng="point.coordinates"
-          :icon="getIconForPoint(point)" @mouseover="enlargeIcon(point)" @mouseout="resetIcon(point)">
+        <l-marker
+          v-for="(point, index) in filteredPoints"
+          :key="index"
+          :lat-lng="point.coordinates"
+          :icon="getIconForPoint(point)"
+          @mouseover="enlargeIcon(point.idPoint)"
+          @mouseout="resetIcon()"
+        >
           <l-popup>{{ getPopupText(point) }}</l-popup>
         </l-marker>
-
       </l-map>
     </div>
   </div>
@@ -65,6 +70,7 @@ export default {
       selectedLayer: "osm",
       points,
       stands,
+      hoveredPointId: null, // Nouveau pour gérer le survol
       layers: {
         osm: {
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -76,48 +82,13 @@ export default {
         },
       },
       icons: {
-        'Toilettes': L.icon({
-          iconUrl: toiletIcon,
-          iconSize: [30, 30],
-          iconAnchor: [15, 30],
-          popupAnchor: [0, -30],
-        }),
-        'Parking': L.icon({
-          iconUrl: parkingIcon,
-          iconSize: [30, 30],
-          iconAnchor: [15, 30],
-          popupAnchor: [0, -30],
-        }),
-        'Tournois': L.icon({
-          iconUrl: tournamentIcon,
-          iconSize: [30, 30],
-          iconAnchor: [15, 30],
-          popupAnchor: [0, -30],
-        }),
-        'Restauration': L.icon({
-          iconUrl: restaurationIcon,
-          iconSize: [30, 30],
-          iconAnchor: [15, 30],
-          popupAnchor: [0, -30],
-        }),
-        'Boutique': L.icon({
-          iconUrl: boutiqueIcon,
-          iconSize: [30, 30],
-          iconAnchor: [15, 30],
-          popupAnchor: [0, -30],
-        }),
-        'Stand': L.icon({
-          iconUrl: standIcon,
-          iconSize: [30, 30],
-          iconAnchor: [15, 30],
-          popupAnchor: [0, -30],
-        }),
-        'Emplacement': L.icon({
-          iconUrl: emplacementIcon,
-          iconSize: [30, 30],
-          iconAnchor: [15, 30],
-          popupAnchor: [0, -30],
-        }),
+        Toilettes: toiletIcon,
+        Parking: parkingIcon,
+        Tournois: tournamentIcon,
+        Restauration: restaurationIcon,
+        Boutique: boutiqueIcon,
+        Stand: standIcon,
+        Emplacement: emplacementIcon,
       },
     };
   },
@@ -125,11 +96,7 @@ export default {
     filteredPoints() {
       return this.points.filter(point => {
         const categoryMatch = this.selectedCategory === "" || point.category === this.selectedCategory;
-
-        // Filtrer les emplacements disponibles uniquement pour les prestataires
-        const isEmplacementOccupied = point.category !== 'Emplacement' || point.disponible === false;
-
-        return categoryMatch && isEmplacementOccupied;
+        return categoryMatch && (point.category !== 'Emplacement' || point.disponible === false);
       });
     },
     categories() {
@@ -137,44 +104,42 @@ export default {
     },
   },
   methods: {
-  getPopupText(point) {
-    const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
-    return standAssocie ? standAssocie.nom : point.name;
-  },
-  getIconForPoint(point) {
-    if (point.category === 'Emplacement' && !point.disponible) {
+    getPopupText(point) {
       const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
+      return standAssocie ? standAssocie.nom : point.name;
+    },
+    getIconForPoint(point) {
+      const baseIconUrl = this.icons[point.category] || this.icons.Emplacement;
+      const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
+      
+      let iconUrl = baseIconUrl;
       if (standAssocie) {
         let standType = standAssocie.type.toLowerCase();
         if (standType === 'restaurants') standType = 'Restauration';
         if (standType === 'boutique') standType = 'Boutique';
-
-        const iconKey = standType.charAt(0).toUpperCase() + standType.slice(1);
-        return this.icons[iconKey] || this.icons.Emplacement;
+        iconUrl = this.icons[standType.charAt(0).toUpperCase() + standType.slice(1)];
       }
-    }
-    return this.icons[point.category] || this.icons.Emplacement;
+
+      const isHovered = this.hoveredPointId === point.idPoint;
+      const iconSize = isHovered ? [40, 40] : [30, 30];
+
+      return L.icon({
+        iconUrl,
+        iconSize,
+        iconAnchor: [iconSize[0] / 2, iconSize[1]],
+        popupAnchor: [0, -iconSize[1] / 2],
+      });
+    },
+    enlargeIcon(pointId) {
+      this.hoveredPointId = pointId;
+    },
+    resetIcon() {
+      this.hoveredPointId = null;
+    },
+    changeLayer() {
+      // Logique pour changer la vue de la carte
+    },
   },
-  // Méthode pour agrandir l'icône au survol
-  enlargeIcon(point) {
-    const icon = this.getIconForPoint(point);
-    if (icon) {
-      icon.options.iconSize = [40, 40];
-      icon.options.iconAnchor = [20, 40];
-    }
-  },
-  // Méthode pour réinitialiser la taille de l'icône
-  resetIcon(point) {
-    const icon = this.getIconForPoint(point);
-    if (icon) {
-      icon.options.iconSize = [30, 30];
-      icon.options.iconAnchor = [15, 30];
-    }
-  },
-  changeLayer() {
-    // Logique pour changer la vue de la carte
-  },
-},
 };
 </script>
 
