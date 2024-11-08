@@ -17,8 +17,8 @@
           </div>
         </div>
       </div>
-      <p v-else>Aucun restaurants disponible.</p>
-
+      <p v-else>Aucun restaurants disponible.</p> 
+<!-- à sup -->
       <div class="cart">
         <h3>Panier</h3>
         <div v-for="item in cart" :key="item.nom" class="cart-item">
