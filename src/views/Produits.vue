@@ -8,17 +8,17 @@
       <button @click="selectTab('Boutique')" :class="{ active: selectedTab === 'Boutique' }">Boutique</button>
     </div>
 
-    <div v-if="selectedTab === 'Restauration'">
-      <div class="cards-container" v-if="restaurants.length">
-        <div v-for="restaurant in restaurants" :key="restaurant._id" class="card" @click="openModalRestau(restaurant)">
+    <div v-show="selectedTab === 'Restauration'">
+      <div class="cards-container" v-if="stands.length">
+        <div v-for="restaurant in stands.filter(stand => stand.type === 'restaurants')" :key="restaurant.idRestau" class="card" @click="openModalRestau(restaurant)">
           <img :src="restaurant.image" alt="Image du restaurant" class="card-image" />
           <div class="card-content">
             <h2 class="card-title">{{ restaurant.nom }}</h2>
           </div>
         </div>
       </div>
-      <p v-else>Aucun restaurants disponible.</p> 
-<!-- à sup -->
+      <p v-else>Aucun restaurants disponible.</p>
+
       <div class="cart">
         <h3>Panier</h3>
         <div v-for="item in cart" :key="item.nom" class="cart-item">
@@ -53,7 +53,7 @@
         <h2>{{ selectedModalRestau.name }}</h2>
         <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image"
              style=" width: 50%; height: 50%"/>
-        <div v-for="stand in stands.filter(stand => stand.idRestau === selectedModalRestau._id)" :key="stand.id">
+        <div v-for="stand in stands.filter(stand => stand.idRestau === selectedModalRestau.idRestau)" :key="stand.id">
           <p><strong>Nourritures :</strong></p>
           <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
             <div v-for="nourriture in stand.nourritures" :key="nourriture.nom" class="article-button">
@@ -126,14 +126,14 @@
 
 <script>
 
-import { jeux, restaurants, souvenirs, stands } from '@/datasource/data';
+import { jeux, souvenirs, stands } from '@/datasource/data';
 import { mapActions } from 'vuex';
 
 export default {
   name: "PagePrestataires",
   data() {
     return {
-      selectedTab: null,
+      selectedTab: "Restauration",
       selectedModalJeu: null,
       selectedModalRestau: null,
       cart: [],
@@ -143,7 +143,6 @@ export default {
       cardCommandMessage: '',
       jeux,
       souvenirs,
-      restaurants,
       stands
     };
   },
@@ -174,7 +173,11 @@ export default {
     },
     confirmReservation() {
       const currentUser = this.$store.state.userSession;
+
+      // Vérifie si un utilisateur est connecté et si le panier contient des articles
       if (this.cart.length > 0 && currentUser) {
+
+        // Grouper les articles par restaurant
         const orderByRestaurant = this.cart.reduce((acc, article) => {
           if (!acc[article.restaurantNom]) {
             acc[article.restaurantNom] = { restaurantNom: article.restaurantNom, articles: [] };
@@ -183,7 +186,7 @@ export default {
           return acc;
         }, {});
 
-        // Ajouter chaque restaurant comme une commande séparée dans orders
+        // Ajouter chaque groupe d'articles par restaurant comme commande séparée
         Object.values(orderByRestaurant).forEach(restaurantOrder => {
           this.addArticleOrder({
             ...restaurantOrder,
@@ -191,12 +194,14 @@ export default {
           });
         });
 
-        this.cart = []; // Vider le panier après la commande
+        // Vider le panier et masquer la confirmation après la commande
+        this.cart = [];
         this.showConfirmation = false;
         console.log('Commandes passées par restaurant :', this.orders);
         this.commandMessage = 'Votre commande a été confirmée !';
+
       } else {
-        this.commandMessage = "Erreur : aucun utilisateur connecté.";
+        this.commandMessage = "Erreur : aucun utilisateur connecté ou panier vide.";
       }
     },
 

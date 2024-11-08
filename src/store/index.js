@@ -4,9 +4,6 @@ import { reservations } from "@/datasource/data";
 import { getAllTournois } from '@/services/tournoisService';
 import { comptes } from '@/datasource/comptes';
 import { getAllSouvenirs } from "@/services/souvenirsService";
-import { getAllNourritures } from "@/services/nourrituresService";
-import { getAllRestaurant } from "@/services/restaurantsService";
-import { getAllBoissons } from "@/services/boissonsService";
 
 Vue.use(Vuex);
 
@@ -16,9 +13,6 @@ export default new Vuex.Store({
     comptes: comptes,
     userSession: null,
     souvenirs: [],
-    nourritures: [],
-    restaurants: [],
-    boissons: [],
     reservations: reservations,
     userOrders: [],
   },
@@ -46,15 +40,6 @@ export default new Vuex.Store({
     },
     SET_SOUVENIR(state, souvenirs) {
       state.souvenirs = souvenirs;
-    },
-    SET_NOURRITURE(state, nourritures) {
-      state.nourritures = nourritures;
-    },
-    SET_RESTAURANT(state, restaurants) {
-      state.restaurants = restaurants;
-    },
-    SET_BOISSON(state, boissons) {
-      state.boissons = boissons;
     },
     SET_USER_ORDERS(state, orders) {
       state.userOrders = orders;
@@ -104,48 +89,12 @@ export default new Vuex.Store({
         console.error("Erreur lors de la récupération des souvenirs :", error);
       }
     },
-    async getAllNourritures({ commit }) {
-      try {
-        const response = await getAllNourritures();
-        console.log('Nourriture récupérée :', response.data);
-        if (response.error === 0) {
-          commit('SET_NOURRITURE', response.data);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération de la nourriture :", error);
-      }
-    },
-    async getAllRestaurant({ commit }) {
-      try {
-        const response = await getAllRestaurant();
-        console.log('Restaurants récupérés :', response.data);
-        if (response.error === 0) {
-          commit('SET_RESTAURANT', response.data);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération des restaurants :", error);
-      }
-    },
-    async getAllBoissons({ commit }) {
-      try {
-        const response = await getAllBoissons();
-        console.log('Boissons récupérées :', response.data);
-        if (response.error === 0) {
-          commit('SET_BOISSON', response.data);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération des boissons :", error);
-      }
-    },
   },
   getters: {
     tournois: (state) => state.tournois,
     comptes: (state) => state.comptes,
     userSession: (state) => state.userSession,
     souvenirs: (state) => state.souvenirs,
-    nourritures: (state) => state.nourritures,
-    restaurants: (state) => state.restaurants,
-    boissons: (state) => state.boissons,
     userOrders: (state) => state.userOrders,
     userReservations: (state) => {
       console.log("Reservations in state:", state.reservations);

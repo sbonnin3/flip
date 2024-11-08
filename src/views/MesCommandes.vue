@@ -2,7 +2,10 @@
   <div class="mes-commandes">
     <h1 class="page-title">Mes Commandes</h1>
 
+    <!-- Chargement des tournois -->
     <p v-if="!this.$store.state.tournois.length">Chargement des tournois...</p>
+
+    <!-- Commandes de tournois -->
     <div class="cards-container" v-else-if="commandes && commandes.length">
       <h2 class="section-title">Commandes de tournois</h2>
       <div v-for="(commande, index) in commandes" :key="index" class="card">
@@ -14,12 +17,13 @@
       </div>
     </div>
 
-      <h2 class="section-title">Commandes d'Articles</h2>
+    <!-- Commandes d'articles par restaurant -->
     <div class="cards-container" v-if="articleCommandes && articleCommandes.length">
+      <h2 class="section-title">Commandes d'Articles</h2>
       <div v-for="(commande, index) in articleCommandes" :key="'commande-' + index" class="card">
         <div class="card-content">
-          <h3 class="card-title">Commande {{ index + 1 }}</h3>
-          <h4 class="restaurant-name">Restaurant : {{ commande.selectedModalRestau }}</h4>
+          <h3 class="card-title">Commande d'Articles {{ index + 1 }}</h3>
+          <h4 class="restaurant-name">Restaurant : {{ commande.restaurantNom }}</h4>
           <div v-for="article in commande.articles" :key="article.nom" class="article">
             <p class="article-name">{{ article.nom }}</p>
             <p class="article-quantity">Quantité : {{ article.quantite }}</p>
@@ -29,6 +33,8 @@
         </div>
       </div>
     </div>
+
+    <!-- Message si aucune commande trouvée -->
     <p v-else>Aucune commande trouvée.</p>
   </div>
 </template>

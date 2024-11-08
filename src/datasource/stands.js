@@ -1,5 +1,3 @@
-import { restaurants } from "./prestataires/restaurants";
-
 export const stands = [
     // {
     //     id: int, //= id du stand
@@ -64,7 +62,7 @@ export const stands = [
         idRestau: "R3",
         nom: 'Breizh Gaufres',
         type: "restaurants",
-        image: require('@/assets/images/Derya.png'),
+        image: require('@/assets/images/breizh_gauffres.png'),
         idPoint: 10,
         comptes: [12342],
         nourritures: [
@@ -82,9 +80,9 @@ export const stands = [
     {
         id: 1238,
         idRestau: "R4",
-        nom: 'Breizh Gaufres',
+        nom: 'Dream Bubble',
         type: "restaurants",
-        image: require('@/assets/images/Derya.png'),
+        image: require('@/assets/images/dreambubble.png'),
         idPoint: 9,
         comptes: [12342],
         nourritures: [
@@ -106,9 +104,9 @@ export const stands = [
     {
         id: 1239,
         idRestau: "R5",
-        nom: 'Breizh Gaufres',
+        nom: 'Pralinette',
         type: "restaurants",
-        image: require('@/assets/images/Derya.png'),
+        image: require('@/assets/images/pralinette.png'),
         idPoint: 8,
         comptes: [12342],
         nourritures: [
@@ -127,7 +125,4 @@ export const stands = [
 
 ];
 
-export {
-    restaurants,
-};
   
