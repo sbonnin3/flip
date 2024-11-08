@@ -9,6 +9,7 @@ import MonCompte from '../views/MonCompte.vue';
 import MesCommandes from '../views/MesCommandes.vue';
 import Reservations from '../views/Reservations.vue';
 import PrestatairesCarte from '../views/PrestatairesCarte.vue';
+import MaPrestation from '../views/MaPrestation.vue';
 import store from '../store/index.js';
 
 Vue.use(VueRouter);
@@ -58,6 +59,12 @@ const routes = [
     meta: { requiresAuth: true, requiresOrganizer: true },
   },
   {
+    path: "/MaPrestation",
+    name: "MaPrestation",
+    component: MaPrestation,
+    meta: { requiresAuth: true, requiresPrestataire: true }
+  },
+  {
     path: '/PrestatairesCarte',
     name: 'PrestatairesCarte',
     component: PrestatairesCarte,
@@ -100,6 +107,10 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !user) {
     return next('/Connexion');
   }
+
+  if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
+    return next('/Accueil');
+  }  
 
   // Redirection pour les prestataires sur la page Carte
   if (to.path === '/Carte' && user && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {

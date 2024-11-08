@@ -74,19 +74,19 @@ export const points = [
     {
         idPoint: 13,
         category: 'Emplacement',
-        disponible: false,
+        disponible: true,
         coordinates: [46.6472, -0.2479],
     },
     {
         idPoint: 14,
         category: 'Emplacement',
-        disponible: false,
+        disponible: true,
         coordinates: [46.6481, -0.2488],
     },
     {
-        idPoint: 14,
+        idPoint: 15,
         category: 'Emplacement',
-        disponible: false,
+        disponible: true,
         coordinates: [46.6483, -0.2516],
     },
 ];

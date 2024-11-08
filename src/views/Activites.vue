@@ -31,7 +31,7 @@
             <label for="searchAge" class="search-label">Âge minimum :</label>
             <input id="searchAge" type="number" v-model="searchAge" min="1" placeholder="Âge minimum" class="search-input" />
   
-            <label for="searchDuration" class="search-label">Durée max (min) :</label>
+            <label for="searchDuration" class="search-label">Durée max :</label>
             <input id="searchDuration" type="number" v-model="searchDuration" min="1" placeholder="Durée max (minutes)" class="search-input" />
           </div>
   
