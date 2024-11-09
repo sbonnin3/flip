@@ -18,7 +18,7 @@
       </select>
 
       <l-map :zoom="zoom" :center="center" :max-bounds="bounds" :max-bounds-viscosity="1.0" :min-zoom="minZoom"
-        :max-zoom="maxZoom" style="height: 700px; width: 100%;">
+        :max-zoom="maxZoom" :options="mapOptions" style="height: 700px; width: 100%;">
         <l-tile-layer :url="layers[selectedLayer].url" :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
         <!-- Marqueurs avec les icônes appropriées -->
@@ -61,6 +61,9 @@ export default {
   },
   data() {
     return {
+      mapOptions : {
+        attributionControl: false
+      },
       zoom: 16,
       minZoom: 13,
       maxZoom: 18,
@@ -74,11 +77,9 @@ export default {
       layers: {
         osm: {
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         },
         satellite: {
           url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-          attribution: '&copy; <a href="https://www.esri.com/en-us/home">Esri</a> &mdash; Source: Esri, USGS, NOAA',
         },
       },
       icons: {
@@ -137,7 +138,6 @@ export default {
       this.hoveredPointId = null;
     },
     changeLayer() {
-      // Logique pour changer la vue de la carte
     },
   },
 };
@@ -162,5 +162,5 @@ export default {
 
 select {
   margin-bottom: 10px;
-}
+} 
 </style>

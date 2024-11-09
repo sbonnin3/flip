@@ -130,7 +130,6 @@ body {
   margin-top: 0px;
   background-color: #ffffff;
   min-height: 100vh;
-  padding-bottom: 20px;
 }
 
 body {
