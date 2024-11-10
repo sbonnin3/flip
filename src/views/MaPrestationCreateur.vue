@@ -19,6 +19,7 @@
       </div>
 
       <!-- Point associé sur la carte (stands disponibles uniquement) -->
+      <!-- OLD
       <div class="form-group">
         <label for="point">Point sur la carte :</label>
         <select v-model="stand.idPoint" id="point" required>
@@ -26,6 +27,52 @@
             Point {{ point.idPoint }}
           </option>
         </select>
+      </div>
+      -->
+
+      <div class="form-group map-container">
+        <label>Sélectionnez un emplacement sur la carte :</label>
+        <div class="map-controls">
+          <select v-model="selectedLayer" @change="changeLayer">
+            <option value="osm">Vue Carte</option>
+            <option value="satellite">Vue Satellite</option>
+          </select>
+        </div>
+
+        <l-map
+            :zoom="zoom"
+            :center="center"
+            :max-bounds="bounds"
+            :min-zoom="minZoom"
+            :max-zoom="maxZoom"
+            :options="mapOptions"
+            style="height: 500px;"
+            @ready="mapReady"
+        >
+          <l-tile-layer
+              :url="layers[selectedLayer].url"
+              :attribution="layers[selectedLayer].attribution"
+          ></l-tile-layer>
+
+          <l-marker
+              v-for="point in availablePoints"
+              :key="point.idPoint"
+              :lat-lng="point.coordinates"
+              :icon="getIconForPoint(point)"
+              @click="selectPoint(point)"
+          >
+            <l-tooltip>
+              {{ point === selectedPoint ? 'Point sélectionné' : 'Disponible - Cliquez pour sélectionner' }}
+            </l-tooltip>
+          </l-marker>
+        </l-map>
+
+        <p v-if="selectedPoint" class="selected-point-info">
+          Point sélectionné : {{ selectedPoint.idPoint }}
+        </p>
+        <p v-else class="no-selection-info">
+          Veuillez sélectionner un point sur la carte
+        </p>
       </div>
 
       <!-- Bouton d'enregistrement -->
@@ -37,9 +84,19 @@
 <script>
 import { mapGetters } from "vuex";
 import { points, stands } from "@/datasource/data.js";
-
+import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import emplacementIcon from "@/assets/icons/emplacement-icon.png";
+import selectedIcon from "@/assets/icons/selected-icon.png";
 export default {
   name: "MaPrestationCreateur",
+  components: {
+    LMap,
+    LTileLayer,
+    LMarker,
+    LTooltip,
+  },
   data() {
     return {
       stand: {
@@ -52,29 +109,61 @@ export default {
       },
       isNewStand: true,
       originalPointId: null,
+      zoom: 16,
+      minZoom: 13,
+      maxZoom: 18,
+      center: [46.648, -0.2494],
+      bounds: [[46.620, -0.270], [46.680, -0.230]],
+      selectedLayer: "osm",
+      mapOptions: {
+        attributionControl: false
+      },
+      layers: {
+        osm: {
+          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          attribution: '&copy; OpenStreetMap contributors'
+        },
+        satellite: {
+          url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          attribution: '&copy; Esri'
+        }
+      }
     };
   },
   computed: {
     ...mapGetters(["userSession"]),
     availablePoints() {
-      return points.filter(point => point.category === "Emplacement" && point.disponible);
+      return points.filter(point =>
+          point.category === "Emplacement" &&
+          (point.disponible || point.idPoint === this.originalPointId)
+      );
     }
   },
   created() {
+    this.restorePointsState();
     this.initializeStand();
   },
   methods: {
+    restorePointsState() {
+      const pointsState = JSON.parse(localStorage.getItem('pointsState') || '{}');
+      Object.entries(pointsState).forEach(([pointId, isAvailable]) => {
+        const point = points.find(p => p.idPoint === parseInt(pointId));
+        if (point) {
+          point.disponible = isAvailable;
+        }
+      });
+    },
     initializeStand() {
-      // Charger les informations à partir du localStorage si elles existent
       const savedStand = JSON.parse(localStorage.getItem(`stand_${this.userSession.id}`));
       if (savedStand) {
         this.stand = { ...savedStand };
         this.isNewStand = false;
         this.originalPointId = this.stand.idPoint;
+        this.selectedPoint = points.find(p => p.idPoint === this.stand.idPoint);
+        this.updatePointAvailability(this.stand.idPoint, false);
         return;
       }
 
-      // Sinon, initialiser avec les données par défaut
       const roleToTypeMap = {
         createur: "stand",
         restaurateur: "restaurant",
@@ -88,9 +177,32 @@ export default {
         this.stand = { ...existingStand };
         this.isNewStand = false;
         this.originalPointId = this.stand.idPoint;
+        this.selectedPoint = points.find(p => p.idPoint === this.stand.idPoint);
+        this.updatePointAvailability(this.stand.idPoint, false);
       } else {
         this.stand.comptes = [this.userSession.id];
       }
+    },
+    getIconForPoint(point) {
+      const iconConfig = point.idPoint === this.selectedPoint?.idPoint ?
+          {
+            iconUrl: selectedIcon,
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40],
+          } : {
+            iconUrl: emplacementIcon,
+            iconSize: [30, 30],
+            iconAnchor: [15, 30],
+            popupAnchor: [0, -30],
+          };
+
+      return L.icon(iconConfig);
+    },
+    selectPoint(point) {
+      this.selectedPoint = point;
+      this.stand.idPoint = point.idPoint;
+      this.$forceUpdate();
     },
     handleImageUpload(event) {
       const file = event.target.files[0];
@@ -102,18 +214,25 @@ export default {
         reader.readAsDataURL(file);
       }
     },
+    changeLayer() {
+    },
+    mapReady() {
+      if (this.selectedPoint) {
+        this.$nextTick(() => {
+          this.center = this.selectedPoint.coordinates;
+        });
+      }
+    },
     saveStand() {
       if (!this.stand.idPoint) {
         alert("Veuillez sélectionner un point sur la carte.");
         return;
       }
 
-      // Libérer l'ancien point si nécessaire
       if (this.originalPointId && this.originalPointId !== this.stand.idPoint) {
         this.updatePointAvailability(this.originalPointId, true);
       }
 
-      // Marquer le point comme occupé
       this.updatePointAvailability(this.stand.idPoint, false);
 
       if (this.isNewStand) {
@@ -128,10 +247,8 @@ export default {
         }
       }
 
-      // Sauvegarder dans le localStorage
       this.saveStandToLocalStorage();
 
-      // Mettre à jour l'état
       this.isNewStand = false;
       this.originalPointId = this.stand.idPoint;
     },
@@ -142,12 +259,14 @@ export default {
       const point = points.find(p => p.idPoint === pointId);
       if (point) {
         point.disponible = isAvailable;
+        const pointsState = JSON.parse(localStorage.getItem('pointsState') || '{}');
+        pointsState[pointId] = isAvailable;
+        localStorage.setItem('pointsState', JSON.stringify(pointsState));
       }
     }
   },
   beforeDestroy() {
-    // Libérer le point si l'utilisateur quitte sans sauvegarder
-    if (this.isNewStand && this.stand.idPoint) {
+    if (this.isNewStand && this.stand.idPoint && !localStorage.getItem(`stand_${this.userSession.id}`)) {
       this.updatePointAvailability(this.stand.idPoint, true);
     }
   }
