@@ -35,4 +35,16 @@ export const jeux = [
         nom_stand: "Stand3",
         prix: "10",
     },
+    {
+        _id: '04',
+        type: 'Divertissement',
+        name: 'Esquissé',
+        image: require('@/assets/images/jeu_esquisse.png'),
+        nombre_de_joueurs: [4, 5, 6, 7, 8],
+        age_minimum: 8,
+        duree: 30,
+        editeur: "Goliath",
+        nom_stand: "Stand4",
+        prix: "28",
+    },
 ];
