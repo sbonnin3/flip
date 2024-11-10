@@ -24,7 +24,7 @@ export const stands = [
         nom: 'L\'orientale',
         type: "restaurants",
         image: require('@/assets/images/Lorientale.png'),
-        idPoint: 12,
+        idPoint: 7,
         comptes: [12342],
         nourritures: [
             {nom: "Couscous", prix: 8, image: require('@/assets/images/couscous.png')},
