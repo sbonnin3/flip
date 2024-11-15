@@ -4,6 +4,7 @@ import { reservations } from "@/datasource/data";
 import { getAllTournois } from '@/services/tournoisService';
 import { comptes } from '@/datasource/comptes';
 import { getAllSouvenirs } from "@/services/souvenirsService";
+import { getAllStands } from "@/services/standsService";
 
 Vue.use(Vuex);
 
@@ -15,6 +16,7 @@ export default new Vuex.Store({
     souvenirs: [],
     reservations: reservations,
     userOrders: [],
+    restaurants: [],
   },
   mutations: {
     SET_USER_SESSION(state, user) {
@@ -43,7 +45,10 @@ export default new Vuex.Store({
     },
     SET_USER_ORDERS(state, orders) {
       state.userOrders = orders;
-    }
+    },
+    SET_STANDS(state, restaurants) {
+      state.restaurants = restaurants;
+    },
   },
   actions: {
     async getAllTournois({ commit }) {
@@ -89,6 +94,17 @@ export default new Vuex.Store({
         console.error("Erreur lors de la récupération des souvenirs :", error);
       }
     },
+    async getAllStands({ commit }) {
+      try {
+        const response = await getAllStands();
+        console.log('Stands récupérés :', response.data);
+        if (response.error === 0) {
+          commit('SET_STANDS', response.data);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des stands :", error);
+      }
+    },
   },
   getters: {
     tournois: (state) => state.tournois,
@@ -96,11 +112,12 @@ export default new Vuex.Store({
     userSession: (state) => state.userSession,
     souvenirs: (state) => state.souvenirs,
     userOrders: (state) => state.userOrders,
+    restaurants: (state) => state.restaurants,
     userReservations: (state) => {
       console.log("Reservations in state:", state.reservations);
       if (state.userSession) {
         return state.reservations.filter(
-          (reservation) => reservation.userId === state.userSession.id
+            (reservation) => reservation.userId === state.userSession.id
         );
       }
       return [];

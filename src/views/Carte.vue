@@ -18,27 +18,32 @@
       </select>
 
       <l-map :zoom="zoom" :center="center" :max-bounds="bounds" :max-bounds-viscosity="1.0" :min-zoom="minZoom"
-        :max-zoom="maxZoom" :options="mapOptions" style="height: 700px; width: 100%;">
+             :max-zoom="maxZoom" :options="mapOptions" style="height: 700px; width: 100%;">
         <l-tile-layer :url="layers[selectedLayer].url" :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
-        <!-- Marqueurs avec les icônes appropriées -->
-        <l-marker
-          v-for="(point, index) in filteredPoints"
-          :key="index"
-          :lat-lng="point.coordinates"
-          :icon="getIconForPoint(point)"
-          @mouseover="enlargeIcon(point.idPoint)"
-          @mouseout="resetIcon()"
-        >
-          <l-popup>{{ getPopupText(point) }}</l-popup>
+        <!-- Marqueurs avec les icônes appropriées et info-bulles au survol -->
+        <l-marker v-for="(point, index) in filteredPoints" :key="index" :lat-lng="point.coordinates"
+                  :icon="getIconForPoint(point)" @mouseover="enlargeIcon(point.idPoint)" @mouseout="resetIcon()"
+                  @click="showStandInfo(point)">
+          <!-- Afficher le nom du stand au survol -->
+          <l-tooltip>{{ getTooltipText(point) }}</l-tooltip>
         </l-marker>
       </l-map>
+
+      <!-- Fenêtre d'information du prestataire -->
+      <div v-if="selectedStand" class="stand-info-panel">
+        <button class="close-button" @click="closeStandInfo">X</button>
+        <h2>{{ selectedStand.nom }}</h2>
+        <img v-if="selectedStand.image" :src="selectedStand.image" alt="Image du stand" class="stand-image" />
+        <p><strong>Type:</strong> {{ selectedStand.type }}</p>
+        <p v-if="selectedStand.description"><strong>Description:</strong> {{ selectedStand.description }}</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
+import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { points, stands } from "@/datasource/data.js";
@@ -57,12 +62,12 @@ export default {
     LMap,
     LTileLayer,
     LMarker,
-    LPopup,
+    LTooltip,
   },
   data() {
     return {
-      mapOptions : {
-        attributionControl: false
+      mapOptions: {
+        attributionControl: false,
       },
       zoom: 16,
       minZoom: 13,
@@ -73,7 +78,8 @@ export default {
       selectedLayer: "osm",
       points,
       stands,
-      hoveredPointId: null, // Nouveau pour gérer le survol
+      hoveredPointId: null,
+      selectedStand: null,
       layers: {
         osm: {
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -105,14 +111,14 @@ export default {
     },
   },
   methods: {
-    getPopupText(point) {
+    getTooltipText(point) {
       const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
       return standAssocie ? standAssocie.nom : point.name;
     },
     getIconForPoint(point) {
       const baseIconUrl = this.icons[point.category] || this.icons.Emplacement;
       const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
-      
+
       let iconUrl = baseIconUrl;
       if (standAssocie) {
         let standType = standAssocie.type.toLowerCase();
@@ -137,8 +143,16 @@ export default {
     resetIcon() {
       this.hoveredPointId = null;
     },
-    changeLayer() {
+    showStandInfo(point) {
+      const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
+      if (standAssocie) {
+        this.selectedStand = standAssocie;
+      }
     },
+    closeStandInfo() {
+      this.selectedStand = null;
+    },
+    changeLayer() { },
   },
 };
 </script>
@@ -152,15 +166,49 @@ export default {
 .map-container {
   max-width: 60%;
   margin: auto;
+  position: relative;
 }
 
-.leaflet-container {
-  width: auto;
-  border: 5px solid #000000;
+.stand-info-panel {
+  position: absolute;
+  top: 100px;
+  right: 20px;
+  background-color: white;
+  padding: 20px;
+  border: 1px solid #ddd;
   border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  z-index: 1000;
 }
 
-select {
+.stand-info-panel h2 {
+  margin-top: 0;
+}
+
+.stand-info-panel img {
+  max-width: 100%;
+  height: auto;
   margin-bottom: 10px;
-} 
+  border-radius: 5px;
+}
+
+.stand-info-panel p {
+  margin: 10px 0;
+}
+
+.stand-info-panel p strong {
+  color: #007bff;
+}
+
+.close-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  float: right;
+}
 </style>

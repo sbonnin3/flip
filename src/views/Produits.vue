@@ -50,7 +50,7 @@
     <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
       <div class="modal-content">
         <span class="close-button" @click="closeModalRestau">&times;</span>
-        <h2>{{ selectedModalRestau.name }}</h2>
+        <h2>{{ selectedModalRestau.nom }}</h2>
         <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image"
              style=" width: 50%; height: 50%"/>
         <div v-for="stand in stands.filter(stand => stand.idRestau === selectedModalRestau.idRestau)" :key="stand.id">
@@ -178,16 +178,19 @@ export default {
       if (this.cart.length > 0 && currentUser) {
 
         // Grouper les articles par restaurant
-        const orderByRestaurant = this.cart.reduce((acc, article) => {
-          if (!acc[article.restaurantNom]) {
-            acc[article.restaurantNom] = { restaurantNom: article.restaurantNom, articles: [] };
+        const ordersByRestaurant = this.cart.reduce((acc, article) => {
+          const restaurantName = article.restaurant;
+
+          // Initialise l'entrée pour le restaurant s'il n'existe pas encore
+          if (!acc[restaurantName]) {
+            acc[restaurantName] = { restaurantNom: restaurantName, articles: [] };
           }
-          acc[article.restaurantNom].articles.push(article);
+          acc[restaurantName].articles.push(article);
           return acc;
         }, {});
 
         // Ajouter chaque groupe d'articles par restaurant comme commande séparée
-        Object.values(orderByRestaurant).forEach(restaurantOrder => {
+        Object.values(ordersByRestaurant).forEach(restaurantOrder => {
           this.addArticleOrder({
             ...restaurantOrder,
             status: 'Confirmée',
@@ -197,7 +200,6 @@ export default {
         // Vider le panier et masquer la confirmation après la commande
         this.cart = [];
         this.showConfirmation = false;
-        console.log('Commandes passées par restaurant :', this.orders);
         this.commandMessage = 'Votre commande a été confirmée !';
 
       } else {
@@ -226,7 +228,7 @@ export default {
         this.cardCommandMessage = "Article ajouté dans le panier !"
       } else {
         // Sinon, on ajoute un nouvel article avec une quantité initiale de 1
-        this.cart.push({ ...article, quantite: 1 });
+        this.cart.push({ ...article, quantite: 1, restaurant: this.selectedModalRestau.nom});
         this.cardCommandMessage = "Article ajouté dans le panier !"
       }
 

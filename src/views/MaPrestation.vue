@@ -9,6 +9,12 @@
         <input type="text" v-model="stand.nom" id="nom" required />
       </div>
 
+      <div class="form-group">
+        <label for="description">Description de la prestation :</label>
+        <textarea v-model="stand.description" id="description" rows="4" placeholder="Décrivez votre prestation..."
+                  required></textarea>
+      </div>
+
       <!-- Image du stand -->
       <div class="form-group">
         <label for="image">Image du Stand :</label>
@@ -17,18 +23,6 @@
           <img :src="stand.image" alt="Image du stand" class="stand-image" />
         </div>
       </div>
-
-      <!-- Point associé sur la carte (stands disponibles uniquement) -->
-      <!-- OLD
-      <div class="form-group">
-        <label for="point">Point sur la carte :</label>
-        <select v-model="stand.idPoint" id="point" required>
-          <option v-for="point in availablePoints" :key="point.idPoint" :value="point.idPoint">
-            Point {{ point.idPoint }}
-          </option>
-        </select>
-      </div>
-      -->
 
       <div class="form-group map-container">
         <label>Sélectionnez un emplacement sur la carte :</label>
@@ -39,28 +33,13 @@
           </select>
         </div>
 
-        <l-map
-            :zoom="zoom"
-            :center="center"
-            :max-bounds="bounds"
-            :min-zoom="minZoom"
-            :max-zoom="maxZoom"
-            :options="mapOptions"
-            style="height: 500px;"
-            @ready="mapReady"
-        >
-          <l-tile-layer
-              :url="layers[selectedLayer].url"
-              :attribution="layers[selectedLayer].attribution"
-          ></l-tile-layer>
+        <l-map :zoom="zoom" :center="center" :max-bounds="bounds" :min-zoom="minZoom" :max-zoom="maxZoom"
+               :options="mapOptions" style="height: 500px;" @ready="mapReady">
+          <l-tile-layer :url="layers[selectedLayer].url"
+                        :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
-          <l-marker
-              v-for="point in availablePoints"
-              :key="point.idPoint"
-              :lat-lng="point.coordinates"
-              :icon="getIconForPoint(point)"
-              @click="selectPoint(point)"
-          >
+          <l-marker v-for="point in availablePoints" :key="point.idPoint" :lat-lng="point.coordinates"
+                    :icon="getIconForPoint(point)" @click="selectPoint(point)">
             <l-tooltip>
               {{ point === selectedPoint ? 'Point sélectionné' : 'Disponible - Cliquez pour sélectionner' }}
             </l-tooltip>
@@ -76,7 +55,8 @@
       </div>
 
       <!-- Bouton d'enregistrement -->
-      <button type="submit" class="save-button">{{ isNewStand ? 'Créer le stand' : 'Enregistrer les modifications' }}</button>
+      <button type="submit" class="save-button">{{ isNewStand ? 'Créer le stand' : 'Enregistrer les modifications'
+        }}</button>
     </form>
   </div>
 </template>
@@ -104,6 +84,7 @@ export default {
         nom: "",
         type: "",
         image: "",
+        description: "",
         idPoint: null,
         comptes: [],
       },
@@ -214,6 +195,9 @@ export default {
         reader.readAsDataURL(file);
       }
     },
+    saveStandToLocalStorage() {
+      localStorage.setItem(`stand_${this.userSession.id}`, JSON.stringify(this.stand));
+    },
     changeLayer() {
     },
     mapReady() {
@@ -251,9 +235,6 @@ export default {
 
       this.isNewStand = false;
       this.originalPointId = this.stand.idPoint;
-    },
-    saveStandToLocalStorage() {
-      localStorage.setItem(`stand_${this.userSession.id}`, JSON.stringify(this.stand));
     },
     updatePointAvailability(pointId, isAvailable) {
       const point = points.find(p => p.idPoint === pointId);
@@ -320,5 +301,13 @@ export default {
 
 .save-button:hover {
   background-color: #0056b3;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  resize: vertical;
 }
 </style>
