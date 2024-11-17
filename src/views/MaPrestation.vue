@@ -12,7 +12,7 @@
       <div class="form-group">
         <label for="description">Description de la prestation :</label>
         <textarea v-model="stand.description" id="description" rows="4" placeholder="Décrivez votre prestation..."
-          required></textarea>
+                  required></textarea>
       </div>
 
       <!-- Image du stand -->
@@ -33,13 +33,28 @@
           </select>
         </div>
 
-        <l-map :zoom="zoom" :center="center" :max-bounds="bounds" :min-zoom="minZoom" :max-zoom="maxZoom"
-          :options="mapOptions" style="height: 500px;" @ready="mapReady">
-          <l-tile-layer :url="layers[selectedLayer].url"
-            :attribution="layers[selectedLayer].attribution"></l-tile-layer>
+        <l-map
+            :zoom="zoom"
+            :center="center"
+            :max-bounds="bounds"
+            :min-zoom="minZoom"
+            :max-zoom="maxZoom"
+            :options="mapOptions"
+            style="height: 500px;"
+            @ready="mapReady"
+        >
+          <l-tile-layer
+              :url="layers[selectedLayer].url"
+              :attribution="layers[selectedLayer].attribution"
+          ></l-tile-layer>
 
-          <l-marker v-for="point in availablePoints" :key="point.idPoint" :lat-lng="point.coordinates"
-            :icon="getIconForPoint(point)" @click="selectPoint(point)">
+          <l-marker
+              v-for="point in availablePoints"
+              :key="point.idPoint"
+              :lat-lng="point.coordinates"
+              :icon="getIconForPoint(point)"
+              @click="selectPoint(point)"
+          >
             <l-tooltip>
               {{ point === selectedPoint ? 'Point sélectionné' : 'Disponible - Cliquez pour sélectionner' }}
             </l-tooltip>

@@ -130,6 +130,14 @@ export default {
   box-shadow: 0 6px 4px rgba(0, 0, 0, 0.1);
 }
 
+.navbar-visible p.nav-item {
+  color: black;
+}
+
+.navbar-visible p.nav-item:hover {
+  color: black;
+}
+
 .nav-titles {
   display: flex;
   justify-content: center;
@@ -157,6 +165,10 @@ p.nav-item.active {
   font-weight: bold;
 }
 
+.navbar-transparent p.nav-item.active {
+  color: white;
+}
+
 p.nav-item::after {
   content: '';
   position: absolute;
@@ -173,7 +185,7 @@ p.nav-item:hover::after {
 }
 
 p.nav-item:hover {
-  color: black;
+  color: white;
   transform: scale(1.1);
   font-weight: bold;
 }

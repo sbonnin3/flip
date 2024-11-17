@@ -49,12 +49,55 @@
     </div>
     <div class="down-container-up-part">
     </div>
+    <h2 class="down-container-mid-part-title">Les services</h2>
     <div class="down-container-mid-part">
+      <a href="#" class="figure-link">
+        <figure>
+          <img src="../assets/images/burger.jpg" alt="Restauration" width="265" height="280">
+          <figcaption>Restauration</figcaption>
+        </figure>
+      </a>
 
+      <a href="#" class="figure-link">
+        <figure>
+          <img src="../assets/images/boutique.jpg" alt="Boutique" width="265" height="280">
+          <figcaption>Boutique</figcaption>
+        </figure>
+      </a>
+
+      <a href="#" class="figure-link">
+        <figure style>
+          <img src="../assets/images/flipgamepicture.jpg" alt="Jeu" width="265" height="280">
+          <figcaption>Jeux</figcaption>
+        </figure>
+      </a>
+
+      <a href="#" class="figure-link">
+        <figure>
+          <img src="../assets/images/tournois_basketball.png" alt="Tournoi" width="265" height="280">
+          <figcaption>Tournois</figcaption>
+        </figure>
+      </a>
     </div>
 
 
+
+
+    <div class="voircarte">
+      Voir la carte
+    </div>
+
+
+
+
+
+
+
   </div>
+
+
+
+
 </template>
 
 <script>
@@ -141,6 +184,8 @@ export default {
     },
   },
 };
+
+
 </script>
 
 <style scoped>
@@ -348,6 +393,112 @@ button:hover {
   position: relative;
   box-shadow: black 0px 0px 15px;
 }
+
+.down-container-mid-part {
+  display: flex;
+  gap: 20px; /* Espacement horizontal entre les figures */
+  justify-content: center; /* Centre les figures dans le conteneur */
+  padding: 20px 0; /* Optionnel : padding vertical autour des figures */
+}
+
+
+
+figure {
+  display: grid;
+  border-radius: 1rem;
+  overflow: hidden;
+  cursor: pointer;
+}
+figure > * {
+  grid-area: 1/1;
+  transition: .4s;
+}
+figure figcaption {
+  display: grid;
+  align-items: center;
+  font-family: sans-serif;
+  font-size: 2.3rem;
+  font-weight: bold;
+  color: #0000;
+  padding: .75rem;
+  background: var(--c, rgba(255, 255, 255, 0.8));
+  clip-path: inset(0 var(--_i,100%) 0 0);
+  -webkit-mask:
+      linear-gradient(#000 0 0),
+      linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  -webkit-mask-clip: text, padding-box;
+  margin: -1px;
+}
+figure:hover figcaption{
+  --_i: 0%;
+}
+figure:hover img {
+  transform: scale(1.2);
+}
+@supports not (-webkit-mask-clip: text) {
+  figure figcaption {
+    -webkit-mask: none;
+    color: #fff;
+  }
+}
+
+.down-container-mid-part-title {
+  text-align: center;
+  border-bottom: red solid 4px;
+  margin-top: 35px;
+  color: black;
+}
+
+.voircarte {
+  background-color: #1A1A1A; /* Noir élégant */
+  color: #ffffff; /* Bleu lumineux pour le texte */
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.voircarte:before {
+  content: "🗺️"; /* Icône de localisation */
+  font-size: 18px;
+  margin-right: 8px;
+  position: relative;
+  top: 2px;
+  transition: transform 0.3s ease;
+}
+
+/* Animation de lumière au survol */
+.voircarte:hover {
+  background-color: #333333; /* Changement du fond en bleu */
+  font-weight: bold;
+  transform: scale(1.05);
+}
+
+/* Ligne de lumière glissante */
+.voircarte::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: skewX(-30deg);
+  transition: left 0.6s ease;
+}
+
+.voircarte:hover::after {
+  left: 100%;
+}
+
+
 
 
 </style>

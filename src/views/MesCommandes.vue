@@ -22,8 +22,8 @@
       <h2 class="section-title">Commandes d'Articles</h2>
       <div v-for="(commande, index) in articleCommandes" :key="'commande-' + index" class="card">
         <div class="card-content">
-          <h3 class="card-title">Commande d'Articles {{ index + 1 }}</h3>
-          <h4 class="restaurant-name">Restaurant : {{ commande.restaurantNom }}</h4>
+          <h3 class="card-title">Commande chez {{ commande.restaurantNom }}</h3>
+          <!--h4 class="restaurant-name">Stand : {{ commande.restaurantNom }}</h4-->
           <div v-for="article in commande.articles" :key="article.nom" class="article">
             <p class="article-name">{{ article.nom }}</p>
             <p class="article-quantity">Quantité : {{ article.quantite }}</p>

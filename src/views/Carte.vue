@@ -18,13 +18,13 @@
       </select>
 
       <l-map :zoom="zoom" :center="center" :max-bounds="bounds" :max-bounds-viscosity="1.0" :min-zoom="minZoom"
-        :max-zoom="maxZoom" :options="mapOptions" style="height: 700px; width: 100%;">
+             :max-zoom="maxZoom" :options="mapOptions" style="height: 700px; width: 100%;">
         <l-tile-layer :url="layers[selectedLayer].url" :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
         <!-- Marqueurs avec les icônes appropriées et info-bulles au survol -->
         <l-marker v-for="(point, index) in filteredPoints" :key="index" :lat-lng="point.coordinates"
-          :icon="getIconForPoint(point)" @mouseover="enlargeIcon(point.idPoint)" @mouseout="resetIcon()"
-          @click="showStandInfo(point)">
+                  :icon="getIconForPoint(point)" @mouseover="enlargeIcon(point.idPoint)" @mouseout="resetIcon()"
+                  @click="showStandInfo(point)">
           <!-- Afficher le nom du stand au survol -->
           <l-tooltip>{{ getTooltipText(point) }}</l-tooltip>
         </l-marker>
