@@ -631,8 +631,6 @@ figure:hover img {
   margin: 15px;
 }
 
-.down-container-down-part {
-}
-
+.down-container-down-part {}
 
 </style>
