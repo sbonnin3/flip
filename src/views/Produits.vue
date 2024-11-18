@@ -47,6 +47,14 @@
       </div>
     </div>
 
+    <!-- Modale de connexion -->
+    <ConnexionModal
+        v-if="showLoginModal"
+        :visible="showLoginModal"
+        @close="closeLoginModal"
+        @login-success="handleLoginSuccess"
+    />
+
     <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
       <div class="modal-content">
         <span class="close-button" @click="closeModalRestau">&times;</span>
@@ -128,9 +136,11 @@
 
 import { jeux, souvenirs, stands } from '@/datasource/data';
 import { mapActions } from 'vuex';
+import ConnexionModal from "@/components/Connexion.vue";
 
 export default {
   name: "PagePrestataires",
+  components: {ConnexionModal},
   data() {
     return {
       selectedTab: "Restauration",
@@ -139,6 +149,7 @@ export default {
       cart: [],
       orders: [],
       showConfirmation: false,
+      showLoginModal: false,
       commandMessage: '',
       cardCommandMessage: '',
       jeux,
@@ -174,14 +185,17 @@ export default {
     confirmReservation() {
       const currentUser = this.$store.state.userSession;
 
-      // Vérifie si un utilisateur est connecté et si le panier contient des articles
-      if (this.cart.length > 0 && currentUser) {
+      if (!currentUser) {
+        // Si aucun utilisateur n'est connecté, afficher la modale de connexion
+        this.showLoginModal = true;
+        return;
+      }
 
+      if (this.cart.length > 0) {
         // Grouper les articles par restaurant
         const ordersByRestaurant = this.cart.reduce((acc, article) => {
           const restaurantName = article.restaurant;
 
-          // Initialise l'entrée pour le restaurant s'il n'existe pas encore
           if (!acc[restaurantName]) {
             acc[restaurantName] = { restaurantNom: restaurantName, articles: [] };
           }
@@ -189,24 +203,29 @@ export default {
           return acc;
         }, {});
 
-        // Ajouter chaque groupe d'articles par restaurant comme commande séparée
-        Object.values(ordersByRestaurant).forEach(restaurantOrder => {
+        // Ajouter les commandes
+        Object.values(ordersByRestaurant).forEach((restaurantOrder) => {
           this.addArticleOrder({
             ...restaurantOrder,
-            status: 'Confirmée',
+            status: "Confirmée",
           });
         });
 
-        // Vider le panier et masquer la confirmation après la commande
+        // Vider le panier et masquer la confirmation
         this.cart = [];
         this.showConfirmation = false;
-        this.commandMessage = 'Votre commande a été confirmée !';
-
+        this.commandMessage = "Votre commande a été confirmée !";
       } else {
-        this.commandMessage = "Erreur : aucun utilisateur connecté ou panier vide.";
+        this.commandMessage = "Erreur : panier vide.";
       }
     },
-
+    closeLoginModal() {
+      this.showLoginModal = false;
+    },
+    handleLoginSuccess() {
+      this.showLoginModal = false;
+      this.commandMessage = "Connexion réussie. Vous pouvez confirmer votre commande.";
+    },
     deleteCommand(){
       this.cart = [];
       this.commandMessage = 'Votre commande a été effacée !'
@@ -240,6 +259,56 @@ export default {
 </script>
 
 <style scoped>
+
+.confirmation-modal,
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.confirm-button {
+  background: #4caf50;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.cancel-button {
+  background: #f44336;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
 
 .reservation-message {
   position: fixed;
