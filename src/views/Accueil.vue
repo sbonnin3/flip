@@ -12,7 +12,7 @@
         <h1>{{ currentCarouselSlide.title }}</h1>
         <h3>{{ currentCarouselSlide.subtitle }}</h3>
         <h5>{{ currentCarouselSlide.description }}</h5>
-        <button type="submit" class="login-button">En savoir plus</button>
+        <a href="https://www.jeux-festival.com/"><button type="submit" class="more-button">En savoir plus</button></a>
       </div>
       <img class="festivalimages" :class="{ 'slide-in': fadeImage }" :src="currentCarouselSlide.image"
            alt="imagefestival">
@@ -58,12 +58,12 @@
         </figure>
         </router-link>
 
-      <router-link to="/Produits">
+      <a href @click="goToBoutique" class="figure-link">
         <figure>
-          <img src="../assets/images/boutique.jpg" alt="Restauration" width="280" height="300">
+          <img src="../assets/images/boutique.jpg" alt="Boutique" width="280" height="300">
           <figcaption>Boutique</figcaption>
         </figure>
-      </router-link>
+      </a>
 
       <router-link to="/Activites">
         <figure style>
@@ -72,12 +72,12 @@
         </figure>
       </router-link>
 
-      <router-link to="/Activites#Tournois">
+      <a href @click="goToTournois" class="figure-link">
         <figure>
           <img src="../assets/images/tournois_basketball.png" alt="Tournoi" width="280" height="300">
           <figcaption>Tournois</figcaption>
         </figure>
-      </router-link>
+      </a>
     </div>
     <router-link to="Carte">
     <div class="voircarte">
@@ -170,6 +170,12 @@ export default {
     this.startCarouselTransition();
   },
   methods: {
+    goToBoutique() {
+      this.$router.push({ path: '/Produits', query: { tab: 'Boutique' } });
+    },
+    goToTournois() {
+      this.$router.push({ path: '/Activites', query: { tab: 'Tournois' } });
+    },
     startTextTransition() {
       setInterval(() => {
         this.fadeText = false;
@@ -410,6 +416,38 @@ button:hover {
   box-shadow: black 0px 0px 15px;
 }
 
+.more-button {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  background: linear-gradient(90deg, #ff4500, #ffa500);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.more-button:hover {
+  background: linear-gradient(90deg, #e63e00, #ff9c00);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.more-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+}
+
+.more-button:focus {
+  outline: 2px solid #ff4500; /* Contour rouge vif au focus */
+  outline-offset: 2px;
+}
+
+
 .down-container-mid-part {
   display: flex;
   gap: 20px; /* Espacement horizontal entre les figures */
@@ -631,6 +669,8 @@ figure:hover img {
   margin: 15px;
 }
 
-.down-container-down-part {}
+.down-container-down-part {
+}
+
 
 </style>

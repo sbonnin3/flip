@@ -230,6 +230,21 @@ export default {
       return `${day} ${monthName} à ${dates.heures}h${dates.min.toString().padStart(2, '0')}`;
     },
   },
+  mounted() {
+    // Vérifie si un paramètre `tab` est présent dans l'URL au moment du chargement de la page
+    const selectedTab = this.$route.query.tab;
+    if (selectedTab) {
+      this.selectTab(selectedTab);
+    }
+  },
+  watch: {
+    // Surveille les changements de l'URL pour mettre à jour l'onglet si nécessaire
+    '$route.query.tab'(newTab) {
+      if (newTab) {
+        this.selectTab(newTab);
+      }
+    }
+  },
 };
 </script>
   

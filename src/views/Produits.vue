@@ -90,7 +90,7 @@
       </div>
     </div>
 
-    <div id="Boutique" v-if="selectedTab === 'Boutique'">
+    <div v-if="selectedTab === 'Boutique'">
       <h2 class="page-other_title">JEUX</h2>
       <div class="cards-container" v-if="jeux.length">
         <div v-for="jeu in jeux" :key="jeu._id" class="card" @click="openModalJeu(jeu)">
@@ -157,10 +157,23 @@ export default {
       stands
     };
   },
+  mounted() {
+    // Vérifie si un paramètre `tab` est présent dans l'URL au moment du chargement de la page
+    const selectedTab = this.$route.query.tab;
+    if (selectedTab) {
+      this.selectTab(selectedTab);
+    }
+  },
+  watch: {
+    // Surveille les changements de l'URL pour mettre à jour l'onglet si nécessaire
+    '$route.query.tab'(newTab) {
+      if (newTab) {
+        this.selectTab(newTab);
+      }
+    }
+  },
   methods: {
     ...mapActions(['addArticleOrder']),
-
-
     selectTab(tab) {
       this.selectedTab = tab;
     },
