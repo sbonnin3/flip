@@ -4,4 +4,10 @@ module.exports = defineConfig({
   publicPath: process.env.NODE_ENV === 'production'
     ? '/flip/'
     : '/',
+    productionSourceMap: false,
+    configureWebpack: {
+      performance: {
+        hints: false
+      }
+    },
 })
