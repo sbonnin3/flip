@@ -19,16 +19,62 @@
       </div>
       <p v-else>Aucun restaurants disponible.</p>
 
-      <div class="cart">
-        <h3>Panier</h3>
-        <div v-for="item in cart" :key="item.nom" class="cart-item">
-          <p>{{ item.nom }} - {{ item.prix }}€ x {{ item.quantite }}</p>
+
+      <div class="cart_section">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-lg-10 offset-lg-1">
+              <div class="cart_container">
+                <h1 class="cart_title">Panier</h1>
+                <div class="cart_items">
+                  <ul class="cart_list">
+                    <li v-for="item in cart" :key="item.nom" class="cart_item clearfix">
+                      <div class="cart_item_image">
+                        <img :src="item.image" alt="Image du produit" />
+                      </div>
+                      <div class="cart_item_info d-flex flex-md-row flex-column justify-content-between">
+                        <div class="cart_item_name cart_info_col">
+                          <div class="cart_item_title">Nom</div>
+                          <div class="cart_item_text">{{ item.nom }}</div>
+                        </div>
+                        <div class="cart_item_quantity cart_info_col">
+                          <div class="cart_item_title">Quantité</div>
+                          <div class="cart_item_text">{{ item.quantite }}</div>
+                        </div>
+                        <div class="cart_item_price cart_info_col">
+                          <div class="cart_item_title">Prix</div>
+                          <div class="cart_item_text">{{ item.prix }}€</div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="order_total">
+                  <div class="order_total_content text-md-right">
+                    <div class="order_total_title">Prix total:</div>
+                    <div class="order_total_amount">{{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€</div>
+                  </div>
+                </div>
+                <div class="cart_buttons">
+                  <button class="button cart_button_clear" @click="deleteCommand">Effacer</button>
+                  <button class="button cart_button_checkout" @click="openCommandConfirmation">Commander</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <p>Total : {{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€</p>
-        <button class="reserve-button" @click="openCommandConfirmation">Commander</button>
-        <button class="reserve-button" @click="deleteCommand" style="margin-left: 10px">Effacer</button>
       </div>
-    </div>
+
+      <!--      <div class="cart">
+              <h3>Panier</h3>
+              <div v-for="item in cart" :key="item.nom" class="cart-item">
+                <p>{{ item.nom }} - {{ item.prix }}€ x {{ item.quantite }}</p>
+              </div>
+              <p>Total : {{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€</p>
+              <button class="reserve-button" @click="openCommandConfirmation">Commander</button>
+              <button class="reserve-button" @click="deleteCommand" style="margin-left: 10px">Effacer</button>
+            </div>
+          </div>-->
 
     <div v-if="showConfirmation" class="confirmation-modal">
       <div class="modal-content">
@@ -129,6 +175,7 @@
         <p><strong>Éditeur :</strong> {{ selectedModalJeu.editeur }}</p>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -681,5 +728,204 @@ form input {
 
 form button {
   align-self: flex-start;
+}
+
+/*.cart {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 400px;
+  margin: 20px auto;
+  box-shadow: 0 4px 8px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cart h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #333;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.cart-item p {
+  margin: 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.cart p:last-of-type {
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: right;
+  color: #333;
+}
+
+.reserve-button {
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 1rem;
+}
+
+.reserve-button:hover {
+  background-color: #45a049;
+}
+
+.reserve-button:active {
+  background-color: #45a049;
+}
+
+.reserve-button + .reserve-button {
+  margin-left: 10px;
+}
+
+.reserve-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .cart {
+    padding: 15px;
+  }
+
+  .cart h3 {
+    font-size: 1.3rem;
+  }
+
+  .reserve-button {
+    width: 100%;
+    margin: 10px 0;
+  }
+}*/
+
+.cart_section {
+  width: 100%;
+  padding: 50px 0;
+  background-color: #f9f9f9;
+}
+
+.cart_container {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cart_title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+.cart_list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.cart_item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 15px 0;
+}
+
+.cart_item:last-child {
+  border-bottom: none;
+}
+
+.cart_item_image img {
+  max-width: 100px;
+  border-radius: 5px;
+}
+
+.cart_item_info {
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 15px;
+}
+
+.cart_item_title {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 5px;
+}
+
+.cart_item_text {
+  font-size: 16px;
+  color: #333;
+}
+
+.order_total {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f1f1f1;
+  border-radius: 5px;
+  text-align: right;
+}
+
+.order_total_title {
+  font-size: 16px;
+  color: #555;
+}
+
+.order_total_amount {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.cart_buttons {
+  margin-top: 30px;
+  text-align: right;
+}
+
+.cart_button_clear,
+.cart_button_checkout {
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cart_button_clear {
+  background-color: #f1f1f1;
+  color: #333;
+  margin-right: 10px;
+}
+
+.cart_button_clear:hover {
+  background-color: #b8b8b8;
+}
+
+.cart_button_checkout {
+  background-color: #4CAF50;
+  color: #fff;
+}
+
+.cart_button_checkout:hover {
+  background-color: #45a049;
 }
 </style>
