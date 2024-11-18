@@ -229,6 +229,7 @@ export default {
         this.showConfirmation = false;
         this.commandMessage = "Votre commande a été confirmée !";
       } else {
+        this.showConfirmation = false;
         this.commandMessage = "Erreur : panier vide.";
       }
     },
@@ -237,7 +238,7 @@ export default {
     },
     handleLoginSuccess() {
       this.showLoginModal = false;
-      this.commandMessage = "Connexion réussie. Vous pouvez confirmer votre commande.";
+      this.commandMessage = "Connexion réussie !";
     },
     deleteCommand(){
       this.cart = [];
