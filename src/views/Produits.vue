@@ -82,7 +82,7 @@
       </div>
     </div>
 
-    <div v-if="selectedTab === 'Boutique'">
+    <div id="Boutique" v-if="selectedTab === 'Boutique'">
       <h2 class="page-other_title">JEUX</h2>
       <div class="cards-container" v-if="jeux.length">
         <div v-for="jeu in jeux" :key="jeu._id" class="card" @click="openModalJeu(jeu)">

@@ -61,7 +61,7 @@
         <p v-else>Aucun jeu disponible.</p>
       </div>
   
-      <div v-show="selectedTab === 'Tournois'">
+      <div id="Tournois" v-show="selectedTab === 'Tournois'">
         <div class="cards-container" v-if="tournois.length">
           <div v-for="tournoi in tournois" :key="tournoi._id" class="card" @click="openModal(tournoi)">
             <img :src="tournoi.image" alt="Image du tournoi" class="card-image" />

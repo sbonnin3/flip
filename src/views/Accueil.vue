@@ -51,53 +51,69 @@
     </div>
     <h2 class="down-container-mid-part-title">Les services</h2>
     <div class="down-container-mid-part">
-      <a href="#" class="figure-link">
+        <router-link to="/Produits">
         <figure>
-          <img src="../assets/images/burger.jpg" alt="Restauration" width="265" height="280">
+          <img src="../assets/images/burger.jpg" alt="Restauration" width="280" height="300">
           <figcaption>Restauration</figcaption>
         </figure>
-      </a>
+        </router-link>
 
-      <a href="#" class="figure-link">
+      <router-link to="/Produits">
         <figure>
-          <img src="../assets/images/boutique.jpg" alt="Boutique" width="265" height="280">
+          <img src="../assets/images/boutique.jpg" alt="Restauration" width="280" height="300">
           <figcaption>Boutique</figcaption>
         </figure>
-      </a>
+      </router-link>
 
-      <a href="#" class="figure-link">
+      <router-link to="/Activites">
         <figure style>
-          <img src="../assets/images/flipgamepicture.jpg" alt="Jeu" width="265" height="280">
+          <img src="../assets/images/flipgamepicture.jpg" alt="Jeu" width="280" height="300">
           <figcaption>Jeux</figcaption>
         </figure>
-      </a>
+      </router-link>
 
-      <a href="#" class="figure-link">
+      <router-link to="/Activites#Tournois">
         <figure>
-          <img src="../assets/images/tournois_basketball.png" alt="Tournoi" width="265" height="280">
+          <img src="../assets/images/tournois_basketball.png" alt="Tournoi" width="280" height="300">
           <figcaption>Tournois</figcaption>
         </figure>
-      </a>
+      </router-link>
     </div>
-
-
-
-
+    <router-link to="Carte">
     <div class="voircarte">
       Voir la carte
     </div>
-
-
-
-
-
-
-
+    </router-link>
+      <h2 class="h2-down-container">Nos prestataires</h2>
+    <div class="down-container-down-part">
+<!-- liste prestataires qd y'aura json -->
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <form class="label-input-wrapper">
+      <label for="prestataire">Rechercher un prestataire</label>
+      <input id="prestataire" class="prestatairefiltreinput" type="text" placeholder="Rechercher... (nom)">
+    </form>
+    <br>
+    <div class="checkbox-container">
+    <div class="checkbox-wrapper-2">
+      <label for="restaurationCheckbox">Restaurateur</label>
+      <input type="checkbox" name="restaurationCheckbox" class="sc-gJwTLC ikxBAC">
+    </div>
+    <div class="checkbox-wrapper-2">
+      <label for="vendeurCheckbox">Vendeur</label>
+      <input type="checkbox" name="vendeurCheckbox" class="sc-gJwTLC ikxBAC">
+    </div>
+    <div class="checkbox-wrapper-2">
+      <label for="organisateurCheckbox">Organisateur</label>
+      <input type="checkbox" name="organisateurCheckbox" class="sc-gJwTLC ikxBAC">
+    </div>
+    <div class="checkbox-wrapper-2">
+      <label for="createurCheckbox">Créateur</label>
+      <input type="checkbox" name="createurCheckbox" class="sc-gJwTLC ikxBAC">
+    </div>
+    </div>
+      </div>
+    <br><br><br>
   </div>
-
-
-
-
 </template>
 
 <script>
@@ -350,8 +366,8 @@ button:hover {
 
 .section-title {
   margin-bottom: 15px;
-  color: #e63946;
-  border-bottom: 4px solid #e63946;
+  color: black;
+  border-bottom: 4px solid black;
   padding-top: 5px;
   padding-bottom: 5px;
   font-size: 24px;
@@ -470,7 +486,7 @@ figure:hover img {
   font-size: 18px;
   margin-right: 8px;
   position: relative;
-  top: 2px;
+  top: 0px;
   transition: transform 0.3s ease;
 }
 
@@ -498,7 +514,125 @@ figure:hover img {
   left: 100%;
 }
 
+.h2-down-container {
+  color: black;
+  padding-top: 30px;
+  padding-bottom: 10px;
+  border-bottom: red solid 4px;
+}
 
+.label-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.label-input-wrapper label {
+  font-size: 16px;
+  color: #555;
+}
+
+.prestatairefiltreinput {
+  height: 30px;
+  width: 300px;
+  font-size: 14px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.prestatairefiltreinput:focus {
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+  outline: none;
+}
+
+
+.prestatairefiltre > label {
+  padding: 20px;
+}
+
+ .checkbox-wrapper-2 .ikxBAC {
+   appearance: none;
+   background-color: #dfe1e4;
+   border-radius: 72px;
+   border-style: none;
+   flex-shrink: 0;
+   height: 20px;
+   margin: 0;
+   position: relative;
+   width: 30px;
+   top: 3px;
+   margin-left: 5px;
+ }
+
+.checkbox-wrapper-2 .ikxBAC::before {
+  bottom: -6px;
+  content: "";
+  left: -6px;
+  position: absolute;
+  right: -6px;
+  top: -6px;
+}
+
+.checkbox-wrapper-2 .ikxBAC,
+.checkbox-wrapper-2 .ikxBAC::after {
+  transition: all 100ms ease-out;
+}
+
+.checkbox-wrapper-2 .ikxBAC::after {
+  background-color: #fff;
+  border-radius: 50%;
+  content: "";
+  height: 14px;
+  left: 3px;
+  position: absolute;
+  top: 3px;
+  width: 14px;
+}
+
+.checkbox-wrapper-2 input[type=checkbox] {
+  cursor: default;
+}
+
+.checkbox-wrapper-2 .ikxBAC:hover {
+  background-color: #c9cbcd;
+  transition-duration: 0s;
+}
+
+.checkbox-wrapper-2 .ikxBAC:checked {
+  background-color: #6e79d6;
+}
+
+.checkbox-wrapper-2 .ikxBAC:checked::after {
+  background-color: #fff;
+  left: 13px;
+}
+
+.checkbox-wrapper-2 :focus:not(.focus-visible) {
+  outline: 0;
+}
+
+.checkbox-wrapper-2 .ikxBAC:checked:hover {
+  background-color: #535db3;
+}
+
+.checkbox-container {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+}
+
+.checkbox-wrapper-2 {
+  margin: 15px;
+}
+
+.down-container-down-part {
+}
 
 
 </style>
