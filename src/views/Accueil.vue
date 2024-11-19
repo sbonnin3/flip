@@ -28,14 +28,14 @@
       <div class="section-one">
         <h2 class="section-title">De multiples jeux et activités</h2>
         <div class="section-content">
-          <p class="section-text">Jeu de <strong>société</strong>, jeu de <strong>cartes</strong>, jeux <strong>vidéos</strong> (zones dédiées aux <strong>nouvelles technologies</strong> de jeu), jeux <strong>traditionnels</strong>, jeux en <strong>bois</strong>, jeux de <strong>rôles</strong>...</p>
+          <p class="section-text">Jeux de <strong>société</strong>, jeux de <strong>cartes</strong>, jeux <strong>vidéo</strong>, jeux <strong>traditionnels</strong>, jeux en <strong>bois</strong>, jeux de <strong>rôles</strong>, (zones dédiées aux <strong>nouvelles technologies</strong> de jeu)...</p>
         </div>
         <img src="../assets/images/flipgamepicture.jpg" alt="Description de l'image" class="section-image">
       </div>
       <div class="section-two">
         <h2 class="section-title">Boutique et souvenirs</h2>
         <div class="section-content">
-          <p class="section-text">Le FLIP propose souvent des souvenirs tels que des jeux <strong>exclusifs</strong>, des <strong>tee-shirts</strong>, des <strong>affiches</strong>, et des <strong>goodies</strong>. Des <strong>boutiques</strong> sont également disponibles</p>
+          <p class="section-text">Le FLIP propose des souvenirs tels que des jeux <strong>exclusifs</strong>, des <strong>tee-shirts</strong>, des <strong>affiches</strong>, et des <strong>goodies</strong>. Des <strong>boutiques</strong> sont également disponibles</p>
         </div>
         <img src="../assets/images/flipshoppicture.jpg" alt="Description de l'image" class="section-image">
       </div>
@@ -49,7 +49,7 @@
     </div>
     <div class="down-container-up-part">
     </div>
-    <h2 class="down-container-mid-part-title">Les services</h2>
+    <h1 class="down-container-mid-part-title">Les services</h1>
     <div class="down-container-mid-part">
         <router-link to="/Produits">
         <figure>
@@ -157,7 +157,7 @@ export default {
           image: require("../assets/images/imagefestival_2.png"),
         },
         {
-          title: "Présent tous les ans sans exception",
+          title: "Un rendez-vous annuel incontournable",
           subtitle: "Du 9 au 20 juillet 2025",
           description: "Le tout gratuit",
           image: require("../assets/images/imagefestival_3.png"),
@@ -184,7 +184,7 @@ export default {
           this.currentIndex = (this.currentIndex + 1) % this.slides.length;
           this.fadeText = true;
         }, 1000);
-      }, 4000);
+      }, 6000);
     },
     startCarouselTransition() {
       setInterval(() => {
@@ -194,7 +194,7 @@ export default {
           this.currentCarouselIndex = (this.currentCarouselIndex + 1) % this.carouselSlides.length;
           this.fadeImage = true;
         }, 1000);
-      }, 4000);
+      }, 6000);
     },
   },
   computed: {
@@ -211,7 +211,10 @@ export default {
 </script>
 
 <style scoped>
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+
 
 .accueilpage {
   display: flex;
@@ -342,7 +345,6 @@ button:hover {
 }
 
 .midh1 {
-  border-bottom: red solid 4px;
   color: black;
   padding-top: 30px;
   padding-bottom: 10px;
@@ -373,7 +375,6 @@ button:hover {
 .section-title {
   margin-bottom: 15px;
   color: black;
-  border-bottom: 4px solid black;
   padding-top: 5px;
   padding-bottom: 5px;
   font-size: 24px;
@@ -403,7 +404,6 @@ button:hover {
   color: black;
   padding-top: 30px;
   padding-bottom: 10px;
-  border-bottom: red solid 4px;
 }
 
 .down-container-up-part {
@@ -499,8 +499,7 @@ figure:hover img {
 
 .down-container-mid-part-title {
   text-align: center;
-  border-bottom: red solid 4px;
-  margin-top: 35px;
+  margin-top: 100px;
   color: black;
 }
 
@@ -556,7 +555,6 @@ figure:hover img {
   color: black;
   padding-top: 30px;
   padding-bottom: 10px;
-  border-bottom: red solid 4px;
 }
 
 .label-input-wrapper {

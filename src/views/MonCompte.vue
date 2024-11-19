@@ -1,6 +1,6 @@
 <template>
   <div class="pagecompte">
-    <div class="mon-compte-page">
+    <div class="mon-compte-page form-box">
       <h2>Mon Compte</h2>
       <div v-if="userSession" class="user-details">
         <p><strong>Nom :</strong> {{ userSession.nom }}</p>
@@ -37,28 +37,72 @@ export default {
 </script>
 
 <style scoped>
+/* Reprise des styles de la page d'inscription */
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
 .pagecompte {
-  padding-top: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  background: url("../assets/images/backgroundaccueil_3.jpg") no-repeat;
+  background-position: center;
+  background-size: cover;
 }
 
 .mon-compte-page {
-  max-width: 500px;
-  margin: 50px auto;
+  position: relative;
+  width: 400px;
+  min-height: 500px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
   padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  color: white; /* Texte blanc */
+}
+
+h2 {
+  font-size: 2em;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.user-details p {
+  margin: 10px 0;
+  font-size: 1em;
 }
 
 button {
-  background-color: #f04e23;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 4px;
+  width: 100%;
+  height: 40px;
+  border-radius: 40px;
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 1em;
+  font-weight: 600;
   cursor: pointer;
+  margin-top: 10px;
 }
 
 button:hover {
-  background-color: #d83d1a;
+  background: rgba(255, 255, 255, 0.2);
 }
+
+div p {
+  font-size: 1em;
+  color: white;
+}
+
 </style>

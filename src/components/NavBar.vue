@@ -79,7 +79,7 @@ export default {
   },
   methods: {
     checkIfOnHomePage() {
-      this.isOnHomePage = this.$route.path === "/Accueil";
+      this.isOnHomePage = this.$route.path === "/Accueil" || this.$route.path === "/Connexion" || this.$route.path === "/MonCompte";
       this.isScrolled = !this.isOnHomePage;
     },
     handleScroll() {

@@ -1,6 +1,6 @@
 <template>
   <div v-if="visible" class="modal-overlay">
-    <div class="modal-container">
+    <div class="modal-container form-box">
       <button class="close-button" @click="closeModal">✖</button>
       <div class="auth-container">
         <div class="auth-toggle">
@@ -11,39 +11,39 @@
         <div v-if="isLogin">
           <h2>Connexion</h2>
           <form @submit.prevent="login">
-            <div>
+            <div class="inputbox">
               <label for="identifiant">Identifiant:</label>
-              <input v-model="identifiant" type="text" id="identifiant" required />
+              <input v-model="identifiant" type="text" id="identifiant" required/>
             </div>
-            <div>
+            <div class="inputbox">
               <label for="motDePasse">Mot de Passe:</label>
-              <input v-model="motDePasse" type="password" id="motDePasse" required />
+              <input v-model="motDePasse" type="password" id="motDePasse" required/>
             </div>
             <button type="submit">Se connecter</button>
-            <p v-if="errorMessage">{{ errorMessage }}</p>
+            <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
         </div>
 
         <div v-else>
           <h2>Inscription</h2>
           <form @submit.prevent="register">
-            <div>
+            <div class="inputbox">
               <label for="nom">Nom:</label>
-              <input v-model="nom" type="text" id="nom" required />
+              <input v-model="nom" type="text" id="nom" required/>
             </div>
-            <div>
+            <div class="inputbox">
               <label for="prenom">Prénom:</label>
-              <input v-model="prenom" type="text" id="prenom" required />
+              <input v-model="prenom" type="text" id="prenom" required/>
             </div>
-            <div>
+            <div class="inputbox">
               <label for="identifiant">Identifiant:</label>
-              <input v-model="identifiant" type="text" id="identifiant" required />
+              <input v-model="identifiant" type="text" id="identifiant" required/>
             </div>
-            <div>
+            <div class="inputbox">
               <label for="motDePasse">Mot de Passe:</label>
-              <input v-model="motDePasse" type="password" id="motDePasse" required />
+              <input v-model="motDePasse" type="password" id="motDePasse" required/>
             </div>
-            <div>
+            <div class="inputbox">
               <label for="role">Rôle:</label>
               <select v-model="role" id="role">
                 <option value="utilisateur">Utilisateur</option>
@@ -55,7 +55,7 @@
               </select>
             </div>
             <button type="submit">S'inscrire</button>
-            <p v-if="errorMessage">{{ errorMessage }}</p>
+            <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
         </div>
       </div>
@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import {mapActions} from "vuex";
 
 export default {
   name: "ConnexionModal",
@@ -155,12 +155,14 @@ export default {
 }
 
 .modal-container {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 400px;
   position: relative;
+  width: 400px;
+  min-height: 500px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  padding: 20px;
 }
 
 .close-button {
@@ -170,55 +172,78 @@ export default {
   background: transparent;
   border: none;
   font-size: 20px;
+  color: white;
   cursor: pointer;
 }
 
-.auth-container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.close-button:hover {
+  color: #ff5555;
 }
 
-.auth-toggle {
-  display: flex;
-  justify-content: space-around;
+h2 {
+  font-size: 2em;
+  color: #fff;
+  text-align: center;
   margin-bottom: 20px;
 }
 
-.auth-toggle button {
-  padding: 10px 20px;
-  cursor: pointer;
-  background-color: #ddd;
+.inputbox {
+  position: relative;
+  margin: 20px 0;
+  width: 100%;
+  border-bottom: 2px solid #fff;
+}
+
+.inputbox label {
+  position: absolute;
+  top: 0;
+  left: 5px;
+  color: #ffffff;
+  font-size: 1em;
+  pointer-events: none;
+  transition: 0.3s;
+}
+
+.inputbox input:focus ~ label,
+.inputbox input:valid ~ label {
+  top: -20px;
+  font-size: 0.8em;
+  color: #fff;
+}
+
+.inputbox input,
+.inputbox select {
+  width: 100%;
+  height: 50px;
+  background: transparent;
   border: none;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.auth-toggle button.active {
-  background-color: #4CAF50;
-  color: white;
-}
-
-form div {
-  margin-bottom: 10px;
+  outline: none;
+  font-size: 1em;
+  padding: 0 35px 0 5px;
+  color: #fff;
 }
 
 button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px;
+  width: 100%;
+  height: 40px;
+  border-radius: 40px;
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 1em;
+  font-weight: 600;
   cursor: pointer;
+  margin-top: 10px;
 }
 
 button:hover {
-  background-color: #45a049;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 p {
   color: red;
+  font-size: 0.9em;
+  text-align: center;
+  margin-top: 10px;
 }
 </style>
