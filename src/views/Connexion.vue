@@ -10,7 +10,7 @@
 
         <!-- Login Form -->
         <div v-if="isLogin">
-          <h2>Login</h2>
+          <h2>Se connecter</h2>
           <form @submit.prevent="login">
             <div class="inputbox">
               <ion-icon name="mail-outline"></ion-icon>
@@ -20,7 +20,7 @@
             <div class="inputbox">
               <ion-icon name="lock-closed-outline"></ion-icon>
               <input v-model="motDePasse" type="password" required />
-              <label for="motDePasse">Password</label>
+              <label for="motDePasse">Mot de passe</label>
             </div>
             <div class="forget">
               <label>
@@ -57,7 +57,7 @@
             <div class="inputbox">
               <ion-icon name="lock-closed-outline"></ion-icon>
               <input v-model="motDePasse" type="password" required />
-              <label for="motDePasse">Password</label>
+              <label for="motDePasse">Mot de passe</label>
             </div>
             <div class="inputbox">
               <select v-model="role" id="role">
@@ -69,19 +69,20 @@
                 <option value="administrateur">Administrateur</option>
               </select>
             </div>
-            <button type="submit">Register</button>
+            <button type="submit">S'inscrire</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
         </div>
 
         <!-- Register Link for Login Form -->
         <div v-if="isLogin" class="register">
-          <p>Don't have an account? <a href="#" @click="toggleForm('signup')">Register</a></p>
+          <p>Pas de compte ? <a href="#" @click="toggleForm('signup')">S'inscrire</a></p>
         </div>
 
         <!-- Register Link for Signup Form -->
+
         <div v-else class="register">
-          <p>Already have an account? <a href="#" @click="toggleForm('login')">Login</a></p>
+          <p>Déja un compte ? <a href="#" @click="toggleForm('login')">Se connecter</a></p>
         </div>
       </div>
     </div>
@@ -283,7 +284,8 @@ button {
   font-size: 1em;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 button:hover {

@@ -93,7 +93,8 @@ button {
   font-size: 1em;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 button:hover {

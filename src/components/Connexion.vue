@@ -166,14 +166,13 @@ export default {
 }
 
 .close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: relative;
   background: transparent;
   border: none;
   font-size: 20px;
   color: white;
   cursor: pointer;
+  margin: 0;
 }
 
 .close-button:hover {
@@ -220,7 +219,15 @@ h2 {
   outline: none;
   font-size: 1em;
   padding: 0 35px 0 5px;
-  color: #fff;
+  color: white;
+}
+
+.inputbox option {
+  color: black;
+}
+
+.inputbox select {
+  margin-top: 10px;
 }
 
 button {
@@ -233,7 +240,8 @@ button {
   font-size: 1em;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 button:hover {
@@ -245,5 +253,29 @@ p {
   font-size: 0.9em;
   text-align: center;
   margin-top: 10px;
+}
+
+.auth-container {
+  max-height: 600px; /* Hauteur maximale pour éviter que le contenu déborde */
+  overflow-x: hidden;  /* Active la barre de défilement verticale si nécessaire */
+  overflow-y: auto;
+  padding-right: 10px; /* Ajout d'un espace pour éviter que la barre de défilement ne masque le contenu */
+}
+
+.auth-container::-webkit-scrollbar {
+  width: 8px; /* Largeur de la barre de défilement */
+}
+
+.auth-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5); /* Couleur de la barre */
+  border-radius: 10px; /* Pour un style arrondi */
+}
+
+.auth-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.8); /* Couleur de la barre au survol */
+}
+
+.auth-container::-webkit-scrollbar-track {
+  background: transparent; /* Fond transparent pour le track */
 }
 </style>
