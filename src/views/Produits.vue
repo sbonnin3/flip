@@ -135,6 +135,7 @@
         </div>
       </div>
     </div>
+    </div>
 
     <div v-if="selectedTab === 'Boutique'">
       <h2 class="page-other_title">JEUX</h2>
@@ -175,7 +176,6 @@
         <p><strong>Éditeur :</strong> {{ selectedModalJeu.editeur }}</p>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
