@@ -57,7 +57,7 @@
                   </div>
                 </div>
                 <div class="cart_buttons">
-                  <button class="button cart_button_clear" @click="deleteCommand">Effacer</button>
+                  <button class="button cart_button_clear" @click="deleteCommand">Supprimer</button>
                   <button class="button cart_button_checkout" @click="openCommandConfirmation">Commander</button>
                 </div>
               </div>
@@ -920,12 +920,13 @@ form button {
 }
 
 .cart_button_clear {
-  background-color: #f1f1f1;
-  color: #333;
+  background-color: #f64242;
+  color: #ffffff;
 }
 
 .cart_button_clear:hover {
-  background-color: #b8b8b8;
+  background-color: #fa0000;
+  color: white;
 }
 
 .cart_button_checkout {
