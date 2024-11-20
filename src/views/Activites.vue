@@ -119,21 +119,31 @@
         <p>{{ reservationMessage }}</p>
         <button @click="closeReservationMessage">OK</button>
       </div>
+
+      <ConnexionModal
+          v-if="showLoginModal"
+          :visible="showLoginModal"
+          @close="closeLoginModal"
+          @login-success="handleLoginSuccess"
+      />
     </div>
   </div>
   </template>
   
 <script>
 import { reservations, tournois, jeux } from '@/datasource/data';
+import ConnexionModal from "@/components/Connexion.vue";
 
 export default {
   name: 'PageActivites',
+  components: {ConnexionModal},
   data() {
     return {
       selectedTab: 'Jeux',
       selectedJeu: null,
       selectedTournoi: null,
       showConfirmation: false,
+      showLoginModal: false,
       reservationMessage: '',
       reservations,
       tournois,
@@ -208,11 +218,18 @@ export default {
           });
           this.reservationMessage = 'Votre réservation a été confirmée !';
         } else {
-          this.reservationMessage = "Erreur : aucun utilisateur connecté.";
+          this.showLoginModal = true;
         }
       } else {
         this.reservationMessage = 'Désolé, il ne reste plus de places disponibles.';
       }
+    },
+    closeLoginModal() {
+      this.showLoginModal = false;
+    },
+    handleLoginSuccess() {
+      this.showLoginModal = false;
+      this.commandMessage = "Connexion réussie !";
     },
     closeReservationMessage() {
       this.reservationMessage = '';

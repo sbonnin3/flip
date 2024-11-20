@@ -3,13 +3,13 @@
     <h1 class="page-title">Produits</h1>
 
     <div class="tab-container">
-      <button @click="selectTab('Restauration')"
-              :class="{ active: selectedTab === 'Restauration' }">Restauration</button>
-      <button @click="selectTab('Boutique')" :class="{ active: selectedTab === 'Boutique' }">Boutique</button>
+      <button :class="{ active: selectedTab === 'Restauration' }"
+              @click="selectTab('Restauration')">Restauration</button>
+      <button :class="{ active: selectedTab === 'Boutique' }" @click="selectTab('Boutique')">Boutique</button>
     </div>
 
     <div v-show="selectedTab === 'Restauration'">
-      <div class="cards-container" v-if="stands.length">
+      <div v-if="stands.length" class="cards-container">
         <div v-for="restaurant in stands.filter(stand => stand.type === 'restaurants')" :key="restaurant.idRestau" class="card" @click="openModalRestau(restaurant)">
           <img :src="restaurant.image" alt="Image du restaurant" class="card-image" />
           <div class="card-content">
@@ -81,8 +81,8 @@
         <span class="close-button" @click="closeConfirmation">&times;</span>
         <h2>Confirmer la commande</h2>
         <p>Voulez-vous vraiment confirmer la commande du panier ?</p>
-        <button @click="confirmReservation" class="confirm-button">Confirmer</button>
-        <button @click="closeConfirmation" class="cancel-button">Annuler</button>
+        <button class="confirm-button" @click="confirmReservation">Confirmer</button>
+        <button class="cancel-button" @click="closeConfirmation">Annuler</button>
       </div>
     </div>
 
@@ -93,13 +93,13 @@
       </div>
     </div>
 
-    <!-- Modale de connexion -->
-    <ConnexionModal
-        v-if="showLoginModal"
-        :visible="showLoginModal"
-        @close="closeLoginModal"
-        @login-success="handleLoginSuccess"
-    />
+      <!-- Modale de connexion -->
+      <ConnexionModal
+          v-if="showLoginModal"
+          :visible="showLoginModal"
+          @close="closeLoginModal"
+          @login-success="handleLoginSuccess"
+      />
 
     <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
       <div class="modal-content">
@@ -111,7 +111,7 @@
           <p><strong>Nourritures :</strong></p>
           <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
             <div v-for="nourriture in stand.nourritures" :key="nourriture.nom" class="article-button">
-              <button @click="addToCart(nourriture)" class="article-button-content">
+              <button class="article-button-content" @click="addToCart(nourriture)">
                 <img :src="nourriture.image" alt="Image de l'article" class="article-image" />
                 {{ nourriture.nom }} - {{ nourriture.prix }}€
               </button>
@@ -120,7 +120,7 @@
           <p><strong>Boissons :</strong></p>
           <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
             <div v-for="boisson in stand.boissons" :key="boisson.nom" class="article-button">
-              <button @click="addToCart(boisson)" class="article-button-content">
+              <button class="article-button-content" @click="addToCart(boisson)">
                 <img :src="boisson.image" alt="Image de l'article" class="article-image">
                 {{ boisson.nom }} - {{ boisson.prix }}€
               </button>
@@ -139,7 +139,7 @@
 
     <div v-if="selectedTab === 'Boutique'">
       <h2 class="page-other_title">JEUX</h2>
-      <div class="cards-container" v-if="jeux.length">
+      <div v-if="jeux.length" class="cards-container">
         <div v-for="jeu in jeux" :key="jeu._id" class="card" @click="openModalJeu(jeu)">
           <img :src="jeu.image" alt="Image du jeu" class="card-image" />
           <div class="card-content">
@@ -152,7 +152,7 @@
       <p v-else>Aucun jeux disponible.</p>
 
       <h2 class="page-other_title">SOUVENIRS</h2>
-      <div class="cards-container" v-if="souvenirs.length">
+      <div v-if="souvenirs.length" class="cards-container">
         <div v-for="souvenir in souvenirs" :key="souvenir._id" class="card">
           <img :src="souvenir.image" alt="Image du souvenir" class="card-image" />
           <div class="card-content">
@@ -284,7 +284,6 @@ export default {
       this.showLoginModal = false;
     },
     handleLoginSuccess() {
-      this.showLoginModal = false;
       this.commandMessage = "Connexion réussie !";
     },
     deleteCommand(){
@@ -860,7 +859,7 @@ form button {
 .cart_item_info {
   display: flex;
   flex: 1;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   padding-left: 15px;
 }
