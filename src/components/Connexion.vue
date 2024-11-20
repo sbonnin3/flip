@@ -12,12 +12,12 @@
           <h2>Connexion</h2>
           <form @submit.prevent="login">
             <div class="inputbox">
-              <label for="identifiant">Identifiant:</label>
               <input v-model="identifiant" type="text" id="identifiant" required/>
+              <label for="identifiant">Identifiant:</label>
             </div>
             <div class="inputbox">
-              <label for="motDePasse">Mot de Passe:</label>
               <input v-model="motDePasse" type="password" id="motDePasse" required/>
+              <label for="motDePasse">Mot de Passe:</label>
             </div>
             <button type="submit">Se connecter</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -28,20 +28,20 @@
           <h2>Inscription</h2>
           <form @submit.prevent="register">
             <div class="inputbox">
-              <label for="nom">Nom:</label>
               <input v-model="nom" type="text" id="nom" required/>
+              <label for="nom">Nom:</label>
             </div>
             <div class="inputbox">
-              <label for="prenom">Prénom:</label>
               <input v-model="prenom" type="text" id="prenom" required/>
+              <label for="prenom">Prénom:</label>
             </div>
             <div class="inputbox">
-              <label for="identifiant">Identifiant:</label>
               <input v-model="identifiant" type="text" id="identifiant" required/>
+              <label for="identifiant">Identifiant:</label>
             </div>
             <div class="inputbox">
-              <label for="motDePasse">Mot de Passe:</label>
               <input v-model="motDePasse" type="password" id="motDePasse" required/>
+              <label for="motDePasse">Mot de Passe:</label>
             </div>
             <div class="inputbox">
               <label for="role">Rôle:</label>
@@ -205,9 +205,9 @@ h2 {
 
 .inputbox input:focus ~ label,
 .inputbox input:valid ~ label {
-  top: -20px;
+  top: -10px;
   font-size: 0.8em;
-  color: #fff;
+  color: white;
 }
 
 .inputbox input,
