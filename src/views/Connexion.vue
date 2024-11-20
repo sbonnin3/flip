@@ -30,7 +30,7 @@
 <!--                <a href="#">Forgot password?</a>-->
               </label>
             </div>
-            <button type="submit">Log in</button>
+            <button type="submit">Se connecter</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
         </div>
@@ -167,7 +167,7 @@ section {
   align-items: center;
   min-height: 100vh;
   width: 100%;
-  background: url("../assets/images/backgroundaccueil_3.jpg") no-repeat;
+  background: url("../assets/images/backgroundconnexion.jpg") no-repeat;
   background-position: center;
   background-size: cover;
 }
