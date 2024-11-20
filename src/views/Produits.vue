@@ -28,31 +28,32 @@
                 <h1 class="cart_title">Panier</h1>
                 <div class="cart_items">
                   <ul class="cart_list">
-                    <li v-for="item in cart" :key="item.nom" class="cart_item clearfix">
+                    <li v-for="item in cart" :key="item.nom" class="cart_item">
                       <div class="cart_item_image">
                         <img :src="item.image" alt="Image du produit" />
                       </div>
-                      <div class="cart_item_info d-flex flex-md-row flex-column justify-content-between">
-                        <div class="cart_item_name cart_info_col">
-                          <div class="cart_item_title">Nom</div>
-                          <div class="cart_item_text">{{ item.nom }}</div>
-                        </div>
-                        <div class="cart_item_quantity cart_info_col">
-                          <div class="cart_item_title">Quantité</div>
-                          <div class="cart_item_text">{{ item.quantite }}</div>
-                        </div>
-                        <div class="cart_item_price cart_info_col">
-                          <div class="cart_item_title">Prix</div>
-                          <div class="cart_item_text">{{ item.prix }}€</div>
-                        </div>
+                      <div class="cart_item_info">
+                        <div class="cart_item_title">Nom</div>
+                        <div class="cart_item_text">{{ item.nom }}</div>
+                      </div>
+                      <div class="cart_item_quantity">
+                        <div class="cart_item_title">Quantité</div>
+                        <div class="cart_item_text">{{ item.quantite }}</div>
+                      </div>
+                      <div class="cart_item_price">
+                        <div class="cart_item_title">Prix</div>
+                        <div class="cart_item_text">{{ item.prix }}€</div>
+                      </div>
+                      <div class="cart_button_clear_logo" @click="deleteArticle(item)">
+                        <img src="../assets/icons/bin.png" alt="logo poubelle" width="35px" height="35px" />
                       </div>
                     </li>
                   </ul>
                 </div>
                 <div class="order_total">
                   <div class="order_total_content text-md-right">
-                    <div class="order_total_title">Prix total:</div>
-                    <div class="order_total_amount">{{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€</div>
+                    <div class="order_total_title">Prix total: {{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€ </div>
+                    <!-- div class="order_total_amount"></div-->
                   </div>
                 </div>
                 <div class="cart_buttons">
@@ -314,6 +315,20 @@ export default {
       console.log('Ajouté au panier :', article);
       console.log('Panier actuel :', this.cart);
     },
+
+    deleteArticle(article) {
+      const itemInCartToDelete = this.cart.find(item => item.nom === article.nom);
+
+      if (itemInCartToDelete) {
+        itemInCartToDelete.quantite -= 1;
+
+        if (itemInCartToDelete.quantite <= 0) {
+          // Supprimer l'article du panier si la quantité atteint 0
+          this.cart = this.cart.filter(item => item.nom !== article.nom);
+          this.commandMessage = 'Article retiré du panier.'
+        }
+      }
+    }
   },
 };
 </script>
@@ -811,28 +826,6 @@ form button {
   }
 }*/
 
-.cart_section {
-  width: 100%;
-  padding: 50px 0;
-  background-color: #f9f9f9;
-}
-
-.cart_container {
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 10px;
-  padding: 30px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.cart_title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  text-align: center;
-  color: #333;
-}
-
 .cart_list {
   padding: 0;
   margin: 0;
@@ -840,63 +833,80 @@ form button {
 }
 
 .cart_item {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 35em 13em 13em 13em 30em; /* Réduit les largeurs des colonnes */
+  gap: 5px; /* Réduit davantage l'espacement entre les colonnes */
   align-items: center;
   border-bottom: 1px solid #e8e8e8;
-  padding: 15px 0;
-}
-
-.cart_item:last-child {
-  border-bottom: none;
+  padding: 8px 0; /* Réduit l'espace vertical */
 }
 
 .cart_item_image img {
-  max-width: 100px;
+  width: 70px; /* Réduit la taille de l'image pour gagner de l'espace */
+  height: auto;
   border-radius: 5px;
 }
 
 .cart_item_info {
   display: flex;
-  flex: 1;
-  justify-content: space-around;
-  align-items: center;
-  padding-left: 15px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px; /* Réduit l'espacement entre les lignes d'informations */
 }
 
 .cart_item_title {
-  font-size: 14px;
+  font-size: 18px; /* Taille réduite pour compacter */
   color: #888;
-  margin-bottom: 5px;
 }
 
 .cart_item_text {
-  font-size: 16px;
+  font-size: 20px; /* Taille ajustée pour plus de compacité */
   color: #333;
+  white-space: nowrap; /* Empêche les débordements */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+.cart_item_quantity,
+.cart_item_price {
+  text-align: center;
+  font-size: 14px; /* Taille légèrement réduite */
+  padding: 0; /* Supprime tout espace interne */
+  margin: 0; /* Supprime tout espace externe */
+}
+
+
 
 .order_total {
   margin-top: 20px;
-  padding: 15px;
+  padding: 10px 15px;
   background: #f1f1f1;
   border-radius: 5px;
-  text-align: right;
+  display: flex; /* Aligne les éléments sur une ligne */
+  justify-content: center; /* Centre les éléments horizontalement */
+  align-items: center; /* Centre verticalement */
+  gap: 10px; /* Espacement entre les éléments */
 }
 
-.order_total_title {
-  font-size: 16px;
-  color: #555;
-}
-
+.order_total_title,
 .order_total_amount {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
   color: #333;
 }
 
 .cart_buttons {
-  margin-top: 30px;
+  margin-top: 20px;
   text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px; /* Espacement entre les boutons */
+  padding: 15px; /* Ajoute un espace autour des boutons */
+}
+
+.cart_button_clear_logo {
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .cart_button_clear,
@@ -912,7 +922,6 @@ form button {
 .cart_button_clear {
   background-color: #f1f1f1;
   color: #333;
-  margin-right: 10px;
 }
 
 .cart_button_clear:hover {
@@ -927,4 +936,7 @@ form button {
 .cart_button_checkout:hover {
   background-color: #45a049;
 }
+
+
+
 </style>
