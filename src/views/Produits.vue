@@ -102,6 +102,13 @@
           @login-success="handleLoginSuccess"
       />
 
+      <PaymentModal
+          v-if="showPaymentModal"
+          :visible="showPaymentModal"
+          @close="closePaymentModal"
+          @payment-success="handlePaymentSuccess"
+      />
+
     <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
       <div class="modal-content">
         <span class="close-button" @click="closeModalRestau">&times;</span>
@@ -185,10 +192,11 @@
 import { jeux, souvenirs, stands } from '@/datasource/data';
 import { mapActions } from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
+import PaymentModal from "@/components/PaymentForm.vue";
 
 export default {
   name: "PagePrestataires",
-  components: {ConnexionModal},
+  components: {PaymentModal, ConnexionModal},
   data() {
     return {
       selectedTab: "Restauration",
@@ -198,6 +206,7 @@ export default {
       orders: [],
       showConfirmation: false,
       showLoginModal: false,
+      showPaymentModal: false,
       commandMessage: '',
       cardCommandMessage: '',
       jeux,
@@ -264,18 +273,17 @@ export default {
           return acc;
         }, {});
 
+        this.showPaymentModal = true;
+
         // Ajouter les commandes
         Object.values(ordersByRestaurant).forEach((restaurantOrder) => {
           this.addArticleOrder({
             ...restaurantOrder,
             status: "Confirmée",
           });
-        });
-
+        })
         // Vider le panier et masquer la confirmation
-        this.cart = [];
         this.showConfirmation = false;
-        this.commandMessage = "Votre commande a été confirmée !";
       } else {
         this.showConfirmation = false;
         this.commandMessage = "Erreur : panier vide.";
@@ -287,6 +295,10 @@ export default {
     handleLoginSuccess() {
       this.commandMessage = "Connexion réussie !";
     },
+    handlePaymentSuccess(){
+      this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
+      this.cart = [];
+    },
     deleteCommand(){
       this.cart = [];
       this.commandMessage = 'Votre commande a été effacée !'
@@ -297,6 +309,9 @@ export default {
     },
     closeCardCommandMessage() {
       this.cardCommandMessage = '';
+    },
+    closePaymentModal(){
+      this.showPaymentModal = false;
     },
     addToCart(article) {
       // Vérifier si l'article est déjà dans le panier
