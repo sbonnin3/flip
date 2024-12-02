@@ -3,23 +3,68 @@
     <div class="modal-container form-box">
       <button class="close-button" @click="closePaymentModal">✖</button>
       <div class="auth-container">
-          <h2>Paiement</h2>
-          <form @submit.prevent="processPayment">
+        <h2>Paiement</h2>
+        <form @submit.prevent="processPayment">
+
+          <label for="paymentType">Bienvenue sur la fenêtre de paiement en ligne. Veuillez sélectionner votre moyen de paiement ci-dessous :</label>
+
+          <div class="selectedCard">
+            <div
+                class="selected-option"
+                @click="toggleDropdown"
+            >
+              {{ selected || "Choisir une option" }}
+            </div>
+            <ul
+                v-if="dropdownOpen"
+                class="options"
+            >
+              <li
+                  v-for="option in options"
+                  :key="option"
+                  @click="selectOption(option)"
+              >
+                {{ option }}
+              </li>
+            </ul>
+          </div>
+
+          <div v-if="selected === 'Carte Bancaire'">
             <div class="inputbox">
-              <input v-model="cardNumber" type="text" placeholder="1234 5678 9012 3456" id="cardNumber" required/>
+              <input v-model="paymentDetails.cardNumber" type="tel" placeholder="xxxx xxxx xxxx xxxx" pattern="\d*"
+                     maxlength="19"
+                     id="cardNumber" required/>
               <label for="cardNumber">Numéro de carte :</label>
             </div>
             <div class="inputbox">
-              <input v-model="expirationDate" type="text" placeholder="MM/AA" id="expirationDate" required/>
+              <input v-model="paymentDetails.expirationDate" type="tel" placeholder="MM/AA" pattern="\d*" maxlength="7"
+                     id="expirationDate" required/>
               <label for="expirationDate">Date d'expiration :</label>
             </div>
             <div class="inputbox">
-              <input v-model="cvv" type="text" placeholder="123" id="cvv" required/>
-              <label for="cvv">CVV :</label>
+              <input v-model="paymentDetails.cvv" type="tel" placeholder="123" pattern="\d*" maxlength="4"
+                     id="cvv" required/>
+              <label for="cvv">CVC :</label>
             </div>
-            <button type="submit">Payer</button>
-            <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-          </form>
+            <div class="inputbox">
+              <input v-model="paymentDetails.cardName" type="text" placeholder="PRENOM NOM"
+                     id="cardName" required/>
+              <label for="cardName">Propiétaire de la carte :</label>
+            </div>
+          </div>
+
+          <div v-if="selected === 'PayPal'">
+            <div class="inputbox">
+              <input v-model="paymentDetails.paypalEmail" type="email" placeholder="paypal@gmail.com"
+                     id="paypalEmail" required/>
+              <label for="paypalEmail">Email :</label>
+            </div>
+          </div>
+
+          <button type="submit">Payer</button>
+          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        </form>
+
       </div>
     </div>
   </div>
@@ -36,22 +81,39 @@ export default {
   },
   data() {
     return {
-      cardNumber: '',
-      expirationDate: '',
-      cvv: '',
+      options: ["Carte Bancaire", "PayPal"],
+      selected: "",
+      dropdownOpen: false,
+      paymentDetails: {
+        cardNumber: '',
+        expirationDate: '',
+        cvv: '',
+        cardName: '',
+        paypalEmail: '',
+      },
       errorMessage: null,
     };
   },
   methods: {
+    toggleDropdown() {
+      this.dropdownOpen = !this.dropdownOpen;
+    },
+
+    selectOption(option) {
+      this.selected = option;
+      this.dropdownOpen = false;
+    },
+
     processPayment() {
       // Ajouter ici la logique pour envoyer les données à l'API
-      if (!this.cardNumber || !this.expirationDate || !this.cvv) {
+      if (!this.paymentDetails) {
         this.errorMessage = "Veuillez remplir tous les champs.";
         return;
       }
       this.$emit("payment-success");
       this.closePaymentModal();
     },
+
     closePaymentModal() {
       this.$emit("close");
     },
@@ -102,6 +164,12 @@ h2 {
   font-size: 2em;
   color: #fff;
   text-align: center;
+  padding-bottom: 10px;
+}
+
+label {
+  color: white;
+  font-size: 1em;
 }
 
 .inputbox {
@@ -148,6 +216,59 @@ h2 {
   margin-top: 10px;
 }
 
+.selectedCard {
+  position: relative;
+  margin: 75px 0;
+  width: 100%;
+}
+
+.selectedCard label {
+  position: absolute;
+  top: -20px;
+  left: 5px;
+  color: #ffffff;
+  font-size: 1.2em;
+}
+
+.selected-option {
+  padding: 0.5rem;
+  border: 2px solid white;
+  border-radius: 5px;
+  background-color: transparent;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+}
+
+.selected-option:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 2px solid white;
+  border-radius: 5px;
+  background-color: transparent;
+  position: absolute;
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.options li {
+  color: white;
+  padding: 0.5rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.options li:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 button {
   width: 100%;
   height: 40px;
@@ -175,7 +296,7 @@ p {
 
 .auth-container {
   max-height: 600px; /* Hauteur maximale pour éviter que le contenu déborde */
-  overflow-x: hidden;  /* Active la barre de défilement verticale si nécessaire */
+  overflow-x: hidden; /* Active la barre de défilement verticale si nécessaire */
   overflow-y: auto;
   padding-right: 10px; /* Ajout d'un espace pour éviter que la barre de défilement ne masque le contenu */
 }
