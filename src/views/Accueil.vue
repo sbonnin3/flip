@@ -1,6 +1,7 @@
 <template>
   <div class="accueilpage">
     <div class="introduction-container">
+      <img class="staticlogo" src="../assets/images/logov2.png" width="800" height="230">
       <div class="text-container" :class="{ 'fade-in-text': fadeText, 'fade-out-text': !fadeText }">
         <h1>{{ currentSlide.title }}</h1>
         <h3>{{ currentSlide.subtitle }}</h3>
@@ -112,7 +113,92 @@
     </div>
     </div>
       </div>
-    <br><br><br>
+    <br><br><br><br><br><br><br><br><br>
+
+
+    <footer class="footer">
+      <div class="footer-container">
+        <!-- Contact Information Section -->
+        <div class="footer-cta">
+          <div class="cta-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <div class="cta-text">
+              <h4>Nous trouver</h4>
+              <p>2 Rue de la Citadelle, 79200 Parthenay</p>
+            </div>
+          </div>
+          <div class="cta-item">
+            <i class="fas fa-phone"></i>
+            <div class="cta-text">
+              <h4>Nous appeller</h4>
+              <p>01 02 03 04 05</p>
+            </div>
+          </div>
+          <div class="cta-item">
+            <i class="far fa-envelope-open"></i>
+            <div class="cta-text">
+              <h4>Nous envoyer un mail</h4>
+              <p>mail@info.com</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Content Section -->
+        <div class="footer-content">
+          <div class="footer-column">
+            <div class="footer-logo">
+              <a href="index.html">
+                <img src="../assets/images/logov2.png" alt="Logo" class="logo">
+              </a>
+            </div>
+            <p class="footer-description">
+              Join us at the festival of free games, where fun knows no bounds!
+            </p>
+            <div class="footer-social">
+              <span>Suivez nous</span>
+              <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+              <a href="#" class="social-icon"><i class="fab fa-google-plus-g"></i></a>
+            </div>
+          </div>
+          <div class="footer-column">
+            <h3>Liens utiles</h3>
+            <ul class="footer-links">
+              <li><a href="#">Accueil</a></li>
+              <li><a href="#">A propos</a></li>
+              <li><a href="#">Activités</a></li>
+              <li><a href="#">Produits</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
+          <div class="footer-column">
+            <h3>Se connecter</h3>
+            <p></p>
+            <form action="#" class="subscribe-form">
+              <input type="text" placeholder="Nom d'utilisateur" required>
+              <input type="password" placeholder="Mot de passe" required>
+              <button type="submit"><i class="fab fa-telegram-plane"></i>Se connecter</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Footer Bottom Section -->
+        <div class="footer-bottom">
+          <div class="footer-bottom-left">
+            <p>&copy; 2024, All Rights Reserved. <a href="https://www.jeux-festival.com/">FLIP</a></p>
+          </div>
+          <div class="footer-bottom-right">
+            <ul class="footer-bottom-links">
+              <li><a href="#">Accueil</a></li>
+              <li><a href="#">Termes et conditions</a></li>
+              <li><a href="#">Politique de confidentialité</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+
   </div>
 </template>
 
@@ -668,6 +754,333 @@ figure:hover img {
 }
 
 .down-container-down-part {
+}
+
+.staticlogo {
+  position: absolute;
+  margin-bottom : 430px;
+  margin-left: 100px;
+  z-index: 1;
+}
+
+/* Global Footer Styles */
+.footer {
+  width: 100%;
+  background-color: black;
+  color: #fff;
+  padding: 80px 20px;
+  font-size: 15px;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+/* Contact Information Section */
+.footer-cta {
+  display: flex;
+  justify-content: space-evenly; /* On répartit l'espace uniformément */
+  align-items: center; /* On aligne verticalement les éléments au centre */
+  gap: 30px;
+  flex-wrap: wrap;
+  padding-bottom: 30px;
+  border-bottom: 2px solid #444;
+}
+
+.cta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centrer les icônes et le texte */
+  gap: 15px;
+  margin-bottom: 20px;
+  flex: 1 1 200px; /* Assurer un espacement flexible et éviter qu'ils ne s'étirent trop */
+}
+
+.cta-item i {
+  font-size: 32px; /* Agrandir un peu les icônes pour plus de visibilité */
+  color: #ff6f00;
+  transition: color 0.3s ease;
+}
+
+.cta-item i:hover {
+  color: #ff9e00;
+}
+
+.cta-text {
+  text-align: center; /* Centrer le texte */
+}
+
+.cta-text h4 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ff6f00;
+}
+
+.cta-text p {
+  font-size: 14px;
+  color: #bbb;
+  line-height: 1.6;
+}
+
+
+/* Footer Content Section */
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 50px;
+  flex-wrap: wrap;
+  padding-bottom: 30px;
+}
+
+.footer-column {
+  flex: 1;
+  min-width: 280px;
+}
+
+.footer-logo {
+  margin-bottom: 20px;
+}
+
+.footer-logo img {
+  max-width: 250px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.footer-logo img:hover {
+  transform: scale(1.05);
+}
+
+.footer-description {
+  font-size: 14px;
+  color: #bbb;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.footer-social {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-social span {
+  font-weight: bold;
+  color: #ff6f00;
+  transition: color 0.3s ease;
+}
+
+.footer-social span:hover {
+  color: #ff9e00;
+}
+
+.social-icon {
+  font-size: 22px;
+  color: #bbb;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.social-icon:hover {
+  color: #ff6f00;
+  transform: translateY(-5px);
+}
+
+/* Footer Links */
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin: 15px 0;
+}
+
+.footer-links li a {
+  text-decoration: none;
+  color: #bbb;
+  font-size: 14px;
+  transition: color 0.3s ease, letter-spacing 0.3s ease;
+}
+
+.footer-links li a:hover {
+  color: #ff6f00;
+  letter-spacing: 1px;
+}
+
+/* Subscribe Form */
+.subscribe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subscribe-form input {
+  padding: 15px;
+  font-size: 15px;
+  border: 1px solid #555;
+  border-radius: 5px;
+  color: #333;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+}
+
+.subscribe-form input:focus {
+  border-color: #ff6f00;
+  outline: none;
+}
+
+.subscribe-form button {
+  background-color: #ff6f00;
+  color: #fff;
+  padding: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.subscribe-form button:hover {
+  background-color: #e65100;
+  transform: translateY(-3px);
+}
+
+/* Footer Bottom Section */
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 2px solid #444;
+  padding-top: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-bottom-left {
+  font-size: 14px;
+  color: #bbb;
+}
+
+.footer-bottom-left a {
+  color: #ff6f00;
+  text-decoration: none;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.footer-bottom-left a:hover {
+  text-decoration: underline;
+}
+
+.footer-bottom-right {
+  font-size: 14px;
+  display: flex;
+  gap: 30px;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.footer-bottom-links li a {
+  color: #bbb;
+  text-decoration: none;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.footer-bottom-links li a:hover {
+  color: #ff6f00;
+  transform: translateY(-3px);
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .footer-column {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-bottom-left {
+    margin-bottom: 20px;
+  }
+
+  .footer-bottom-right {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-cta {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .footer-column {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-bottom-left {
+    margin-bottom: 20px;
+  }
+
+  .footer-bottom-right {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+}
+
+/* Animation for Hover Effects */
+@keyframes hover-effect {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Adding a shadow effect when hovered */
+.footer-logo img:hover {
+  animation: hover-effect 0.3s ease forwards;
+}
+
+.social-icon:hover,
+.footer-links li a:hover,
+.footer-bottom-links li a:hover {
+  animation: hover-effect 0.3s ease forwards;
 }
 
 
