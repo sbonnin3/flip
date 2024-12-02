@@ -15,7 +15,7 @@
             <div class="inputbox">
               <ion-icon name="mail-outline"></ion-icon>
               <input v-model="identifiant" type="text" required />
-              <label for="identifiant">Email</label>
+              <label for="identifiant">Identifiant</label>
             </div>
             <div class="inputbox">
               <ion-icon name="lock-closed-outline"></ion-icon>
@@ -52,7 +52,7 @@
             <div class="inputbox">
               <ion-icon name="mail-outline"></ion-icon>
               <input v-model="identifiant" type="text" required />
-              <label for="identifiant">Email</label>
+              <label for="identifiant">Identifiant</label>
             </div>
             <div class="inputbox">
               <ion-icon name="lock-closed-outline"></ion-icon>

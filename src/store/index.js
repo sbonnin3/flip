@@ -22,8 +22,14 @@ export default new Vuex.Store({
     SET_USER_SESSION(state, user) {
       state.userSession = user;
     },
-    REMOVE_COMPTE(state, compteId) {
-      state.comptes = state.comptes.filter(compte => compte.id !== compteId);
+    REMOVE_COMPTE(state, id) {
+      state.comptes = state.comptes.filter((compte) => compte.id !== id);
+    },
+    UPDATE_COMPTE(state, updatedCompte) {
+      const index = state.comptes.findIndex((compte) => compte.id === updatedCompte.id);
+      if (index !== -1) {
+        state.comptes.splice(index, 1, updatedCompte);
+      }
     },
     SET_TOURNOIS(state, tournois) {
       state.tournois = tournois;
