@@ -110,7 +110,7 @@ export default {
   background-color: #ffffff;
   padding: 5px 20px;
   box-shadow: 0 6px 4px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 5000;
   height: 80px;
   transition: background-color 0.40s ease-in-out;
 }

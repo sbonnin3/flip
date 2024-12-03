@@ -158,57 +158,185 @@ export default {
 </script>
 
 <style scoped>
-.page-carte {
-  padding-top: 100px;
-  max-width: 100%;
-}
+  .page-carte {
+    padding-top: 50px; /* Réduit l'espacement pour que la carte soit mieux positionnée */
+    max-width: 100%;
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+  }
 
-.map-container {
-  max-width: 60%;
-  margin: auto;
-  position: relative;
-}
+  .map-container {
+    max-width: 75%; /* Agrandit la taille de la carte */
+    margin: 0 auto;
+    position: relative;
+    padding-bottom: 40px; /* Espace sous la carte */
+  }
 
-.stand-info-panel {
-  position: absolute;
-  top: 100px;
-  right: 20px;
-  background-color: white;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 250px;
-  z-index: 1000;
-}
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: 100px;
+    color: #333;
+  }
 
-.stand-info-panel h2 {
-  margin-top: 0;
-}
+  select {
+    padding: 10px 15px;
+    font-size: 1rem;
+    margin-right: 20px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #333;
+    outline: none;
+    transition: all 0.3s ease;
+  }
 
-.stand-info-panel img {
-  max-width: 100%;
-  height: auto;
-  margin-bottom: 10px;
-  border-radius: 5px;
-}
+  select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
 
-.stand-info-panel p {
-  margin: 10px 0;
-}
+  select + select {
+    margin-top: 15px;
+  }
 
-.stand-info-panel p strong {
-  color: #007bff;
-}
+  select option {
+    padding: 10px;
+  }
 
-.close-button {
-  background-color: #ff4d4d;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 25px;
-  height: 25px;
-  cursor: pointer;
-  float: right;
-}
+  .stand-info-panel {
+    position: absolute;
+    top: 100px;
+    right: 20px;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 280px;
+    z-index: 1000;
+    max-height: 80%;
+    overflow-y: auto;
+  }
+
+  .stand-info-panel h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    color: #333;
+  }
+
+  .stand-info-panel img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 15px;
+    border-radius: 8px;
+  }
+
+  .stand-info-panel p {
+    margin: 15px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .stand-info-panel p strong {
+    color: #007bff;
+  }
+
+  .close-button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    float: right;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin-top: -10px;
+  }
+
+  .close-button:hover {
+    background-color: #e60000;
+  }
+
+  .map-container select {
+    margin: 10px 0 30px;
+    display: inline-block;
+  }
+
+  select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+
+  .l-map {
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .l-tooltip {
+    font-size: 1rem;
+    background-color: rgba(0, 123, 255, 0.9);
+    color: white;
+    padding: 8px;
+    border-radius: 5px;
+  }
+
+  .stand-info-panel {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+  }
+
+  .stand-info-panel h2 {
+    color: #333;
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+
+  .stand-info-panel p {
+    font-size: 1rem;
+    color: #555;
+  }
+
+  .stand-info-panel img {
+    margin-bottom: 15px;
+    border-radius: 5px;
+    max-height: 180px;
+  }
+
+  .stand-info-panel button {
+    background-color: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  .stand-info-panel button:hover {
+    background-color: #e60000;
+  }
+
+  .select-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .select-container select {
+    margin-right: 15px;
+    font-size: 1rem;
+  }
+
+  .stand-info-panel {
+    background-color: #ffffff;
+    color: #333;
+  }
+
 </style>
