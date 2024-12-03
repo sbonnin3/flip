@@ -558,12 +558,14 @@ export default {
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
-  width: 80%;
   max-width: 600px;
+  max-height: 70vh; /* Hauteur maximale relative à la fenêtre */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: left;
   position: relative;
+  overflow-y: auto; /* Barre de défilement verticale */
 }
+
 
 .modal-image {
   width: 100%;
@@ -677,7 +679,6 @@ form button {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 300px;
-  overflow: hidden;
   text-align: center;
   transition: transform 0.3s ease;
   cursor: pointer;
@@ -878,7 +879,6 @@ form button {
   font-size: 20px; /* Taille ajustée pour plus de compacité */
   color: #333;
   white-space: nowrap; /* Empêche les débordements */
-  overflow: hidden;
   text-overflow: ellipsis;
 }
 
