@@ -16,6 +16,7 @@ export default new Vuex.Store({
     souvenirs: [],
     reservations: reservations,
     userOrders: [],
+    currentOrder: [],
     restaurants: [],
   },
   mutations: {
@@ -51,6 +52,12 @@ export default new Vuex.Store({
     },
     SET_USER_ORDERS(state, orders) {
       state.userOrders = orders;
+    },
+    SET_CURRENT_ORDER(state, order) {
+      state.currentOrder = order;
+    },
+    RESET_CURRENT_ORDER(state, Order) {
+      state.currentOrder = Order;
     },
     SET_STANDS(state, restaurants) {
       state.restaurants = restaurants;
@@ -89,6 +96,12 @@ export default new Vuex.Store({
       commit('SET_USER_ORDERS', updatedOrders);
       console.log("Commandes d'articles actuelles :", updatedOrders);
     },
+    setCurrentOrder({ commit }, order) {
+      commit('SET_CURRENT_ORDER', order);  // Met à jour la commande en cours
+    },
+    resetCurrentOrder({ commit }) {
+      commit('RESET_CURRENT_ORDER');  // Réinitialise la commande en cours
+    },
     async getAllSouvenirs({ commit }) {
       try {
         const response = await getAllSouvenirs();
@@ -118,6 +131,7 @@ export default new Vuex.Store({
     userSession: (state) => state.userSession,
     souvenirs: (state) => state.souvenirs,
     userOrders: (state) => state.userOrders,
+    currentOrder : (state) => state.currentOrder,
     restaurants: (state) => state.restaurants,
     userReservations: (state) => {
       console.log("Reservations in state:", state.reservations);

@@ -230,7 +230,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['addArticleOrder']),
+    ...mapActions(['addArticleOrder', 'setCurrentOrder']),
     selectTab(tab) {
       this.selectedTab = tab;
     },
@@ -265,24 +265,33 @@ export default {
         // Grouper les articles par restaurant
         const ordersByRestaurant = this.cart.reduce((acc, article) => {
           const restaurantName = article.restaurant;
-
+          const orderNumber = `${Math.floor(Math.random() * 100)}`;
           if (!acc[restaurantName]) {
-            acc[restaurantName] = { restaurantNom: restaurantName, articles: [] };
+            acc[restaurantName] = {
+              restaurantNom: restaurantName,
+              orderNumber : orderNumber,
+              articles: [] };
           }
           acc[restaurantName].articles.push(article);
           return acc;
         }, {});
 
+
         this.showPaymentModal = true;
 
-        // Ajouter les commandes
-        Object.values(ordersByRestaurant).forEach((restaurantOrder) => {
+        // Mettre à jour currentOrder avec un tableau de commandes
+        const newOrders = Object.values(ordersByRestaurant);
+        this.setCurrentOrder(newOrders);  // Envoi un tableau de commandes à currentOrder
+
+        // Ajouter les commandes à l'historique
+        newOrders.forEach((restaurantOrder) => {
+          console.log('Commande:', restaurantOrder);
           this.addArticleOrder({
             ...restaurantOrder,
             status: "Confirmée",
           });
-        })
-        // Vider le panier et masquer la confirmation
+        });
+
         this.showConfirmation = false;
       } else {
         this.showConfirmation = false;
@@ -295,10 +304,18 @@ export default {
     handleLoginSuccess() {
       this.commandMessage = "Connexion réussie !";
     },
-    handlePaymentSuccess(){
+
+    handlePaymentSuccess(recap) {
       this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
+      if (recap) {
+        console.log(recap);
+        alert(recap);
+      }
+      this.$store.dispatch('resetCurrentOrder');
       this.cart = [];
+      console.log("Panier vidé après paiement :", this.cart);
     },
+
     deleteCommand(){
       this.cart = [];
       this.commandMessage = 'Votre commande a été effacée !'
@@ -343,7 +360,7 @@ export default {
           this.commandMessage = 'Article retiré du panier.'
         }
       }
-    }
+    },
   },
 };
 </script>

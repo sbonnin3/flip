@@ -22,7 +22,7 @@
       <h2 class="section-title">Commandes d'Articles</h2>
       <div v-for="(commande, index) in articleCommandes" :key="'commande-' + index" class="card">
         <div class="card-content">
-          <h3 class="card-title">Commande n° {{ index + 1 }} chez {{ commande.restaurantNom }}</h3>
+          <h3 class="card-title">Commande n° {{ commande.orderNumber }} chez {{ commande.restaurantNom }}</h3>
           <!--h4 class="restaurant-name">Stand : {{ commande.restaurantNom }}</h4-->
           <div v-for="article in commande.articles" :key="article.nom" class="article">
             <p class="article-name">{{ article.nom }}</p>
@@ -66,7 +66,7 @@ export default {
       }
       return this.userOrders.map(order => ({
         ...order,
-        status: 'Payée'
+        status: 'Payée. A chercher au stand.'
       }));
     }
   },

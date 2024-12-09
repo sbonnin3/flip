@@ -1,7 +1,7 @@
 <template>
   <div v-if="visible" class="modal-overlay">
     <div class="modal-container form-box">
-      <button class="close-button" @click="closePaymentModal">✖</button>
+      <button class="close-button" @click="closePaymentModal" aria-label="Fermer la fenêtre">✖</button>
       <div class="auth-container">
         <h2>Paiement</h2>
         <form @submit.prevent="processPayment">
@@ -31,18 +31,18 @@
 
           <div v-if="selected === 'Carte Bancaire'">
             <div class="inputbox">
-              <input v-model="paymentDetails.cardNumber" type="tel" placeholder="xxxx xxxx xxxx xxxx" pattern="\d*"
+              <input v-model="paymentDetails.cardNumber" type="tel" placeholder="xxxx xxxx xxxx xxxx"
                      maxlength="19"
                      id="cardNumber" required/>
               <label for="cardNumber">Numéro de carte :</label>
             </div>
             <div class="inputbox">
-              <input v-model="paymentDetails.expirationDate" type="tel" placeholder="MM/AA" pattern="\d*" maxlength="7"
+              <input v-model="paymentDetails.expirationDate" type="tel" placeholder="MM/AA" maxlength="7"
                      id="expirationDate" required/>
               <label for="expirationDate">Date d'expiration :</label>
             </div>
             <div class="inputbox">
-              <input v-model="paymentDetails.cvv" type="tel" placeholder="123" pattern="\d*" maxlength="4"
+              <input v-model="paymentDetails.cvv" type="tel" placeholder="123" maxlength="4"
                      id="cvv" required/>
               <label for="cvv">CVC :</label>
             </div>
@@ -61,7 +61,12 @@
             </div>
           </div>
 
-          <button type="submit">Payer</button>
+          <div class="inputbox" v-if="selected">
+            <input v-model="pickupTime" type="time" id="pickupTime" />
+            <label for="pickupTime">Heure de retrait souhaitée :</label>
+          </div>
+
+          <button type="submit" :disabled="!validatePayment()">Payer</button>
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </form>
 
@@ -71,6 +76,8 @@
 </template>
 
 <script>
+import {mapGetters} from "vuex";
+
 export default {
   name: 'PaymentModal',
   props: {
@@ -91,9 +98,14 @@ export default {
         cardName: '',
         paypalEmail: '',
       },
+      pickupTime: '',
       errorMessage: null,
     };
   },
+  computed: {
+    ...mapGetters(['userOrders', 'currentOrder']),
+  },
+
   methods: {
     toggleDropdown() {
       this.dropdownOpen = !this.dropdownOpen;
@@ -104,14 +116,67 @@ export default {
       this.dropdownOpen = false;
     },
 
+    validatePayment() {
+      if (this.selected === 'Carte Bancaire') {
+        return this.paymentDetails.cardNumber &&
+            this.paymentDetails.expirationDate &&
+            this.paymentDetails.cvv &&
+            this.paymentDetails.cardName;
+      } else if (this.selected === 'PayPal') {
+        return this.paymentDetails.paypalEmail;
+      }
+      return false;
+    },
+
     processPayment() {
-      // Ajouter ici la logique pour envoyer les données à l'API
-      if (!this.paymentDetails) {
-        this.errorMessage = "Veuillez remplir tous les champs.";
+      if (!this.validatePayment()) {
+        this.errorMessage = "Veuillez remplir tous les champs correctement.";
         return;
       }
-      this.$emit("payment-success");
+      this.$emit("payment-success", this.generateRecap());
       this.closePaymentModal();
+    },
+
+    generateRecap() {
+      console.log('Current Order:', this.currentOrder);
+      if (!Array.isArray(this.currentOrder) || this.currentOrder.length === 0) {
+        console.warn("Aucune commande disponible pour générer le récapitulatif.");
+        return "Aucune commande à afficher.";
+      }
+
+      const restaurantRecaps = this.currentOrder.map(order => {
+        if (!order.articles || order.articles.length === 0) {
+          console.warn("Pas d'articles pour le restaurant:", order.restaurantNom);
+          return `Restaurant : ${order.restaurantNom || "Inconnu"} - Pas d'articles disponibles.`;
+        }
+
+        const articlesText = order.articles
+            .map(article => {
+              if (article.nom && article.quantite && article.prix) {
+                return `- ${article.nom}: ${article.quantite} x ${article.prix}€`;
+              } else {
+                console.error("Erreur dans un article :", article);
+                return "Erreur dans les données de l'article";
+              }
+            })
+            .join("\n");
+
+        // Calculer le total des prix pour les articles
+        const total = order.articles.reduce((total, article) => {
+          return total + (article.prix * article.quantite);
+        }, 0); // Initialiser total à 0
+
+        return `Commande n° ${order.orderNumber} - Restaurant : ${order.restaurantNom || "Inconnu"}
+   Articles :
+      ${articlesText}
+
+💵 Total : ${total.toFixed(2)}€`;
+      });
+
+      return `📋 Récapitulatif de commande :
+  ${restaurantRecaps.join("\n\n")}\n
+  Moyen de paiement : ${this.selected}
+  Heure de retrait : ${this.pickupTime || "Non précisée"}`;
     },
 
     closePaymentModal() {
