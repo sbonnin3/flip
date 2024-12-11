@@ -61,7 +61,7 @@
             </div>
           </div>
 
-          <div class="inputbox" v-if="selected">
+          <div class="inputbox" v-if="selected && showPickupTime">
             <input v-model="pickupTime" type="time" id="pickupTime" />
             <label for="pickupTime">Heure de retrait souhaitée :</label>
           </div>
@@ -84,6 +84,10 @@ export default {
     visible: {
       type: Boolean,
       required: true,
+    },
+    showPickupTime: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {
@@ -133,7 +137,7 @@ export default {
         this.errorMessage = "Veuillez remplir tous les champs correctement.";
         return;
       }
-      this.$emit("payment-success", this.generateRecap());
+      this.$emit("payment-success");
       this.closePaymentModal();
     },
 

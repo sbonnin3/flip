@@ -77,22 +77,22 @@
             </div>
           </div>-->
 
-    <div v-if="showConfirmation" class="confirmation-modal">
-      <div class="modal-content">
-        <span class="close-button" @click="closeConfirmation">&times;</span>
-        <h2>Confirmer la commande</h2>
-        <p>Voulez-vous vraiment confirmer la commande du panier ?</p>
-        <button class="confirm-button" @click="confirmReservation">Confirmer</button>
-        <button class="cancel-button" @click="closeConfirmation">Annuler</button>
+      <div v-if="showConfirmation" class="confirmation-modal">
+        <div class="modal-content">
+          <span class="close-button" @click="closeConfirmation">&times;</span>
+          <h2>Confirmer la commande</h2>
+          <p>Voulez-vous vraiment confirmer la commande du panier ?</p>
+          <button class="confirm-button" @click="confirmReservation">Confirmer</button>
+          <button class="cancel-button" @click="closeConfirmation">Annuler</button>
+        </div>
       </div>
-    </div>
 
-    <div v-if="commandMessage" class="reservation-message">
-      <div class="modal-content">
-        <p>{{ commandMessage }}</p>
-        <button @click="closeCommandMessage">OK</button>
+      <div v-if="commandMessage" class="reservation-message">
+        <div class="modal-content">
+          <p>{{ commandMessage }}</p>
+          <button @click="closeCommandMessage">OK</button>
+        </div>
       </div>
-    </div>
 
       <!-- Modale de connexion -->
       <ConnexionModal
@@ -102,47 +102,47 @@
           @login-success="handleLoginSuccess"
       />
 
-      <PaymentModal
+      <PaymentModal ref="paymentForm"
           v-if="showPaymentModal"
           :visible="showPaymentModal"
           @close="closePaymentModal"
           @payment-success="handlePaymentSuccess"
       />
 
-    <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
-      <div class="modal-content">
-        <span class="close-button" @click="closeModalRestau">&times;</span>
-        <h2>{{ selectedModalRestau.nom }}</h2>
-        <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image"
-             style=" width: 50%; height: 50%"/>
-        <div v-for="stand in stands.filter(stand => stand.idRestau === selectedModalRestau.idRestau)" :key="stand.id">
-          <p><strong>Nourritures :</strong></p>
-          <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
-            <div v-for="nourriture in stand.nourritures" :key="nourriture.nom" class="article-button">
-              <button class="article-button-content" @click="addToCart(nourriture)">
-                <img :src="nourriture.image" alt="Image de l'article" class="article-image" />
-                {{ nourriture.nom }} - {{ nourriture.prix }}€
-              </button>
+      <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
+        <div class="modal-content">
+          <span class="close-button" @click="closeModalRestau">&times;</span>
+          <h2>{{ selectedModalRestau.nom }}</h2>
+          <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image"
+               style=" width: 50%; height: 50%"/>
+          <div v-for="stand in stands.filter(stand => stand.idRestau === selectedModalRestau.idRestau)" :key="stand.id">
+            <p><strong>Nourritures :</strong></p>
+            <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <div v-for="nourriture in stand.nourritures" :key="nourriture.nom" class="article-button">
+                <button class="article-button-content" @click="addToCart(nourriture)">
+                  <img :src="nourriture.image" alt="Image de l'article" class="article-image" />
+                  {{ nourriture.nom }} - {{ nourriture.prix }}€
+                </button>
+              </div>
+            </div>
+            <p><strong>Boissons :</strong></p>
+            <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <div v-for="boisson in stand.boissons" :key="boisson.nom" class="article-button">
+                <button class="article-button-content" @click="addToCart(boisson)">
+                  <img :src="boisson.image" alt="Image de l'article" class="article-image">
+                  {{ boisson.nom }} - {{ boisson.prix }}€
+                </button>
+              </div>
             </div>
           </div>
-          <p><strong>Boissons :</strong></p>
-          <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
-            <div v-for="boisson in stand.boissons" :key="boisson.nom" class="article-button">
-              <button class="article-button-content" @click="addToCart(boisson)">
-                <img :src="boisson.image" alt="Image de l'article" class="article-image">
-                {{ boisson.nom }} - {{ boisson.prix }}€
-              </button>
+          <div v-if="cardCommandMessage" class="reservation-message">
+            <div class="modal-content">
+              <p>{{ cardCommandMessage }}</p>
+              <button @click="closeCardCommandMessage">OK</button>
             </div>
-          </div>
-        </div>
-        <div v-if="cardCommandMessage" class="reservation-message">
-          <div class="modal-content">
-            <p>{{ cardCommandMessage }}</p>
-            <button @click="closeCardCommandMessage">OK</button>
           </div>
         </div>
       </div>
-    </div>
     </div>
 
     <div v-if="selectedTab === 'Boutique'">
@@ -189,8 +189,8 @@
 
 <script>
 
-import { jeux, souvenirs, stands } from '@/datasource/data';
-import { mapActions } from 'vuex';
+import {jeux, souvenirs, stands} from '@/datasource/data';
+import {mapActions} from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
 
@@ -260,7 +260,22 @@ export default {
         this.showLoginModal = true;
         return;
       }
+      if (this.cart.length === 0) {
+        this.closeConfirmation();
+        this.commandMessage = "Erreur : panier vide.";
+      } else {
+        this.openPaymentModal();
+        this.closeConfirmation();
+      }
+    },
+    closeLoginModal() {
+      this.showLoginModal = false;
+    },
+    handleLoginSuccess() {
+      this.commandMessage = "Connexion réussie !";
+    },
 
+    handlePaymentSuccess() {
       if (this.cart.length > 0) {
         // Grouper les articles par restaurant
         const ordersByRestaurant = this.cart.reduce((acc, article) => {
@@ -269,15 +284,13 @@ export default {
           if (!acc[restaurantName]) {
             acc[restaurantName] = {
               restaurantNom: restaurantName,
-              orderNumber : orderNumber,
-              articles: [] };
+              orderNumber: orderNumber,
+              articles: []
+            };
           }
           acc[restaurantName].articles.push(article);
           return acc;
         }, {});
-
-
-        this.showPaymentModal = true;
 
         // Mettre à jour currentOrder avec un tableau de commandes
         const newOrders = Object.values(ordersByRestaurant);
@@ -292,31 +305,21 @@ export default {
           });
         });
 
-        this.showConfirmation = false;
-      } else {
-        this.showConfirmation = false;
-        this.commandMessage = "Erreur : panier vide.";
+
+        this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
+        const recap = this.$refs.paymentForm.generateRecap();
+        if (recap) {
+          console.log(recap);
+          alert(recap);
+        }
+        this.$store.dispatch('resetCurrentOrder');
+        this.cart = [];
+        console.log("Panier vidé après paiement :", this.cart);
+        this.closePaymentModal();
       }
     },
-    closeLoginModal() {
-      this.showLoginModal = false;
-    },
-    handleLoginSuccess() {
-      this.commandMessage = "Connexion réussie !";
-    },
 
-    handlePaymentSuccess(recap) {
-      this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
-      if (recap) {
-        console.log(recap);
-        alert(recap);
-      }
-      this.$store.dispatch('resetCurrentOrder');
-      this.cart = [];
-      console.log("Panier vidé après paiement :", this.cart);
-    },
-
-    deleteCommand(){
+    deleteCommand() {
       this.cart = [];
       this.commandMessage = 'Votre commande a été effacée !'
       console.log('Panier actuel :', this.cart);
@@ -327,7 +330,10 @@ export default {
     closeCardCommandMessage() {
       this.cardCommandMessage = '';
     },
-    closePaymentModal(){
+    openPaymentModal(){
+      this.showPaymentModal = true;
+    },
+    closePaymentModal() {
       this.showPaymentModal = false;
     },
     addToCart(article) {
@@ -340,7 +346,7 @@ export default {
         this.cardCommandMessage = "Article ajouté dans le panier !"
       } else {
         // Sinon, on ajoute un nouvel article avec une quantité initiale de 1
-        this.cart.push({ ...article, quantite: 1, restaurant: this.selectedModalRestau.nom});
+        this.cart.push({...article, quantite: 1, restaurant: this.selectedModalRestau.nom});
         this.cardCommandMessage = "Article ajouté dans le panier !"
       }
 
@@ -908,7 +914,6 @@ form button {
 }
 
 
-
 .order_total {
   margin-top: 20px;
   padding: 10px 15px;
@@ -969,7 +974,6 @@ form button {
 .cart_button_checkout:hover {
   background-color: #45a049;
 }
-
 
 
 </style>

@@ -10,9 +10,13 @@
       <h2 class="section-title">Commandes de tournois</h2>
       <div v-for="(commande, index) in commandes" :key="index" class="card">
         <div class="card-content">
-          <h3 class="card-title">Tournoi: {{ commande.tournoiNom }}</h3>
-          <p class="card-detail">Places réservées : {{ commande.places }}</p>
-          <p class="card-status">Statut : {{ commande.status }}</p>
+          <h3 class="card-title">Tournoi de {{ commande.tournoiNom }}</h3>
+          <div class="article">
+            <p class="article-name">Places réservées : {{ commande.places }}</p>
+            <p class="article-quantity">Date : {{commande.date}}</p>
+            <p class="article-price">Prix : {{ commande.prix }}€</p>
+          </div>
+          <p class="card-status">{{ commande.status }}</p>
         </div>
       </div>
     </div>
@@ -29,13 +33,13 @@
             <p class="article-quantity">Quantité : {{ article.quantite }}</p>
             <p class="article-price">Prix : {{ article.prix }}€</p>
           </div>
-          <p class="card-status">Statut : {{ commande.status }}</p>
+          <p class="card-status">{{ commande.status }}</p>
         </div>
       </div>
     </div>
 
     <!-- Message si aucune commande trouvée -->
-    <p v-else>Aucune commande trouvée.</p>
+    <p v-else>Aucune commande de nourriture trouvées.</p>
   </div>
 </template>
 

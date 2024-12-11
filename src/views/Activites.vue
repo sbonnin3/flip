@@ -123,8 +123,10 @@
       </div>
 
       <div v-if="reservationMessage" class="reservation-message">
-        <p>{{ reservationMessage }}</p>
-        <button @click="closeReservationMessage">OK</button>
+        <div class="modal-content">
+          <p>{{ reservationMessage }}</p>
+          <button @click="closeReservationMessage">OK</button>
+        </div>
       </div>
 
       <ConnexionModal
@@ -133,6 +135,15 @@
           @close="closeLoginModal"
           @login-success="handleLoginSuccess"
       />
+
+      <PaymentModal
+          v-if="showPaymentModal"
+          :visible="showPaymentModal"
+          :showPickupTime="false"
+          @close="closePaymentModal"
+          @payment-success="handlePaymentSuccess"
+      />
+
     </div>
   </div>
 </template>
@@ -140,10 +151,11 @@
 <script>
 import {reservations, tournois, jeux} from '@/datasource/data';
 import ConnexionModal from "@/components/Connexion.vue";
+import PaymentModal from "@/components/PaymentForm.vue";
 
 export default {
   name: 'PageActivites',
-  components: {ConnexionModal},
+  components: {PaymentModal, ConnexionModal},
   data() {
     return {
       selectedTab: 'Jeux',
@@ -151,6 +163,8 @@ export default {
       selectedTournoi: null,
       showConfirmation: false,
       showLoginModal: false,
+      showPaymentModal: false,
+      pickupTime: '',
       reservationMessage: '',
       reservations,
       tournois,
@@ -212,8 +226,16 @@ export default {
       this.showConfirmation = false;
     },
     confirmReservation() {
-      this.showConfirmation = false;
+      const placesRestantes = this.getPlacesRestantes(this.selectedTournoi._id, this.selectedTournoi.placesLimite);
+       if (placesRestantes === 0) {
+        this.reservationMessage = 'Désolé, il ne reste plus de places disponibles.';
+      } else {
+         this.openPaymentModal();
+         this.closeConfirmation();
+       }
+    },
 
+    handlePaymentSuccess() {
       const placesRestantes = this.getPlacesRestantes(this.selectedTournoi._id, this.selectedTournoi.placesLimite);
       if (placesRestantes > 0) {
         const currentUser = this.$store.state.userSession;
@@ -222,15 +244,26 @@ export default {
             tournoiId: this.selectedTournoi._id,
             userId: currentUser.id,
             places: 1,
+            prix: this.selectedTournoi.prix,
+            date: this.formatDate(this.selectedTournoi.dates),
           });
-          this.reservationMessage = 'Votre réservation a été confirmée !';
         } else {
           this.showLoginModal = true;
         }
-      } else {
-        this.reservationMessage = 'Désolé, il ne reste plus de places disponibles.';
+        this.reservationMessage = "Paiement effectué. Votre réservation a été confirmée !";
+        this.closePaymentModal();
+        this.closeModal();
       }
     },
+
+    openPaymentModal() {
+      this.showPaymentModal = true;
+    },
+
+    closePaymentModal(){
+      this.showPaymentModal = false;
+    },
+
     closeLoginModal() {
       this.showLoginModal = false;
     },
@@ -274,8 +307,25 @@ export default {
 
 <style scoped>
 .reservation-message {
-  color: white;
-  font-size: 1em;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reservation-message .modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
 }
 
 .reservation-message button {
