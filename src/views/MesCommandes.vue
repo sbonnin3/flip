@@ -38,8 +38,21 @@
       </div>
     </div>
 
-    <!-- Message si aucune commande trouvée -->
-    <p v-else>Aucune commande de nourriture trouvées.</p>
+    <p v-else-if="!this.$store.state.jeux.length">Chargement des jeux...</p>
+
+    <div class="cards-container" v-else-if ="commandesJeu && commandesJeu.length">
+      <h2 class="section-title">Commandes de jeux</h2>
+      <div v-for="(commande, index) in commandesJeu" :key="index" class="card">
+        <div class="card-content">
+          <h3 class="card-title">Nom du jeu : {{ commande.jeuNom }}</h3>
+          <div class="article">
+            <p class="article-price">Prix : {{ commande.prix }}€</p>
+          </div>
+          <p class="card-status">{{ commande.status }}</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -49,7 +62,7 @@ import { mapGetters } from "vuex";
 export default {
   name: "PageMesCommandes",
   computed: {
-    ...mapGetters(['userReservations', 'userOrders', 'userSession']),
+    ...mapGetters(['userReservations', 'userReservationsJeux', 'userOrders', 'userSession']),
     commandes() {
       if (!this.userSession || !this.userReservations) {
         return [];
@@ -64,6 +77,20 @@ export default {
         };
       });
     },
+    commandesJeu(){
+      if (!this.userSession || !this.userReservationsJeux) {
+        return [];
+      }
+
+      return this.userReservationsJeux.map(reservationJeu => {
+        const jeu = this.$store.state.jeux.find(j => j._id === reservationJeu.jeuID);
+        return {
+          ...reservationJeu,
+          jeuNom: jeu ? jeu.name : 'Jeu inconnu',
+          status: 'Confirmée',
+        };
+      });
+    },
     articleCommandes() {
       if (!this.userSession || !this.userOrders) {
         return [];
@@ -72,10 +99,13 @@ export default {
         ...order,
         status: 'Payée. A chercher au stand.'
       }));
-    }
+    },
+
+
   },
   mounted() {
     this.$store.dispatch('getAllTournois');
+    this.$store.dispatch('getAllJeux');
   },
 };
 </script>

@@ -22,5 +22,5 @@ export const reservations = [
         places: 1,
         date: "12 juillet à 14h45",
         prix: 20,
-    }
+    },
 ];

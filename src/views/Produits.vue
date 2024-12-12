@@ -182,14 +182,48 @@
         <p><strong>Âge minimum : </strong> À partir de {{ selectedModalJeu.age_minimum }} ans</p>
         <p><strong>Durée : </strong> {{ selectedModalJeu.duree }} min</p>
         <p><strong>Éditeur :</strong> {{ selectedModalJeu.editeur }}</p>
+        <button class="button cart_button_checkout" @click="openCommandConfirmation">Réserver</button>
       </div>
     </div>
+
+    <div v-if="showConfirmation" class="confirmation-modal">
+      <div class="modal-content">
+        <span class="close-button" @click="closeConfirmation">&times;</span>
+        <h2>Confirmer la commande</h2>
+        <p>Voulez-vous vraiment confirmer la commande du jeu ?</p>
+        <button class="confirm-button" @click="confirmReservationBoutique">Confirmer</button>
+        <button class="cancel-button" @click="closeConfirmation">Annuler</button>
+      </div>
+    </div>
+
+    <div v-if="commandMessage" class="reservation-message">
+      <div class="modal-content">
+        <p>{{ commandMessage }}</p>
+        <button @click="closeCommandMessage">OK</button>
+      </div>
+    </div>
+
+    <ConnexionModal
+        v-if="showLoginModal"
+        :visible="showLoginModal"
+        @close="closeLoginModal"
+        @login-success="handleLoginSuccess"
+    />
+
+    <PaymentModal
+        v-if="showPaymentModal"
+        :visible="showPaymentModal"
+        :showPickupTime="true"
+        @close="closePaymentModal"
+        @payment-success="handlePaymentSuccessJeu"
+    />
+
   </div>
 </template>
 
 <script>
 
-import {jeux, souvenirs, stands} from '@/datasource/data';
+import {jeux, souvenirs, stands, reservationsJeux} from '@/datasource/data';
 import {mapActions} from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
@@ -211,7 +245,8 @@ export default {
       cardCommandMessage: '',
       jeux,
       souvenirs,
-      stands
+      stands,
+      reservationsJeux,
     };
   },
   mounted() {
@@ -268,6 +303,19 @@ export default {
         this.closeConfirmation();
       }
     },
+
+    confirmReservationBoutique(){
+      const currentUser = this.$store.state.userSession;
+
+      if (!currentUser) {
+        // Si aucun utilisateur n'est connecté, afficher la modale de connexion
+        this.showLoginModal = true;
+      } else {
+        this.openPaymentModal();
+        this.closeConfirmation();
+      }
+    },
+
     closeLoginModal() {
       this.showLoginModal = false;
     },
@@ -317,6 +365,19 @@ export default {
         console.log("Panier vidé après paiement :", this.cart);
         this.closePaymentModal();
       }
+    },
+
+    handlePaymentSuccessJeu(){
+      const currentUser = this.$store.state.userSession;
+      this.reservationsJeux.push({
+        jeuID: this.selectedModalJeu._id,
+        userId: currentUser.id,
+        prix: this.selectedModalJeu.prix,
+      });
+      this.commandMessage = "Paiement effectué. Votre réservation a été confirmée !";
+      this.closeModalJeu();
+      this.closeConfirmation();
+      this.closePaymentModal();
     },
 
     deleteCommand() {
