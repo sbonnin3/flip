@@ -85,7 +85,7 @@ import L from "leaflet";
 import emplacementIcon from "@/assets/icons/emplacement-icon.png";
 import selectedIcon from "@/assets/icons/selected-icon.png";
 export default {
-  name: "MaPrestationCreateur",
+  name: "PageMaPrestation",
   components: {
     LMap,
     LTileLayer,

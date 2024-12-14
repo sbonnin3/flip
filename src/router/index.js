@@ -10,6 +10,7 @@ import MesCommandes from '../views/MesCommandes.vue';
 import Reservations from '../views/Reservations.vue';
 import PrestatairesCarte from '../views/PrestatairesCarte.vue';
 import MaPrestation from '../views/MaPrestation.vue';
+import Statistiques from '../views/Statistiques.vue';
 import store from '../store/index.js';
 
 Vue.use(VueRouter);
@@ -75,6 +76,12 @@ const routes = [
     name: 'AdminComptes',
     component: () => import('@/views/AdminComptesView'),
     meta: { requiresAdmin: true }
+  },
+  {
+    path: "/Statistiques",
+    name: "Statistiques",
+    component: Statistiques,
+    meta: { requiresAuth: true },
   },
   {
     path: "/",

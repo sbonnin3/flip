@@ -6,7 +6,7 @@ import { comptes } from './comptes';
 import { jeux } from './jeux';
 import { stands } from './stands';
 import { souvenirs } from "./souvenirs";
-
+import { statistiques } from "./statistiques"
 export {
   tournois,
   reservations,
@@ -15,5 +15,6 @@ export {
   comptes,
   jeux,
   stands,
-  souvenirs
+  souvenirs,
+  statistiques,
 };
