@@ -4,6 +4,7 @@ import { reservationsJeux } from "./reservationsJeux";
 import { points } from './points';
 import { comptes } from './comptes';
 import { jeux } from './jeux';
+import { jeuxCreation } from "./jeuxCreation";
 import { stands } from './stands';
 import { souvenirs } from "./souvenirs";
 import { statistiques } from "./statistiques"
@@ -14,6 +15,7 @@ export {
   points,
   comptes,
   jeux,
+  jeuxCreation,
   stands,
   souvenirs,
   statistiques,
