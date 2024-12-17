@@ -643,7 +643,7 @@ export default {
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;
-  max-height: 70vh; /* Hauteur maximale relative à la fenêtre */
+  max-height: 60vh; /* Hauteur maximale relative à la fenêtre */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: left;
   position: relative;
