@@ -38,7 +38,7 @@
       </div>
     </div>
 
-    <p v-else-if="!this.$store.state.jeux.length">Chargement des jeux...</p>
+    <p v-if="!this.$store.state.jeux.length">Chargement des jeux...</p>
 
     <div class="cards-container" v-else-if ="commandesJeu && commandesJeu.length">
       <h2 class="section-title">Commandes de jeux</h2>

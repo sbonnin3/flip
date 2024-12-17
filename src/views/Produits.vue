@@ -182,17 +182,17 @@
         <p><strong>Âge minimum : </strong> À partir de {{ selectedModalJeu.age_minimum }} ans</p>
         <p><strong>Durée : </strong> {{ selectedModalJeu.duree }} min</p>
         <p><strong>Éditeur :</strong> {{ selectedModalJeu.editeur }}</p>
-        <button class="button cart_button_checkout" @click="openCommandConfirmation">Réserver</button>
+        <button class="button cart_button_checkout" @click="openCommandConfirmationBoutique">Réserver</button>
       </div>
     </div>
 
-    <div v-if="showConfirmation" class="confirmation-modal">
+    <div v-if="showConfirmationBoutique" class="confirmation-modal">
       <div class="modal-content">
-        <span class="close-button" @click="closeConfirmation">&times;</span>
+        <span class="close-button" @click="closeConfirmationBoutique">&times;</span>
         <h2>Confirmer la commande</h2>
         <p>Voulez-vous vraiment confirmer la commande du jeu ?</p>
         <button class="confirm-button" @click="confirmReservationBoutique">Confirmer</button>
-        <button class="cancel-button" @click="closeConfirmation">Annuler</button>
+        <button class="cancel-button" @click="closeConfirmationBoutique">Annuler</button>
       </div>
     </div>
 
@@ -211,10 +211,10 @@
     />
 
     <PaymentModal
-        v-if="showPaymentModal"
-        :visible="showPaymentModal"
+        v-if="showPaymentModalBoutique"
+        :visible="showPaymentModalBoutique"
         :showPickupTime="true"
-        @close="closePaymentModal"
+        @close="closePaymentModalBoutique"
         @payment-success="handlePaymentSuccessJeu"
     />
 
@@ -239,8 +239,10 @@ export default {
       cart: [],
       orders: [],
       showConfirmation: false,
+      showConfirmationBoutique: false,
       showLoginModal: false,
       showPaymentModal: false,
+      showPaymentModalBoutique: false,
       commandMessage: '',
       cardCommandMessage: '',
       jeux,
@@ -287,6 +289,12 @@ export default {
     closeConfirmation() {
       this.showConfirmation = false;
     },
+    openCommandConfirmationBoutique() {
+      this.showConfirmationBoutique = true;
+    },
+    closeConfirmationBoutique() {
+      this.showConfirmationBoutique = false;
+    },
     confirmReservation() {
       const currentUser = this.$store.state.userSession;
 
@@ -311,8 +319,8 @@ export default {
         // Si aucun utilisateur n'est connecté, afficher la modale de connexion
         this.showLoginModal = true;
       } else {
-        this.openPaymentModal();
-        this.closeConfirmation();
+        this.openPaymentModalBoutique();
+        this.closeConfirmationBoutique();
       }
     },
 
@@ -376,8 +384,8 @@ export default {
       });
       this.commandMessage = "Paiement effectué. Votre réservation a été confirmée !";
       this.closeModalJeu();
-      this.closeConfirmation();
-      this.closePaymentModal();
+      this.closeConfirmationBoutique();
+      this.closePaymentModalBoutique();
     },
 
     deleteCommand() {
@@ -396,6 +404,12 @@ export default {
     },
     closePaymentModal() {
       this.showPaymentModal = false;
+    },
+    openPaymentModalBoutique(){
+      this.showPaymentModalBoutique = true;
+    },
+    closePaymentModalBoutique() {
+      this.showPaymentModalBoutique = false;
     },
     addToCart(article) {
       // Vérifier si l'article est déjà dans le panier
