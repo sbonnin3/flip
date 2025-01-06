@@ -6,6 +6,8 @@ export const stands = [
     //     image: chemin_image_png, //= lien de l'image du prestataire
     //     idPoint: int, //= numéro du point sur la carte
     //     comptes: [int], //= id du compte du prestataire
+    //     notes: [int], //= id des notes attribuées au prestataire
+    //     commentaires: [int], //= id des commentaires attribués au prestataire
     // },
     {
         id: 1234,
@@ -36,7 +38,11 @@ export const stands = [
             {nom: "Coca", prix: 3, image: require('@/assets/images/coca.png')},
             {nom: "Coca zéro", prix: 4, image: require('@/assets/images/coca_zero.png')},
             {nom: "Fanta", prix: 3.50, image: require('@/assets/images/fanta.png')},
-        ]
+        ],
+        notes:[
+        ],
+        commentaires:[
+        ],
     },
     {
         id: 1236,
@@ -57,7 +63,11 @@ export const stands = [
             {nom: "Coca", prix: 3, image: require('@/assets/images/coca.png')},
             {nom: "Coca zéro", prix: 4, image: require('@/assets/images/coca_zero.png')},
             {nom: "Fuzetea", prix: 2.50, image: require('@/assets/images/fuzetea.png')},
-        ]
+        ],
+        notes:[
+        ],
+        commentaires:[
+        ],
     },
     {
         id: 1237,
@@ -79,7 +89,11 @@ export const stands = [
             {nom: "Coca", prix: 3, image: require('@/assets/images/coca.png')},
             {nom: "Coca zéro", prix: 4, image: require('@/assets/images/coca_zero.png')},
             {nom: "Fanta", prix: 3.50, image: require('@/assets/images/fanta.png')},
-        ]
+        ],
+        notes:[
+        ],
+        commentaires:[
+        ],
     },
     {
         id: 1238,
@@ -105,7 +119,11 @@ export const stands = [
             {nom: "Coca zéro", prix: 4, image: require('@/assets/images/coca_zero.png')},
             {nom: "Orangina", prix: 3, image: require('@/assets/images/orangina.png')},
             {nom: "Fanta", prix: 4, image: require('@/assets/images/fanta.png')},
-        ]
+        ],
+        notes:[
+        ],
+        commentaires:[
+        ],
     },
     {
         id: 1239,
@@ -126,7 +144,11 @@ export const stands = [
             {nom: "Oasis", prix: 3, image: require('@/assets/images/oasis.png')},
             {nom: "Fanta", prix: 4, image: require('@/assets/images/fanta.png')},
             {nom: "Orangina", prix: 3.50, image: require('@/assets/images/orangina.png')},
-        ]
+        ],
+        notes:[
+        ],
+        commentaires:[
+        ],
     },
 
 ];

@@ -19,7 +19,6 @@
       </div>
       <p v-else>Aucun restaurants disponible.</p>
 
-
       <div class="cart_section">
         <div class="container-fluid">
           <div class="row">
@@ -53,7 +52,6 @@
                 <div class="order_total">
                   <div class="order_total_content text-md-right">
                     <div class="order_total_title">Prix total: {{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€ </div>
-                    <!-- div class="order_total_amount"></div-->
                   </div>
                 </div>
                 <div class="cart_buttons">
@@ -65,17 +63,6 @@
           </div>
         </div>
       </div>
-
-      <!--      <div class="cart">
-              <h3>Panier</h3>
-              <div v-for="item in cart" :key="item.nom" class="cart-item">
-                <p>{{ item.nom }} - {{ item.prix }}€ x {{ item.quantite }}</p>
-              </div>
-              <p>Total : {{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€</p>
-              <button class="reserve-button" @click="openCommandConfirmation">Commander</button>
-              <button class="reserve-button" @click="deleteCommand" style="margin-left: 10px">Effacer</button>
-            </div>
-          </div>-->
 
       <div v-if="showConfirmation" class="confirmation-modal">
         <div class="modal-content">
@@ -94,7 +81,6 @@
         </div>
       </div>
 
-      <!-- Modale de connexion -->
       <ConnexionModal
           v-if="showLoginModal"
           :visible="showLoginModal"
@@ -103,10 +89,10 @@
       />
 
       <PaymentModal ref="paymentForm"
-          v-if="showPaymentModal"
-          :visible="showPaymentModal"
-          @close="closePaymentModal"
-          @payment-success="handlePaymentSuccess"
+                    v-if="showPaymentModal"
+                    :visible="showPaymentModal"
+                    @close="closePaymentModal"
+                    @payment-success="handlePaymentSuccess"
       />
 
       <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
@@ -133,6 +119,26 @@
                   {{ boisson.nom }} - {{ boisson.prix }}€
                 </button>
               </div>
+            </div>
+            <p><strong>Note</strong></p>
+            <Note :averageRating="stand.notes" />
+            <p><strong>Commentaires :</strong></p>
+            <div v-if="stand.commentaires.length" class="cards-container">
+              <div v-for="comment in stand.commentaires" :key="comment.id">
+                <div class="comments"> {{ comment.texte }}</div>
+              </div>
+            </div>
+            <div v-else>
+              <p>Aucun commentaire pour le moment.</p>
+            </div>
+            <div>
+              <h3>Laisser un avis</h3>
+              <form @submit.prevent="submitComment">
+                <textarea v-model="newComment" placeholder="Votre commentaire" required></textarea>
+                <label for="rating">Note (0-5):</label>
+                <input type="number" id="rating" v-model="newRating" min="0" max="5" required />
+                <button type="submit" class="sendComment">Envoyer</button>
+              </form>
             </div>
           </div>
           <div v-if="cardCommandMessage" class="reservation-message">
@@ -224,13 +230,14 @@
 <script>
 
 import {jeux, souvenirs, stands, reservationsJeux} from '@/datasource/data';
-import {mapActions} from 'vuex';
+import {mapActions, mapGetters} from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
+import Note from "@/components/StarRating.vue";
 
 export default {
   name: "PagePrestataires",
-  components: {PaymentModal, ConnexionModal},
+  components: {PaymentModal, ConnexionModal, Note},
   data() {
     return {
       selectedTab: "Restauration",
@@ -245,6 +252,8 @@ export default {
       showPaymentModalBoutique: false,
       commandMessage: '',
       cardCommandMessage: '',
+      newComment: '',
+      newRating: 0,
       jeux,
       souvenirs,
       stands,
@@ -252,19 +261,25 @@ export default {
     };
   },
   mounted() {
-    // Vérifie si un paramètre `tab` est présent dans l'URL au moment du chargement de la page
     const selectedTab = this.$route.query.tab;
     if (selectedTab) {
       this.selectTab(selectedTab);
     }
   },
   watch: {
-    // Surveille les changements de l'URL pour mettre à jour l'onglet si nécessaire
     '$route.query.tab'(newTab) {
       if (newTab) {
         this.selectTab(newTab);
       }
     }
+  },
+  computed: {
+    ...mapGetters(['userOrders']),
+    hasPurchased() {
+      return (productId) => {
+        return this.userOrders.some(order => order.articles.some(article => article.id === productId));
+      };
+    },
   },
   methods: {
     ...mapActions(['addArticleOrder', 'setCurrentOrder']),
@@ -299,7 +314,6 @@ export default {
       const currentUser = this.$store.state.userSession;
 
       if (!currentUser) {
-        // Si aucun utilisateur n'est connecté, afficher la modale de connexion
         this.showLoginModal = true;
         return;
       }
@@ -316,7 +330,6 @@ export default {
       const currentUser = this.$store.state.userSession;
 
       if (!currentUser) {
-        // Si aucun utilisateur n'est connecté, afficher la modale de connexion
         this.showLoginModal = true;
       } else {
         this.openPaymentModalBoutique();
@@ -333,7 +346,6 @@ export default {
 
     handlePaymentSuccess() {
       if (this.cart.length > 0) {
-        // Grouper les articles par restaurant
         const ordersByRestaurant = this.cart.reduce((acc, article) => {
           const restaurantName = article.restaurant;
           const orderNumber = `${Math.floor(Math.random() * 100)}`;
@@ -348,19 +360,15 @@ export default {
           return acc;
         }, {});
 
-        // Mettre à jour currentOrder avec un tableau de commandes
         const newOrders = Object.values(ordersByRestaurant);
-        this.setCurrentOrder(newOrders);  // Envoi un tableau de commandes à currentOrder
+        this.setCurrentOrder(newOrders);
 
-        // Ajouter les commandes à l'historique
         newOrders.forEach((restaurantOrder) => {
-          console.log('Commande:', restaurantOrder);
           this.addArticleOrder({
             ...restaurantOrder,
             status: "Confirmée",
           });
         });
-
 
         this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
         const recap = this.$refs.paymentForm.generateRecap();
@@ -370,7 +378,6 @@ export default {
         }
         this.$store.dispatch('resetCurrentOrder');
         this.cart = [];
-        console.log("Panier vidé après paiement :", this.cart);
         this.closePaymentModal();
       }
     },
@@ -391,7 +398,6 @@ export default {
     deleteCommand() {
       this.cart = [];
       this.commandMessage = 'Votre commande a été effacée !'
-      console.log('Panier actuel :', this.cart);
     },
     closeCommandMessage() {
       this.commandMessage = '';
@@ -412,21 +418,15 @@ export default {
       this.showPaymentModalBoutique = false;
     },
     addToCart(article) {
-      // Vérifier si l'article est déjà dans le panier
       const itemInCart = this.cart.find(item => item.nom === article.nom);
 
       if (itemInCart) {
-        // Si l'article existe déjà, on augmente la quantité
         itemInCart.quantite += 1;
         this.cardCommandMessage = "Article ajouté dans le panier !"
       } else {
-        // Sinon, on ajoute un nouvel article avec une quantité initiale de 1
         this.cart.push({...article, quantite: 1, restaurant: this.selectedModalRestau.nom});
         this.cardCommandMessage = "Article ajouté dans le panier !"
       }
-
-      console.log('Ajouté au panier :', article);
-      console.log('Panier actuel :', this.cart);
     },
 
     deleteArticle(article) {
@@ -436,10 +436,27 @@ export default {
         itemInCartToDelete.quantite -= 1;
 
         if (itemInCartToDelete.quantite <= 0) {
-          // Supprimer l'article du panier si la quantité atteint 0
           this.cart = this.cart.filter(item => item.nom !== article.nom);
           this.commandMessage = 'Article retiré du panier.'
         }
+      }
+    },
+    submitComment() {
+      if (this.newComment.trim() && this.newRating >= 0 && this.newRating <= 5) {
+        const comment = {
+          id: Date.now(),
+          texte: this.newComment,
+          userId: this.$store.state.userSession.id,
+        };
+        const rating = {
+          id: Date.now(),
+          rating: this.newRating,
+          userId: this.$store.state.userSession.id,
+        };
+        this.selectedModalRestau.commentaires.push(comment);
+        this.selectedModalRestau.notes.push(rating);
+        this.newComment = '';
+        this.newRating = 0;
       }
     },
   },
@@ -447,6 +464,31 @@ export default {
 </script>
 
 <style scoped>
+
+.sendComment {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.comments {
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  border: 1px solid black;
+}
 
 .confirmation-modal,
 .modal-overlay {
