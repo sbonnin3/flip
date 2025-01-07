@@ -1,6 +1,6 @@
 <template>
   <div class="star-rating">
-    <span v-for="star in 5" :key="star" class="star" :class="{ filled: star <= averageRating }">&#9733;</span>
+    <span v-for="star in 5" :key="star" class="star" :class="{ filled: star <= numericRating }">&#9733;</span>
   </div>
 </template>
 
@@ -8,8 +8,17 @@
 export default {
   props: {
     averageRating: {
-      type: Number,
+      type: [Number, String, Array],
       required: true,
+    },
+  },
+  computed: {
+    numericRating() {
+      if (Array.isArray(this.averageRating)) {
+        const total = this.averageRating.reduce((sum, rating) => sum + Number(rating.rating), 0);
+        return total / this.averageRating.length;
+      }
+      return Number(this.averageRating);
     },
   },
 };
@@ -20,6 +29,7 @@ export default {
   font-size: 24px;
   color: #ccc;
 }
+
 .star.filled {
   color: #f39c12;
 }

@@ -125,7 +125,12 @@
             <p><strong>Commentaires :</strong></p>
             <div v-if="stand.commentaires.length" class="cards-container">
               <div v-for="comment in stand.commentaires" :key="comment.id">
+                <p>{{ getUserName(comment.userId) }}</p>
                 <div class="comments"> {{ comment.texte }}</div>
+                <div v-if="comment.userId === $store.state.userSession.id">
+                  <button @click="editComment(comment)">Modifier</button>
+                  <button @click="deleteComment(comment)">Supprimer</button>
+                </div>
               </div>
             </div>
             <div v-else>
@@ -135,6 +140,9 @@
               <h3>Laisser un avis</h3>
               <form @submit.prevent="submitComment">
                 <textarea v-model="newComment" placeholder="Votre commentaire" required></textarea>
+                <button type="submit" class="sendComment">Envoyer</button>
+              </form>
+              <form @submit.prevent="submitRating">
                 <label for="rating">Note (0-5):</label>
                 <input type="number" id="rating" v-model="newRating" min="0" max="5" required />
                 <button type="submit" class="sendComment">Envoyer</button>
@@ -253,6 +261,8 @@ export default {
       commandMessage: '',
       cardCommandMessage: '',
       newComment: '',
+      editingComment: null,
+      editingRating: null,
       newRating: 0,
       jeux,
       souvenirs,
@@ -274,10 +284,17 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['userOrders']),
+    ...mapGetters(['userOrders','comptes']),
     hasPurchased() {
       return (productId) => {
         return this.userOrders.some(order => order.articles.some(article => article.id === productId));
+      };
+    },
+    getUserName() {
+      return (userId) => {
+        const user = this.comptes.find(user => user.id === userId);
+        console.log(user);
+        return user ? user.identifiant : 'Unknown';
       };
     },
   },
@@ -442,22 +459,52 @@ export default {
       }
     },
     submitComment() {
-      if (this.newComment.trim() && this.newRating >= 0 && this.newRating <= 5) {
+      if (this.newComment.trim()) {
         const comment = {
           id: Date.now(),
           texte: this.newComment,
           userId: this.$store.state.userSession.id,
         };
+        if (this.editingComment) {
+          const index = this.selectedModalRestau.commentaires.findIndex(c => c.id === this.editingComment.id);
+          this.$set(this.selectedModalRestau.commentaires, index, comment);
+          this.editingComment = null;
+        } else {
+          this.selectedModalRestau.commentaires.push(comment);
+        }
+        this.newComment = '';
+      }
+    },
+    submitRating() {
+      if (this.newRating >= 0 && this.newRating <= 5) {
         const rating = {
           id: Date.now(),
           rating: this.newRating,
           userId: this.$store.state.userSession.id,
         };
-        this.selectedModalRestau.commentaires.push(comment);
-        this.selectedModalRestau.notes.push(rating);
-        this.newComment = '';
+        const existingRatingIndex = this.selectedModalRestau.notes.findIndex(r => r.userId === this.$store.state.userSession.id);
+        if (existingRatingIndex !== -1) {
+          this.$set(this.selectedModalRestau.notes, existingRatingIndex, rating);
+        } else {
+          this.selectedModalRestau.notes.push(rating);
+        }
         this.newRating = 0;
       }
+    },
+    editComment(comment) {
+      this.newComment = comment.texte;
+      this.editingComment = comment;
+    },
+    deleteComment(comment) {
+      this.selectedModalRestau.commentaires = this.selectedModalRestau.commentaires.filter(c => c.id !== comment.id);
+    },
+    editRating(rating) {
+      this.newRating = rating.rating;
+      this.editingRating = rating;
+    },
+    deleteRating(rating) {
+      this.selectedModalRestau.notes = this.selectedModalRestau.notes.filter(r => r.id !== rating.id);
+      this.newRating = 0;
     },
   },
 };
@@ -898,6 +945,14 @@ form input {
 
 form button {
   align-self: flex-start;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 /*.cart {
