@@ -131,18 +131,12 @@
   
   <style scoped>
   .statistiques-view {
+    padding-top: 80px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     margin-top: 20px;
-  }
-  
-  h1 {
-    font-family: Arial, sans-serif;
-    font-size: 24px;
-    color: #333;
-    margin-bottom: 20px;
   }
   
   .navigation-container {

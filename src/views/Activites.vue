@@ -7,20 +7,21 @@
         <button @click="selectTab('Jeux')" :class="{ active: selectedTab === 'Jeux' }">Jeux</button>
         <button @click="selectTab('Tournois')" :class="{ active: selectedTab === 'Tournois' }">Tournois</button>
       </div>
-
+      <ConnexionModal v-if="showLoginModal" :visible="showLoginModal" @close="closeLoginModal"
+        @login-success="handleLoginSuccess" />
       <div v-show="selectedTab === 'Jeux'">
         <div class="search-container">
           <div class="search-row">
             <label for="searchName" class="search-label">Nom de jeu :</label>
             <input id="searchName" type="text" v-model="searchName" placeholder="Rechercher par nom de jeu"
-                   class="search-input"/>
+              class="search-input" />
           </div>
 
           <div class="search-row">
             <label class="search-label">Type de jeu :</label>
             <div class="checkbox-container">
               <label v-for="type in jeuTypes" :key="type" class="checkbox-label">
-                <input type="checkbox" v-model="selectedTypes" :value="type"/> {{ type }}
+                <input type="checkbox" v-model="selectedTypes" :value="type" /> {{ type }}
               </label>
             </div>
           </div>
@@ -28,24 +29,24 @@
           <div class="search-row">
             <label for="searchPlayers" class="search-label">Nombre de joueurs :</label>
             <input id="searchPlayers" type="number" v-model="searchPlayers" min="1" placeholder="Nombre de joueurs"
-                   class="search-input"/>
+              class="search-input" />
 
             <label for="searchAge" class="search-label">Âge minimum :</label>
             <input id="searchAge" type="number" v-model="searchAge" min="1" placeholder="Âge minimum"
-                   class="search-input"/>
+              class="search-input" />
 
             <label for="searchDuration" class="search-label">Durée max :</label>
             <input id="searchDuration" type="number" v-model="searchDuration" min="1" placeholder="Durée max (minutes)"
-                   class="search-input"/>
+              class="search-input" />
           </div>
 
           <div class="search-row">
             <label for="searchEditeur" class="search-label">Nom de l'éditeur :</label>
             <input id="searchEditeur" type="text" v-model="searchEditeur" placeholder="Rechercher par nom d'éditeur"
-                   class="search-input"/>
+              class="search-input" />
             <label for="searchStand" class="search-label">Nom de stand :</label>
             <input id="searchStand" type="text" v-model="searchStand" placeholder="Rechercher par nom de stand"
-                   class="search-input"/>
+              class="search-input" />
           </div>
 
           <button @click="resetFilters" class="reset-button">Réinitialiser les filtres</button>
@@ -53,7 +54,7 @@
 
         <div class="cards-container" v-if="filteredJeux.length">
           <div v-for="jeu in filteredJeux" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
-            <img :src="jeu.image" alt="Image du jeu" class="card-image"/>
+            <img :src="jeu.image" alt="Image du jeu" class="card-image" />
             <div class="card-content">
               <h2 class="card-title">{{ jeu.name }}</h2>
               <p class="card-type">Type : {{ jeu.type }}</p>
@@ -70,7 +71,7 @@
       <div id="Tournois" v-show="selectedTab === 'Tournois'">
         <div class="cards-container" v-if="tournois.length">
           <div v-for="tournoi in tournois" :key="tournoi._id" class="card" @click="openModal(tournoi)">
-            <img :src="tournoi.image" alt="Image du tournoi" class="card-image"/>
+            <img :src="tournoi.image" alt="Image du tournoi" class="card-image" />
             <div class="card-content">
               <h2 class="card-title">{{ tournoi.nom }}</h2>
               <p class="card-location">{{ tournoi.lieu }}</p>
@@ -87,7 +88,7 @@
         <div class="modal-content">
           <span class="close-button" @click="closeJeuModal">&times;</span>
           <h2>{{ selectedJeu.name }}</h2>
-          <img :src="selectedJeu.image" alt="Image du jeu" class="modal-image"/>
+          <img :src="selectedJeu.image" alt="Image du jeu" class="modal-image" />
           <p><strong>Type :</strong> {{ selectedJeu.type }}</p>
           <p><strong>Nombre de joueurs :</strong> {{ selectedJeu.nombre_de_joueurs.join(', ') }}</p>
           <p><strong>Âge minimum :</strong> {{ selectedJeu.age_minimum }} ans</p>
@@ -101,7 +102,7 @@
         <div class="modal-content">
           <span class="close-button" @click="closeModal">&times;</span>
           <h2>{{ selectedTournoi.nom }}</h2>
-          <img :src="selectedTournoi.image" alt="Image du tournoi" class="modal-image"/>
+          <img :src="selectedTournoi.image" alt="Image du tournoi" class="modal-image" />
           <p><strong>Lieu :</strong> {{ selectedTournoi.lieu }}</p>
           <p><strong>Date :</strong> {{ formatDate(selectedTournoi.dates) }}</p>
           <p><strong>Description :</strong> {{ selectedTournoi.description }}</p>
@@ -116,49 +117,59 @@
         <div class="modal-content">
           <span class="close-button" @click="closeConfirmation">&times;</span>
           <h2>Confirmer la réservation</h2>
-          <p>Voulez-vous vraiment réserver une place pour le tournoi {{ selectedTournoi.nom }} ?</p>
-          <button @click="confirmReservation" class="confirm-button">Confirmer</button>
-          <button @click="closeConfirmation" class="cancel-button">Annuler</button>
+          <p>Choisissez une date pour le tournoi {{ selectedTournoi?.nom || '' }} :</p>
+
+          <form v-if="selectedTournoi?.dates" @submit.prevent="confirmReservation">
+            <div>
+              <label for="reservationDate">Date :</label>
+              <select id="reservationDate" v-model="reservationDate" required>
+                <option v-for="date in selectedTournoi.dates" :key="date.jour" :value="date">
+                  {{ formatReservationDate(date) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-buttons">
+              <button type="submit" class="confirm-button">Confirmer</button>
+              <button type="button" @click="closeConfirmation" class="cancel-button">Annuler</button>
+            </div>
+          </form>
+          <p v-else>Aucune date disponible pour ce tournoi.</p>
         </div>
       </div>
 
       <div v-if="reservationMessage" class="reservation-message">
         <div class="modal-content">
           <p>{{ reservationMessage }}</p>
+          <p v-if="reservationDate">
+            <strong>Date de venue :</strong> {{ formatReservationDate(reservationDate) }}
+          </p>
+          <p v-if="reservationDate">
+            <strong>Heure :</strong> {{ formatTime(reservationDate) }}
+          </p>
           <button @click="closeReservationMessage">OK</button>
         </div>
       </div>
 
-      <ConnexionModal
-          v-if="showLoginModal"
-          :visible="showLoginModal"
-          @close="closeLoginModal"
-          @login-success="handleLoginSuccess"
-      />
-
-      <PaymentModal
-          v-if="showPaymentModal"
-          :visible="showPaymentModal"
-          :showPickupTime="false"
-          @close="closePaymentModal"
-          @payment-success="handlePaymentSuccess"
-      />
+      <PaymentModal v-if="showPaymentModal" :visible="showPaymentModal" :showPickupTime="false"
+        @close="closePaymentModal" @payment-success="handlePaymentSuccess" />
 
     </div>
   </div>
 </template>
 
 <script>
-import {reservations, tournois, jeux} from '@/datasource/data';
+import { reservations, tournois, jeux } from '@/datasource/data';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
 
 export default {
   name: 'PageActivites',
-  components: {PaymentModal, ConnexionModal},
+  components: { PaymentModal, ConnexionModal },
   data() {
     return {
       selectedTab: 'Jeux',
+      reservationDate: null,
       selectedJeu: null,
       selectedTournoi: null,
       showConfirmation: false,
@@ -219,22 +230,69 @@ export default {
     closeModal() {
       this.selectedTournoi = null;
     },
-    openReservationConfirmation() {
-      this.showConfirmation = true;
-    },
     closeConfirmation() {
       this.showConfirmation = false;
     },
-    confirmReservation() {
-      const placesRestantes = this.getPlacesRestantes(this.selectedTournoi._id, this.selectedTournoi.placesLimite);
-       if (placesRestantes === 0) {
-        this.reservationMessage = 'Désolé, il ne reste plus de places disponibles.';
-      } else {
-         this.openPaymentModal();
-         this.closeConfirmation();
-       }
+    formatDate(dates) {
+      if (Array.isArray(dates)) {
+        return dates.map(date => `${date.jour}/${date.mois} à ${this.formatTime(date)}`).join(', ');
+      }
+      return '';
     },
 
+    // Formatage de l'heure (appelé par formatDate)
+    formatTime(date) {
+      const hour = date.heures ? date.heures.toString().padStart(2, '0') : '00';
+      const minute = date.min ? date.min.toString().padStart(2, '0') : '00';
+      return `${hour}:${minute}`;
+    },
+
+    // Formate une date pour les options de réservation
+    formatReservationDate(date) {
+      if (!date || !date.jour || !date.mois) {
+        return 'Date invalide';
+      }
+      return `${date.jour}/${date.mois} à ${this.formatTime(date)}`;
+    },
+
+    openReservationConfirmation() {
+      const currentUser = this.$store.state.userSession;
+      if (currentUser) {
+        this.reservationDate = null; // Réinitialise la sélection
+        this.showConfirmation = true;
+      } else {
+        this.showLoginModal = true;
+      }
+    },
+
+    confirmReservation() {
+      if (!this.reservationDate || !this.reservationDate.jour || !this.reservationDate.mois) {
+        this.reservationMessage = 'Veuillez sélectionner une date valide.';
+        return;
+      }
+
+      const placesRestantes = this.getPlacesRestantes(this.selectedTournoi._id, this.selectedTournoi.placesLimite);
+      if (placesRestantes === 0) {
+        this.reservationMessage = 'Désolé, il ne reste plus de places disponibles.';
+      } else {
+        const currentUser = this.$store.state.userSession;
+        this.reservations.push({
+          tournoiId: this.selectedTournoi._id,
+          userId: currentUser.id,
+          places: 1,
+          prix: this.selectedTournoi.prix,
+          dateReservation: this.formatReservationDate(this.reservationDate),
+        });
+        this.reservationMessage = "Paiement effectué. Votre réservation a été confirmée !";
+        this.closeConfirmation();
+        this.openPaymentModal();
+        this.closeModal();
+        this.resetReservationFields();
+      }
+    },
+    resetReservationFields() {
+      this.reservationDate = '';
+    },
     handlePaymentSuccess() {
       const placesRestantes = this.getPlacesRestantes(this.selectedTournoi._id, this.selectedTournoi.placesLimite);
       if (placesRestantes > 0) {
@@ -260,7 +318,7 @@ export default {
       this.showPaymentModal = true;
     },
 
-    closePaymentModal(){
+    closePaymentModal() {
       this.showPaymentModal = false;
     },
 
@@ -276,15 +334,9 @@ export default {
     },
     getPlacesRestantes(tournoiId, placesLimite) {
       const totalReserved = this.reservations
-          .filter(reservation => reservation.tournoiId === tournoiId)
-          .reduce((total, reservation) => total + reservation.places, 0);
+        .filter(reservation => reservation.tournoiId === tournoiId)
+        .reduce((total, reservation) => total + reservation.places, 0);
       return placesLimite - totalReserved;
-    },
-    formatDate(dates) {
-      const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-      const day = dates.jour.toString().padStart(2, '0');
-      const monthName = mois[dates.mois - 1];
-      return `${day} ${monthName} à ${dates.heures}h${dates.min.toString().padStart(2, '0')}`;
     },
   },
   mounted() {
