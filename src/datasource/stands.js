@@ -51,7 +51,7 @@ export const stands = [
         type: "restaurants",
         image: require('@/assets/images/Derya.png'),
         idPoint: 11,
-        comptes: [12342],
+        comptes: [12350],
         nourritures: [
             {nom: "Tacos", prix: 8, image: require('@/assets/images/tacos.png')},
             {nom: "Crêpes turque", prix: 10, image: require('@/assets/images/crepe_turc.png')},
@@ -76,7 +76,7 @@ export const stands = [
         type: "restaurants",
         image: require('@/assets/images/breizh_gauffres.png'),
         idPoint: 10,
-        comptes: [12342],
+        comptes: [12351],
         nourritures: [
             {nom: "Gaufre aux sucre", prix: 5, image: require('@/assets/images/gaufre_sucre.png')},
             {nom: "Gaufre nutella", prix: 7, image: require('@/assets/images/gaufre_nutella.png')},
@@ -102,7 +102,7 @@ export const stands = [
         type: "restaurants",
         image: require('@/assets/images/dreambubble.png'),
         idPoint: 9,
-        comptes: [12342],
+        comptes: [12352],
         nourritures: [
             {nom: "Barbe à papa", prix: 5, image: require('@/assets/images/barbapapa.png')},
             {nom: "Crêpe aux sucres", prix: 5, image: require('@/assets/images/crepe_sucre.png')},
@@ -132,7 +132,7 @@ export const stands = [
         type: "restaurants",
         image: require('@/assets/images/pralinette.png'),
         idPoint: 8,
-        comptes: [12342],
+        comptes: [12353],
         nourritures: [
             {nom: "Chouquette", prix: 5, image: require('@/assets/images/chouquette.png')},
             {nom: "Pralines", prix: 4, image: require('@/assets/images/pralines.png')},

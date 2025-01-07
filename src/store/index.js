@@ -73,6 +73,9 @@ export default new Vuex.Store({
     SET_STANDS(state, stands) {
       state.stands = stands;
     },
+    SET_COMMANDES(state, commandes) {
+      state.commandes = commandes;
+    },
   },
   actions: {
     async getAllTournois({ commit }) {
@@ -104,6 +107,13 @@ export default new Vuex.Store({
     fetchUserReservationsJeux({ commit }, userId) {
       const userReservationsJeux = reservationsJeux.filter(reservationJeu => reservationJeu.userId === userId);
       commit('SET_RESERVATIONS_JEUX', userReservationsJeux);
+    },
+    async fetchAllOrders({ commit }) {
+      try {
+        commit('SET_COMMANDES', commandes);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des commandes :', error);
+      }
     },
     setUserSession({ commit }, user) {
       commit('SET_USER_SESSION', user);
@@ -171,6 +181,9 @@ export default new Vuex.Store({
       return [];
     },
     currentOrder : (state) => state.currentOrder,
+    allOrders(state) {
+      return state.userOrders || [];
+    },
     userReservations: (state) => {
       console.log("Reservations in state:", state.reservations);
       if (state.userSession) {
