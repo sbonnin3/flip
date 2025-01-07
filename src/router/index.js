@@ -10,6 +10,7 @@ import MesCommandes from '../views/MesCommandes.vue';
 import Reservations from '../views/Reservations.vue';
 import PrestatairesCarte from '../views/PrestatairesCarte.vue';
 import MaPrestation from '../views/MaPrestation.vue';
+import Commandes from '../views/Commandes.vue';
 import Statistiques from '../views/Statistiques.vue';
 import store from '../store/index.js';
 
@@ -63,6 +64,12 @@ const routes = [
     path: "/MaPrestation",
     name: "MaPrestation",
     component: MaPrestation,
+    meta: { requiresAuth: true, requiresPrestataire: true }
+  },
+  {
+    path: "/Commandes",
+    name: "Commandes",
+    component: Commandes,
     meta: { requiresAuth: true, requiresPrestataire: true }
   },
   {

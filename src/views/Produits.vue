@@ -237,7 +237,7 @@
 
 <script>
 
-import {jeux, souvenirs, stands, reservationsJeux} from '@/datasource/data';
+import {jeux, souvenirs, stands, reservationsJeux, commandes} from '@/datasource/data';
 import {mapActions, mapGetters} from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
@@ -268,6 +268,7 @@ export default {
       souvenirs,
       stands,
       reservationsJeux,
+      commandes,
     };
   },
   mounted() {
@@ -362,12 +363,15 @@ export default {
     },
 
     handlePaymentSuccess() {
+      const currentUser = this.$store.state.userSession;
       if (this.cart.length > 0) {
+        // Grouper les articles par restaurant
         const ordersByRestaurant = this.cart.reduce((acc, article) => {
           const restaurantName = article.restaurant;
           const orderNumber = `${Math.floor(Math.random() * 100)}`;
           if (!acc[restaurantName]) {
             acc[restaurantName] = {
+              userId: currentUser.id,
               restaurantNom: restaurantName,
               orderNumber: orderNumber,
               articles: []
@@ -377,15 +381,18 @@ export default {
           return acc;
         }, {});
 
+        // Mettre à jour currentOrder avec un tableau de commandes
         const newOrders = Object.values(ordersByRestaurant);
-        this.setCurrentOrder(newOrders);
+        this.setCurrentOrder(newOrders);  // Envoi un tableau de commandes à currentOrder
 
+        // Ajouter les commandes à l'historique
         newOrders.forEach((restaurantOrder) => {
+          console.log('Commande:', restaurantOrder);
           this.addArticleOrder({
             ...restaurantOrder,
-            status: "Confirmée",
           });
         });
+
 
         this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
         const recap = this.$refs.paymentForm.generateRecap();
@@ -395,6 +402,7 @@ export default {
         }
         this.$store.dispatch('resetCurrentOrder');
         this.cart = [];
+        console.log("Panier vidé après paiement :", this.cart);
         this.closePaymentModal();
       }
     },

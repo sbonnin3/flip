@@ -80,5 +80,22 @@ export const comptes = [
         motDePasse: "c",
         nom: "c",
         prenom: "c",
+    },
+    {
+        id: 12349,
+        role: "restaurateur",
+        identifiant: "r",
+        motDePasse: "r",
+        nom: "r",
+        prenom: "r",
+    },
+    {
+        id: 12350,
+        role: "organisateur",
+        identifiant: "o",
+        motDePasse: "o",
+        nom: "o",
+        prenom: "o",
     }
+
 ];

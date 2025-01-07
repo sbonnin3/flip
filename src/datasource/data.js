@@ -8,6 +8,8 @@ import { jeuxCreation } from "./jeuxCreation";
 import { stands } from './stands';
 import { souvenirs } from "./souvenirs";
 import { statistiques } from "./statistiques"
+import { commandes } from "@/datasource/commandes";
+
 export {
   tournois,
   reservations,
@@ -19,4 +21,5 @@ export {
   stands,
   souvenirs,
   statistiques,
+  commandes,
 };

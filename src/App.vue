@@ -48,6 +48,9 @@ export default {
         if (["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
           this.navTitles.push({ text: "Ma Prestation" });
         }
+        if (this.userSession.role === "restaurateur") {
+          this.navTitles.push({ text: "Commandes" });
+        }
 
         // Ajouter "Statistiques" pour tous les utilisateurs connectés
         this.navTitles.push({ text: "Statistiques" });
@@ -96,6 +99,8 @@ export default {
         route = "/MesCommandes";
       } else if (this.navTitles[index].text === "Ma Prestation") {
         route = "/MaPrestation";
+      } else if (this.navTitles[index].text === "Commandes"){
+        route = "/Commandes";
       }
 
       if (this.$route.path !== route) {

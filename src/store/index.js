@@ -1,12 +1,10 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { reservations } from "@/datasource/data";
+import {commandes, reservations, reservationsJeux, comptes} from "@/datasource/data";
 import { getAllTournois } from '@/services/tournoisService';
 import { getAllJeux } from "@/services/jeuxService";
-import { comptes } from '@/datasource/comptes';
 import { getAllSouvenirs } from "@/services/souvenirsService";
 import { getAllStands } from "@/services/standsService";
-import { reservationsJeux } from "@/datasource/reservationsJeux";
 
 Vue.use(Vuex);
 
@@ -19,9 +17,9 @@ export default new Vuex.Store({
     souvenirs: [],
     reservations: reservations,
     reservationsJeux: reservationsJeux,
-    userOrders: [],
+    userOrders: commandes,
     currentOrder: [],
-    restaurants: [],
+    stands: [],
   },
   mutations: {
     SET_USER_SESSION(state, user) {
@@ -72,8 +70,8 @@ export default new Vuex.Store({
     RESET_CURRENT_ORDER(state, Order) {
       state.currentOrder = Order;
     },
-    SET_STANDS(state, restaurants) {
-      state.restaurants = restaurants;
+    SET_STANDS(state, stands) {
+      state.stands = stands;
     },
   },
   actions: {
@@ -159,12 +157,20 @@ export default new Vuex.Store({
   getters: {
     tournois: (state) => state.tournois,
     jeux: (state) => state.jeux,
+    stands: (state) => state.stands,
     comptes: (state) => state.comptes,
     userSession: (state) => state.userSession,
     souvenirs: (state) => state.souvenirs,
-    userOrders: (state) => state.userOrders,
+    userOrders: (state) => {
+      console.log('User orders:', state.userOrders);  // Vérifie les données
+      if (state.userSession) {
+        return state.userOrders.filter(
+            (order => order.userId === state.userSession.id)
+        );
+      }
+      return [];
+    },
     currentOrder : (state) => state.currentOrder,
-    restaurants: (state) => state.restaurants,
     userReservations: (state) => {
       console.log("Reservations in state:", state.reservations);
       if (state.userSession) {

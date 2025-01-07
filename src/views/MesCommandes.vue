@@ -62,12 +62,8 @@ import { mapGetters } from "vuex";
 export default {
   name: "PageMesCommandes",
   computed: {
-    ...mapGetters(['userReservations', 'userReservationsJeux', 'userOrders', 'userSession']),
+    ...mapGetters(['userReservations', 'userReservationsJeux', 'userOrders']),
     commandes() {
-      if (!this.userSession || !this.userReservations) {
-        return [];
-      }
-
       return this.userReservations.map(reservation => {
         const tournoi = this.$store.state.tournois.find(t => t._id === reservation.tournoiId);
         return {
@@ -78,10 +74,6 @@ export default {
       });
     },
     commandesJeu(){
-      if (!this.userSession || !this.userReservationsJeux) {
-        return [];
-      }
-
       return this.userReservationsJeux.map(reservationJeu => {
         const jeu = this.$store.state.jeux.find(j => j._id === reservationJeu.jeuID);
         return {
@@ -92,20 +84,25 @@ export default {
       });
     },
     articleCommandes() {
-      if (!this.userSession || !this.userOrders) {
-        return [];
-      }
-      return this.userOrders.map(order => ({
-        ...order,
-        status: 'Payée. A chercher au stand.'
-      }));
-    },
+      return this.userOrders.map(commandes => {
+        console.log('Commande:', commandes);
+        const restaurant = this.$store.state.stands.find(s => s.nom === commandes.restaurantNom);
+        console.log('Restaurant trouvé:', restaurant);  // Vérifie si le restaurant est bien trouvé
+        return {
+          ...commandes,
+          restaurantNom: restaurant ? restaurant.nom : 'Restaurant inconnu',
+          status: 'Payée. A chercher au stand.',
+        };
+      });
+    }
+
 
 
   },
   mounted() {
     this.$store.dispatch('getAllTournois');
     this.$store.dispatch('getAllJeux');
+    this.$store.dispatch('getAllStands');
   },
 };
 </script>
