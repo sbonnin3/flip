@@ -141,6 +141,10 @@ export default {
       this.closePaymentModal();
     },
 
+    getPickupTime() {
+      return this.pickupTime;  // Retourne l'heure de retrait
+    },
+
     generateRecap() {
       console.log('Current Order:', this.currentOrder);
       if (!Array.isArray(this.currentOrder) || this.currentOrder.length === 0) {

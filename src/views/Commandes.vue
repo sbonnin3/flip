@@ -17,6 +17,7 @@
             <p class="article-price">Prix : {{ article.prix }}€</p>
           </div>
           <p class="card-status">{{ commande.status }}</p>
+          <p class="card-status">Heure de retrait : {{ commande.pickupTime + "h" || "Non définie"}}</p>
         </div>
       </div>
     </div>
@@ -24,12 +25,13 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import {mapGetters} from "vuex";
 
 export default {
   name: "PageCommandes",
   computed: {
     ...mapGetters(['allOrders']), // Récupère toutes les commandes depuis Vuex
+
     currentUser() {
       return this.$store.state.userSession; // Restaurateur connecté
     },
@@ -56,6 +58,7 @@ export default {
             };
           });
     },
+
 
   },
   mounted() {

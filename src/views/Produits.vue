@@ -369,12 +369,14 @@ export default {
         const ordersByRestaurant = this.cart.reduce((acc, article) => {
           const restaurantName = article.restaurant;
           const orderNumber = `${Math.floor(Math.random() * 100)}`;
+          const pickupTime = this.$refs.paymentForm.getPickupTime();
           if (!acc[restaurantName]) {
             acc[restaurantName] = {
               userId: currentUser.id,
               restaurantNom: restaurantName,
               orderNumber: orderNumber,
-              articles: []
+              articles: [],
+              pickupTime: pickupTime,
             };
           }
           acc[restaurantName].articles.push(article);

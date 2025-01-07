@@ -8,6 +8,7 @@ export const commandes = [
             { nom: "Tacos", quantite: 2, prix: 8},
             { nom: "Frites", quantite: 1, prix: 6}
         ],
+        pickupTime: "12:30",
     },
     {
         commandeId: 2,
@@ -18,6 +19,7 @@ export const commandes = [
             { nom: "Gaufre aux sucre", quantite: 1, prix: 5},
             { nom: "Oasis", quantite: 1, prix: 3}
         ],
+        pickupTime: "16:30",
     },
     {
         commandeId: 2,
@@ -28,5 +30,6 @@ export const commandes = [
             { nom: "Barbe à papa", quantite: 1, prix: 5},
             { nom: "Orangina", quantite: 1, prix: 3}
         ],
+        pickupTime: "17:00",
     },
 ]
