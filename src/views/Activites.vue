@@ -104,7 +104,7 @@
           <h2>{{ selectedTournoi.nom }}</h2>
           <img :src="selectedTournoi.image" alt="Image du tournoi" class="modal-image" />
           <p><strong>Lieu :</strong> {{ selectedTournoi.lieu }}</p>
-          <p><strong>Date :</strong> {{ formatDate(selectedTournoi.dates) }}</p>
+          <p class="article-quantity">Date : {{ formatReservationDate(selectedTournoi.dates[0]) }}</p>
           <p><strong>Description :</strong> {{ selectedTournoi.description }}</p>
           <p><strong>Prix :</strong> {{ selectedTournoi.prix }}€</p>
           <p><strong>Places restantes :</strong>
@@ -114,29 +114,34 @@
       </div>
 
       <div v-if="showConfirmation" class="confirmation-modal">
-        <div class="modal-content">
-          <span class="close-button" @click="closeConfirmation">&times;</span>
-          <h2>Confirmer la réservation</h2>
-          <p>Choisissez une date pour le tournoi {{ selectedTournoi?.nom || '' }} :</p>
+  <div class="modal-content">
+    <span class="close-button" @click="closeConfirmation">&times;</span>
+    <h2>Confirmer la réservation</h2>
+    <p>Choisissez une date pour le tournoi {{ selectedTournoi?.nom || '' }} :</p>
 
-          <form v-if="selectedTournoi?.dates" @submit.prevent="confirmReservation">
-            <div>
-              <label for="reservationDate">Date :</label>
-              <select id="reservationDate" v-model="reservationDate" required>
-                <option v-for="date in selectedTournoi.dates" :key="date.jour" :value="date">
-                  {{ formatReservationDate(date) }}
-                </option>
-              </select>
-            </div>
-
-            <div class="form-buttons">
-              <button type="submit" class="confirm-button">Confirmer</button>
-              <button type="button" @click="closeConfirmation" class="cancel-button">Annuler</button>
-            </div>
-          </form>
-          <p v-else>Aucune date disponible pour ce tournoi.</p>
-        </div>
+    <form v-if="selectedTournoi?.dates" @submit.prevent="confirmReservation">
+      <div>
+        <label for="reservationDate">Date :</label>
+        <select id="reservationDate" v-model="reservationDate" required>
+          <option v-for="date in selectedTournoi.dates" :key="date.jour" :value="date">
+            {{ formatReservationDate(date) }}
+          </option>
+        </select>
       </div>
+
+      <div>
+        <label for="teamName">Nom de l'équipe :</label>
+        <input id="teamName" type="text" v-model="teamName" placeholder="Entrez le nom de votre équipe" required />
+      </div>
+
+      <div class="form-buttons">
+        <button type="submit" class="confirm-button">Confirmer</button>
+        <button type="button" @click="closeConfirmation" class="cancel-button">Annuler</button>
+      </div>
+    </form>
+    <p v-else>Aucune date disponible pour ce tournoi.</p>
+  </div>
+</div>
 
       <div v-if="reservationMessage" class="reservation-message">
         <div class="modal-content">
@@ -180,6 +185,7 @@ export default {
       reservations,
       tournois,
       jeux,
+      teamName: '',
       searchName: '',
       searchPlayers: '',
       searchAge: '',
@@ -235,7 +241,14 @@ export default {
     },
     formatDate(dates) {
       if (Array.isArray(dates)) {
-        return dates.map(date => `${date.jour}/${date.mois} à ${this.formatTime(date)}`).join(', ');
+        return dates
+          .map(date => {
+            const heures = date.heures ? date.heures.toString().padStart(2, '0') : '00';
+            const minutes = date.min ? date.min.toString().padStart(2, '0') : '00';
+            const annee = date.annee || new Date().getFullYear(); // Utilise l'année actuelle si elle n'est pas définie
+            return `${date.jour}/${date.mois}/${annee} à ${heures}:${minutes}`;
+          })
+          .join(', ');
       }
       return '';
     },
@@ -249,12 +262,17 @@ export default {
 
     // Formate une date pour les options de réservation
     formatReservationDate(date) {
-      if (!date || !date.jour || !date.mois) {
+      if (!date || !date.jour || !date.mois || !date.annee) {
         return 'Date invalide';
       }
-      return `${date.jour}/${date.mois} à ${this.formatTime(date)}`;
-    },
 
+      const jour = date.jour.toString().padStart(2, '0'); // Ajout du zéro si nécessaire
+      const mois = date.mois.toString().padStart(2, '0'); // Ajout du zéro si nécessaire
+      const heures = date.heures ? date.heures.toString().padStart(2, '0') : '00';
+      const minutes = date.min ? date.min.toString().padStart(2, '0') : '00';
+
+      return `${jour}/${mois}/${date.annee} à ${heures}:${minutes}`;
+    },
     openReservationConfirmation() {
       const currentUser = this.$store.state.userSession;
       if (currentUser) {
@@ -264,32 +282,35 @@ export default {
         this.showLoginModal = true;
       }
     },
-
     confirmReservation() {
-      if (!this.reservationDate || !this.reservationDate.jour || !this.reservationDate.mois) {
-        this.reservationMessage = 'Veuillez sélectionner une date valide.';
-        return;
-      }
+  if (!this.reservationDate || !this.teamName) {
+    this.reservationMessage = 'Veuillez sélectionner une date et entrer un nom d\'équipe.';
+    return;
+  }
 
-      const placesRestantes = this.getPlacesRestantes(this.selectedTournoi._id, this.selectedTournoi.placesLimite);
-      if (placesRestantes === 0) {
-        this.reservationMessage = 'Désolé, il ne reste plus de places disponibles.';
-      } else {
-        const currentUser = this.$store.state.userSession;
-        this.reservations.push({
-          tournoiId: this.selectedTournoi._id,
-          userId: currentUser.id,
-          places: 1,
-          prix: this.selectedTournoi.prix,
-          dateReservation: this.formatReservationDate(this.reservationDate),
-        });
-        this.reservationMessage = "Paiement effectué. Votre réservation a été confirmée !";
-        this.closeConfirmation();
-        this.openPaymentModal();
-        this.closeModal();
-        this.resetReservationFields();
-      }
-    },
+  const placesRestantes = this.getPlacesRestantes(this.selectedTournoi._id, this.selectedTournoi.placesLimite);
+  if (placesRestantes === 0) {
+    this.reservationMessage = 'Désolé, il ne reste plus de places disponibles.';
+  } else {
+    const currentUser = this.$store.state.userSession;
+    this.reservations.push({
+      tournoiId: this.selectedTournoi._id,
+      userId: currentUser.id,
+      places: 1,
+      prix: this.selectedTournoi.prix,
+      dateReservation: {
+        ...this.reservationDate,
+        annee: new Date().getFullYear(),
+      },
+      teamName: this.teamName, // Ajout du nom d'équipe
+    });
+    this.reservationMessage = "Paiement effectué. Votre réservation a été confirmée !";
+    this.teamName = ''; // Réinitialisation
+    this.closeConfirmation();
+    this.openPaymentModal();
+    this.closeModal();
+  }
+},
     resetReservationFields() {
       this.reservationDate = '';
     },

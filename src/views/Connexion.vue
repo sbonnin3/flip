@@ -24,10 +24,10 @@
             </div>
             <div class="forget">
               <label>
-<!--                <input type="checkbox" /> Remember me-->
+                <!--                <input type="checkbox" /> Remember me-->
               </label>
               <label>
-<!--                <a href="#">Forgot password?</a>-->
+                <!--                <a href="#">Forgot password?</a>-->
               </label>
             </div>
             <button type="submit">Se connecter</button>
@@ -48,6 +48,11 @@
               <ion-icon name="person-outline"></ion-icon>
               <input v-model="prenom" type="text" required />
               <label for="prenom">Prénom</label>
+            </div>
+            <div class="inputbox">
+              <ion-icon name="mail-outline"></ion-icon>
+              <input v-model="email" type="email" required />
+              <label for="email">Email</label>
             </div>
             <div class="inputbox">
               <ion-icon name="mail-outline"></ion-icon>
@@ -100,6 +105,7 @@ export default {
       isLogin: true,
       nom: "",
       prenom: "",
+      email: "",
       identifiant: "",
       motDePasse: "",
       role: "utilisateur",
@@ -116,7 +122,7 @@ export default {
 
     login() {
       const user = this.$store.getters.comptes.find(
-          (compte) => compte.identifiant === this.identifiant && compte.motDePasse === this.motDePasse
+        (compte) => compte.identifiant === this.identifiant && compte.motDePasse === this.motDePasse
       );
       if (user) {
         this.setUserSession(user);
@@ -127,8 +133,12 @@ export default {
     },
 
     register() {
+      if (!this.email.includes("@")) {
+        this.errorMessage = "Veuillez fournir une adresse email valide.";
+        return;
+      }
       const existingUser = this.$store.getters.comptes.find(
-          (compte) => compte.identifiant === this.identifiant
+        (compte) => compte.identifiant === this.identifiant
       );
       if (existingUser) {
         this.errorMessage = "Cet identifiant est déjà utilisé.";
@@ -137,6 +147,7 @@ export default {
           id: Date.now(),
           nom: this.nom,
           prenom: this.prenom,
+          email: this.email, // Ajout de l'email
           identifiant: this.identifiant,
           motDePasse: this.motDePasse,
           role: this.role,
@@ -175,7 +186,8 @@ section {
 .form-box {
   position: relative;
   width: 400px;
-  min-height: 500px; /* Assure une hauteur suffisante pour le formulaire */
+  min-height: 500px;
+  /* Assure une hauteur suffisante pour le formulaire */
   background: transparent;
   border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 20px;
@@ -185,7 +197,8 @@ section {
   align-items: center;
   flex-direction: column;
   padding: 20px;
-  margin-top: 125px; /* Ajusté à 125px pour que le formulaire soit plus bas */
+  margin-top: 125px;
+  /* Ajusté à 125px pour que le formulaire soit plus bas */
 }
 
 h2 {
@@ -206,14 +219,15 @@ h2 {
   position: absolute;
   top: 0;
   left: 5px;
-  color: #ffffff; /* Texte des labels en noir */
+  color: #ffffff;
+  /* Texte des labels en noir */
   font-size: 1em;
   pointer-events: none;
   transition: 0.3s;
 }
 
-.inputbox input:focus ~ label,
-.inputbox input:valid ~ label {
+.inputbox input:focus~label,
+.inputbox input:valid~label {
   top: -20px;
   font-size: 0.8em;
   color: #fff;
@@ -228,12 +242,14 @@ h2 {
   outline: none;
   font-size: 1em;
   padding: 0 35px 0 5px;
-  color: #fff; /* Texte des inputs en blanc */
+  color: #fff;
+  /* Texte des inputs en blanc */
 }
 
 .inputbox input:focus,
 .inputbox select:focus {
-  border-bottom: 2px solid #fff; /* Bordure blanche quand actif */
+  border-bottom: 2px solid #fff;
+  /* Bordure blanche quand actif */
 }
 
 .inputbox ion-icon {
@@ -317,11 +333,12 @@ button:hover {
 }
 
 /* Changer la couleur des éléments dans la liste déroulante (les options) en noir */
-select > option {
-  color: #000; /* Texte des options dans la liste en noir */
+select>option {
+  color: #000;
+  /* Texte des options dans la liste en noir */
 }
 
-.inputbox > option {
+.inputbox>option {
   color: black;
 }
 </style>

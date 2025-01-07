@@ -35,8 +35,9 @@ export default new Vuex.Store({
       }
     },
     SET_TOURNOIS(state, tournois) {
+      console.log("Tournois enregistrés dans le store :", tournois); // Vérifiez ici
       state.tournois = tournois;
-    },
+    },    
     SET_JEUX(state, jeux){
       state.jeux = jeux;
     },
@@ -47,7 +48,7 @@ export default new Vuex.Store({
       state.comptes.push(nouveauCompte);
     },
     ADD_RESERVATION(state, reservation) {
-      Vue.set(state.reservations, state.reservations.length, reservation);
+      state.reservations.push(reservation);
     },
     ADD_RESERVATION_JEUX(state, reservationJeu){
       Vue.set(state.reservationsJeux, state.reservationsJeux.length, reservationJeu);
@@ -74,20 +75,33 @@ export default new Vuex.Store({
       state.stands = stands;
     },
     SET_COMMANDES(state, commandes) {
-      state.commandes = commandes;
+      state.userOrders = commandes;
     },
   },
   actions: {
     async getAllTournois({ commit }) {
       try {
         const response = await getAllTournois();
-        console.log('Tournois récupérés :', response.data);
+        console.log("Tournois récupérés :", response.data); // Log pour vérifier les données
         if (response.error === 0) {
           commit('SET_TOURNOIS', response.data);
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des tournois :", error);
       }
+    },    
+    fetchReservationsByPrestataire({ commit, state }, prestataireId) {
+      // Filtrer les réservations pour les tournois créés par le prestataire
+      const reservationsForPrestataire = state.reservations.filter(
+        (reservation) => {
+          const tournoi = state.tournois.find(t => t.id === reservation.tournoiId);
+          return tournoi && tournoi.prestataireId === prestataireId;
+        }
+      );
+      commit('SET_RESERVATIONS', reservationsForPrestataire);
+    },
+    addReservation({ commit }, reservation) {
+      commit('ADD_RESERVATION', reservation);
     },
     async getAllJeux({ commit }) {
       try {
@@ -123,9 +137,6 @@ export default new Vuex.Store({
     },
     addCompte({ commit }, compte) {
       commit('ADD_COMPTE', compte);
-    },
-    addReservation({ commit }, reservation) {
-      commit('ADD_RESERVATION', reservation);
     },
     addReservationJeux({ commit }, reservationJeu) {
       commit('ADD_RESERVATION_JEUX', reservationJeu);
@@ -171,6 +182,21 @@ export default new Vuex.Store({
     comptes: (state) => state.comptes,
     userSession: (state) => state.userSession,
     souvenirs: (state) => state.souvenirs,
+    reservationsByPrestataire: (state) => (prestataireId) => {
+      const tournoisIds = state.tournois
+        .filter(tournoi => tournoi.prestataireId === prestataireId) // Filtrer les tournois par prestataire
+        .map(tournoi => tournoi._id); // Récupérer les IDs des tournois
+    
+      console.log("IDs des tournois du prestataire :", tournoisIds); // Ajoutez ce log
+    
+      const reservations = state.reservations.filter(
+        reservation => tournoisIds.includes(reservation.tournoiId)
+      );
+    
+      console.log("Réservations trouvées :", reservations); // Ajoutez ce log
+    
+      return reservations;
+    },    
     userOrders: (state) => {
       console.log('User orders:', state.userOrders);  // Vérifie les données
       if (state.userSession) {

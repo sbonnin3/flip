@@ -6,15 +6,18 @@
     <p v-if="!this.$store.state.tournois.length">Chargement des tournois...</p>
 
     <!-- Commandes de tournois -->
-    <div class="cards-container" v-else-if="commandes && commandes.length">
+    <div v-if="commandes && commandes.length">
       <h2 class="section-title">Commandes de tournois</h2>
       <div v-for="(commande, index) in commandes" :key="index" class="card">
         <div class="card-content">
           <h3 class="card-title">Tournoi de {{ commande.tournoiNom }}</h3>
           <div class="article">
             <p class="article-name">Places réservées : {{ commande.places }}</p>
-            <p class="article-quantity">Date : {{commande.date}}</p>
+            <p class="article-quantity">
+              Date : {{ formatReservationDate(commande.date || commande.dateReservation) }}
+            </p>
             <p class="article-price">Prix : {{ commande.prix }}€</p>
+            <p class="article-team">Nom de l'équipe : {{ commande.teamName || 'Aucun' }}</p>
           </div>
           <p class="card-status">{{ commande.status }}</p>
         </div>
@@ -40,7 +43,7 @@
 
     <p v-if="!this.$store.state.jeux.length">Chargement des jeux...</p>
 
-    <div class="cards-container" v-else-if ="commandesJeu && commandesJeu.length">
+    <div class="cards-container" v-else-if="commandesJeu && commandesJeu.length">
       <h2 class="section-title">Commandes de jeux</h2>
       <div v-for="(commande, index) in commandesJeu" :key="index" class="card">
         <div class="card-content">
@@ -64,7 +67,7 @@ export default {
   computed: {
     ...mapGetters(['userReservations', 'userReservationsJeux', 'userOrders']),
     commandes() {
-      return this.userReservations.map(reservation => {
+      const commandes = this.userReservations.map(reservation => {
         const tournoi = this.$store.state.tournois.find(t => t._id === reservation.tournoiId);
         return {
           ...reservation,
@@ -72,8 +75,10 @@ export default {
           status: 'Confirmée',
         };
       });
+      console.log('Commandes:', commandes);
+      return commandes;
     },
-    commandesJeu(){
+    commandesJeu() {
       return this.userReservationsJeux.map(reservationJeu => {
         const jeu = this.$store.state.jeux.find(j => j._id === reservationJeu.jeuID);
         return {
@@ -95,9 +100,25 @@ export default {
         };
       });
     }
+  },
+  methods: {
+    formatReservationDate(date) {
+      if (!date) return 'Date invalide';
 
+      // Vérifier si la date est un objet réactif avec les propriétés nécessaires
+      const { jour, mois, annee, heures, min } = date;
 
+      if (jour !== undefined && mois !== undefined && annee !== undefined) {
+        const formattedJour = jour.toString().padStart(2, '0');
+        const formattedMois = mois.toString().padStart(2, '0');
+        const formattedHeures = heures !== undefined ? heures.toString().padStart(2, '0') : '00';
+        const formattedMinutes = min !== undefined ? min.toString().padStart(2, '0') : '00';
 
+        return `${formattedJour}/${formattedMois}/${annee} à ${formattedHeures}:${formattedMinutes}`;
+      }
+
+      return 'Date invalide';
+    },
   },
   mounted() {
     this.$store.dispatch('getAllTournois');
