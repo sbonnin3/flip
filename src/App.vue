@@ -39,6 +39,10 @@ export default {
       ];
 
       if (this.userSession) {
+        // Exclure l'onglet "Produits" pour les organisateurs
+        if (["vendeur", "restaurateur", "createur", "organisateur"].includes(this.userSession.role)) {
+          this.navTitles = this.navTitles.filter(title => title.text !== "Produits");
+        }
         if (this.userSession.role === "utilisateur") {
           this.navTitles.push({ text: "Mes Commandes" });
         }
@@ -99,7 +103,7 @@ export default {
         route = "/MesCommandes";
       } else if (this.navTitles[index].text === "Ma Prestation") {
         route = "/MaPrestation";
-      } else if (this.navTitles[index].text === "Commandes"){
+      } else if (this.navTitles[index].text === "Commandes") {
         route = "/Commandes";
       }
 

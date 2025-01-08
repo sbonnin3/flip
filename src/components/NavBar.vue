@@ -52,15 +52,20 @@ export default {
       return this.displayedTitles.findIndex(title => {
         // Mapper chaque titre sur le chemin correspondant
         const titleToPathMap = {
-          "Accueil": "/Accueil",
-          "Carte": "/Carte",
-          "Activités": "/Activites",
-          "Réservations": "/Reservations",
-          "Mon Compte": "/MonCompte",
-          "Connexion": "/Connexion",
-          "Comptes": "/Comptes",
-          "Produits": "/Produits"
-        };
+        "Accueil": "/Accueil",
+        "Carte": this.userSession && ["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)
+          ? "/PrestatairesCarte"
+          : "/Carte",
+        "Activités": "/Activites",
+        "Réservations": "/Reservations",
+        "Mon Compte": "/MonCompte",
+        "Connexion": "/Connexion",
+        "Comptes": "/Comptes",
+        "Produits": "/Produits",
+        "Statistiques": "/Statistiques",
+        "Ma Prestation": "/MaPrestation",
+        "Commandes": "/Commandes"
+      };
         return titleToPathMap[title.text]?.toLowerCase() === currentPath;
       });
     },

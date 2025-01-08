@@ -1,15 +1,14 @@
 <template>
   <div class="page-prestation">
-    <h1 class="page-title">Gestion de la prestation</h1>
+    <h1 class="page-title">Gestion de ma prestation</h1>
 
 
     <div class="tab-container">
-      <button :class="{ active: selectedTab === 'Catalogue' }"
-              @click="selectTab('Catalogue')">Catalogue</button>
-      <button :class="{ active: selectedTab === 'Jeux' }"
-              @click="selectTab('Jeux')">Mes jeux </button>
-      <button :class="{ active: selectedTab === 'Emplacement' }"
-              @click="selectTab('Emplacement')">Mon emplacement</button>
+      <button :class="{ active: selectedTab === 'Catalogue' }" @click="selectTab('Catalogue')">Catalogue</button>
+      <button :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Mes jeux </button>
+      <button :class="{ active: selectedTab === 'Emplacement' }" @click="selectTab('Emplacement')">Mon
+        emplacement</button>
+      <button :class="{ active: selectedTab === 'MesTournois' }" @click="selectTab('MesTournois')">Mes tournois</button>
     </div>
 
     <!-- Onglet des jeux du flip -->
@@ -17,7 +16,7 @@
     <div v-show="selectedTab === 'Catalogue'">
       <div class="cards-container" v-if="jeux.length">
         <div v-for="jeu in jeux" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
-          <img :src="jeu.image" alt="Image du jeu" class="card-image"/>
+          <img :src="jeu.image" alt="Image du jeu" class="card-image" />
           <div class="card-content">
             <h2 class="card-title">{{ jeu.name }}</h2>
             <p class="card-type">Type : {{ jeu.type }}</p>
@@ -31,7 +30,7 @@
           <div class="modal-content">
             <span class="close-button" @click="closeJeuModal">&times;</span>
             <h2>{{ selectedJeu.name }}</h2>
-            <img :src="selectedJeu.image" alt="Image du jeu" class="modal-image"/>
+            <img :src="selectedJeu.image" alt="Image du jeu" class="modal-image" />
             <p><strong>Type :</strong> {{ selectedJeu.type }}</p>
             <p><strong>Nombre de joueurs :</strong> {{ selectedJeu.nombre_de_joueurs.join(', ') }}</p>
             <p><strong>Âge minimum :</strong> {{ selectedJeu.age_minimum }} ans</p>
@@ -46,7 +45,7 @@
     <div v-show="selectedTab === 'Jeux'">
       <div class="cards-container" v-if="jeuxCreation.length">
         <div v-for="jeu in jeuxCreation" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
-          <img :src="jeu.image" alt="Image du jeu" class="card-image"/>
+          <img :src="jeu.image" alt="Image du jeu" class="card-image" />
           <div class="card-content">
             <h2 class="card-title">{{ jeu.name }}</h2>
             <p class="card-type">Type : {{ jeu.type }}</p>
@@ -100,6 +99,73 @@
 
     </div>
 
+    <div v-show="selectedTab === 'MesTournois'">
+      <div v-if="mesTournois.length">
+        <div class="cards-container">
+          <div v-for="tournoi in mesTournois" :key="tournoi._id" class="card">
+            <img :src="tournoi.image" alt="Image du tournoi" class="card-image" />
+            <div class="card-content">
+              <h2 class="card-title">{{ tournoi.nom }}</h2>
+              <p class="card-location">{{ tournoi.lieu }}</p>
+              <p class="card-price">Prix : {{ tournoi.prix }}€</p>
+              <p class="card-dates">
+                Dates :
+                <span v-for="date in tournoi.dates" :key="date">
+                  {{ formatDate(date) }} - {{ date.placesRestantes }} places
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p v-else>Aucun tournoi créé pour l'instant.</p>
+
+      <button class="create-button" @click="openTournoiModal">Créer un tournoi</button>
+
+      <div v-if="showTournoiModal" class="modal">
+        <div class="modal-content">
+          <span class="close-button" @click="closeTournoiModal">&times;</span>
+          <h2>Créer un nouveau tournoi</h2>
+          <form @submit.prevent="createTournoi">
+            <div class="inputBox">
+              <label for="nomTournoi">Nom du tournoi :</label>
+              <input v-model="newTournoi.nom" type="text" id="nomTournoi" required />
+            </div>
+            <div class="inputBox">
+              <label for="lieuTournoi">Lieu :</label>
+              <input v-model="newTournoi.lieu" type="text" id="lieuTournoi" required />
+            </div>
+            <div class="inputBox">
+              <label for="prixTournoi">Prix (€) :</label>
+              <input v-model="newTournoi.prix" type="number" id="prixTournoi" required />
+            </div>
+            <div class="inputBox">
+              <label for="imageTournoi">Image :</label>
+              <input type="file" id="imageTournoi" @change="handleTournoiImageUpload" />
+            </div>
+            <div class="inputBox">
+              <label for="descriptionTournoi">Description :</label>
+              <textarea v-model="newTournoi.description" id="descriptionTournoi" rows="4"></textarea>
+            </div>
+            <div class="inputBox">
+              <label>Dates :</label>
+              <button @click.prevent="addDate">Ajouter une date</button>
+              <div v-for="(date, index) in newTournoi.dates" :key="index" class="date-fields">
+                <input v-model="date.jour" type="number" placeholder="Jour" min="1" max="31" />
+                <input v-model="date.mois" type="number" placeholder="Mois" min="1" max="12" />
+                <input v-model="date.annee" type="number" placeholder="Année" />
+                <input v-model="date.heures" type="number" placeholder="Heures" min="0" max="23" />
+                <input v-model="date.min" type="number" placeholder="Minutes" min="0" max="59" />
+                <input v-model="date.placesRestantes" type="number" placeholder="Places restantes" min="1" />
+                <button @click.prevent="removeDate(index)">Supprimer</button>
+              </div>
+            </div>
+            <button type="submit" class="confirm-button">Créer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- Onglet pour sélectionner l'emplacement du stand -->
     <div v-show="selectedTab === 'Emplacement'">
       <div class="prestation-emplacement">
@@ -113,7 +179,7 @@
           <div class="form-group">
             <label for="description">Description de la prestation :</label>
             <textarea v-model="stand.description" id="description" rows="4" placeholder="Décrivez votre prestation..."
-                      required></textarea>
+              required></textarea>
           </div>
 
           <!-- Image du stand -->
@@ -134,28 +200,13 @@
               </select>
             </div>
 
-            <l-map
-                :zoom="zoom"
-                :center="center"
-                :max-bounds="bounds"
-                :min-zoom="minZoom"
-                :max-zoom="maxZoom"
-                :options="mapOptions"
-                style="height: 500px;"
-                @ready="mapReady"
-            >
-              <l-tile-layer
-                  :url="layers[selectedLayer].url"
-                  :attribution="layers[selectedLayer].attribution"
-              ></l-tile-layer>
+            <l-map :zoom="zoom" :center="center" :max-bounds="bounds" :min-zoom="minZoom" :max-zoom="maxZoom"
+              :options="mapOptions" style="height: 500px;" @ready="mapReady">
+              <l-tile-layer :url="layers[selectedLayer].url"
+                :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
-              <l-marker
-                  v-for="point in availablePoints"
-                  :key="point.idPoint"
-                  :lat-lng="point.coordinates"
-                  :icon="getIconForPoint(point)"
-                  @click="selectPoint(point)"
-              >
+              <l-marker v-for="point in availablePoints" :key="point.idPoint" :lat-lng="point.coordinates"
+                :icon="getIconForPoint(point)" @click="selectPoint(point)">
                 <l-tooltip>
                   {{ point === selectedPoint ? 'Point sélectionné' : 'Disponible - Cliquez pour sélectionner' }}
                 </l-tooltip>
@@ -197,6 +248,15 @@ export default {
   },
   data() {
     return {
+      showTournoiModal: false,
+      newTournoi: {
+        nom: '',
+        lieu: '',
+        prix: 0,
+        image: null,
+        description: '',
+        dates: [],
+      },
       stand: {
         id: null,
         nom: "",
@@ -253,13 +313,85 @@ export default {
         point.category === "Emplacement" &&
         (point.disponible || point.idPoint === this.originalPointId)
       );
-    }
+    },
+    mesTournois() {
+      return this.$store.state.tournois.filter(
+        (tournoi) => tournoi.prestataireId === this.$store.state.userSession.id
+      );
+    },
   },
   created() {
-    this.restorePointsState();
-    this.initializeStand();
+    this.$store.dispatch("initializeStore");
   },
   methods: {
+    openTournoiModal() {
+      this.showTournoiModal = true;
+    },
+    closeTournoiModal() {
+      this.showTournoiModal = false;
+      this.resetNewTournoi();
+    },
+    handleTournoiImageUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.newTournoi.image = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    addDate() {
+      this.newTournoi.dates.push({
+        jour: null,
+        mois: null,
+        annee: null,
+        heures: null,
+        min: null,
+        placesRestantes: null,
+      });
+    },
+    removeDate(index) {
+      this.newTournoi.dates.splice(index, 1);
+    },
+    resetNewTournoi() {
+      this.newTournoi = {
+        nom: '',
+        lieu: '',
+        prix: 0,
+        image: null,
+        description: '',
+        dates: [],
+      };
+    },
+    createTournoi() {
+      if (!this.newTournoi.dates.length) {
+        alert("Veuillez ajouter au moins une date.");
+        return;
+      }
+
+      for (const date of this.newTournoi.dates) {
+        if (!date.placesRestantes || date.placesRestantes < 1) {
+          alert("Veuillez entrer un nombre de places valide pour chaque date.");
+          return;
+        }
+      }
+
+      const tournoi = {
+        ...this.newTournoi,
+        _id: Date.now().toString(),
+        prestataireId: this.$store.state.userSession.id, // Lien avec le prestataire
+      };
+
+      // Ajouter le tournoi dans le store
+      this.$store.commit('ADD_TOURNOI', tournoi);
+
+      // Réinitialiser le formulaire et fermer le modal
+      this.closeTournoiModal();
+    },
+    formatDate(date) {
+      return `${date.jour}/${date.mois}/${date.annee} ${date.heures}h${date.min}`;
+    },
     selectTab(tab) {
       this.selectedTab = tab;
     },
@@ -275,7 +407,7 @@ export default {
     closeConfirmation() {
       this.showConfirmation = false;
     },
-    confirmCreation(){
+    confirmCreation() {
 
     },
     restorePointsState() {
