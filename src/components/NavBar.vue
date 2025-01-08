@@ -64,7 +64,8 @@ export default {
         "Produits": "/Produits",
         "Statistiques": "/Statistiques",
         "Ma Prestation": "/MaPrestation",
-        "Commandes": "/Commandes"
+        "Commandes": "/Commandes",
+          "Ventes": "/CommandesBoutique"
       };
         return titleToPathMap[title.text]?.toLowerCase() === currentPath;
       });

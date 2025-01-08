@@ -78,7 +78,7 @@ export default new Vuex.Store({
       state.stands = stands;
     },
     SET_COMMANDES(state, commandes) {
-      state.userOrders = commandes;
+      state.commandes = commandes;
     },
   },
   actions: {
@@ -156,6 +156,14 @@ export default new Vuex.Store({
         console.error('Erreur lors de la récupération des commandes :', error);
       }
     },
+    async fetchAllSells({ commit }) {
+      try {
+        commit('SET_RESERVATIONS_JEUX', reservationsJeux);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des ventes :', error);
+      }
+    },
+
     clearUserSession({ commit }) {
       commit('CLEAR_USER_SESSION');
     },
@@ -233,6 +241,9 @@ export default new Vuex.Store({
     currentOrder: (state) => state.currentOrder,
     allOrders(state) {
       return state.userOrders || [];
+    },
+    allSells(state){
+      return state.reservationsJeux || [];
     },
     userReservations: (state) => {
       console.log("Reservations in state:", state.reservations);

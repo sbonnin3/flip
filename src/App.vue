@@ -49,13 +49,15 @@ export default {
         if (this.userSession.role === "organisateur") {
           this.navTitles.push({ text: "Réservations" });
         }
-        if (["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)) {
+        if (["restaurateur", "createur", "organisateur"].includes(this.userSession.role)) {
           this.navTitles.push({ text: "Ma Prestation" });
         }
         if (this.userSession.role === "restaurateur") {
           this.navTitles.push({ text: "Commandes" });
         }
-
+        if (this.userSession.role === "vendeur") {
+          this.navTitles.push({ text: "Ventes" });
+        }
         // Ajouter "Statistiques" pour tous les utilisateurs connectés
         this.navTitles.push({ text: "Statistiques" });
 
@@ -105,6 +107,8 @@ export default {
         route = "/MaPrestation";
       } else if (this.navTitles[index].text === "Commandes") {
         route = "/Commandes";
+      } else if (this.navTitles[index].text === "Ventes") {
+        route = "/CommandesBoutique";
       }
 
       if (this.$route.path !== route) {

@@ -9,6 +9,7 @@
       <button :class="{ active: selectedTab === 'Emplacement' }" @click="selectTab('Emplacement')">Mon
         emplacement</button>
       <button :class="{ active: selectedTab === 'MesTournois' }" @click="selectTab('MesTournois')">Mes tournois</button>
+      <button :class="{ active: selectedTab === 'MonRestaurant' }" @click="selectTab('MesRestaurant')">Mon restaurant</button>
     </div>
 
     <!-- Onglet des jeux du flip -->

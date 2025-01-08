@@ -196,7 +196,7 @@
         <p><strong>Âge minimum : </strong> À partir de {{ selectedModalJeu.age_minimum }} ans</p>
         <p><strong>Durée : </strong> {{ selectedModalJeu.duree }} min</p>
         <p><strong>Éditeur :</strong> {{ selectedModalJeu.editeur }}</p>
-        <button class="button cart_button_checkout" @click="openCommandConfirmationBoutique">Réserver</button>
+        <button class="button cart_button_checkout" @click="openCommandConfirmationBoutique">Commander</button>
       </div>
     </div>
 
@@ -227,7 +227,7 @@
     <PaymentModal
         v-if="showPaymentModalBoutique"
         :visible="showPaymentModalBoutique"
-        :showPickupTime="true"
+        :showPickupTime="false"
         @close="closePaymentModalBoutique"
         @payment-success="handlePaymentSuccessJeu"
     />
@@ -365,10 +365,15 @@ export default {
     handlePaymentSuccess() {
       const currentUser = this.$store.state.userSession;
       if (this.cart.length > 0) {
+        const maxOrderNumber = Math.max(
+            ...this.cart.map((article) => article.orderNumber || 0),
+            ...this.getExistingOrderNumbers(), // Inclure les commandes déjà passées
+            0 // Valeur par défaut si aucune commande n'existe
+        );
         // Grouper les articles par restaurant
         const ordersByRestaurant = this.cart.reduce((acc, article) => {
           const restaurantName = article.restaurant;
-          const orderNumber = `${Math.floor(Math.random() * 100)}`;
+          const orderNumber = maxOrderNumber + Object.keys(acc).length + 1;
           const pickupTime = this.$refs.paymentForm.getPickupTime();
           if (!acc[restaurantName]) {
             acc[restaurantName] = {
@@ -409,11 +414,21 @@ export default {
       }
     },
 
+    getExistingOrderNumbers() {
+      // Récupère tous les numéros de commandes existants à partir des données d'historique
+      return this.$store.state.userOrders
+          ? this.$store.state.userOrders.map((order) => order.orderNumber || 0)
+          : [];
+    },
+
     handlePaymentSuccessJeu(){
       const currentUser = this.$store.state.userSession;
+      const maxOrderNumber = this.reservationsJeux.reduce((max, reservation) =>
+          Math.max(max, reservation.orderNumber || 0), 0);
       this.reservationsJeux.push({
         jeuID: this.selectedModalJeu._id,
         userId: currentUser.id,
+        orderNumber: maxOrderNumber + 1,
         prix: this.selectedModalJeu.prix,
       });
       this.commandMessage = "Paiement effectué. Votre réservation a été confirmée !";
@@ -444,6 +459,7 @@ export default {
     closePaymentModalBoutique() {
       this.showPaymentModalBoutique = false;
     },
+
     addToCart(article) {
       const itemInCart = this.cart.find(item => item.nom === article.nom);
 

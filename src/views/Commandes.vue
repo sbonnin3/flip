@@ -41,7 +41,9 @@ export default {
         return null;
       }
       return this.$store.state.stands.find(stand => stand.comptes.includes(this.currentUser.id));
+
     },
+
     articleCommandes() {
       if (!this.standAttribue) {
         console.warn("Aucun stand attribué à l'utilisateur connecté.");

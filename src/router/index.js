@@ -13,6 +13,7 @@ import MaPrestation from '../views/MaPrestation.vue';
 import Commandes from '../views/Commandes.vue';
 import Statistiques from '../views/Statistiques.vue';
 import store from '../store/index.js';
+import CommandesBoutique from "@/views/CommandesBoutique.vue";
 
 Vue.use(VueRouter);
 
@@ -70,6 +71,12 @@ const routes = [
     path: "/Commandes",
     name: "Commandes",
     component: Commandes,
+    meta: { requiresAuth: true, requiresPrestataire: true }
+  },
+  {
+    path: "/CommandesBoutique",
+    name: "Ventes",
+    component: CommandesBoutique,
     meta: { requiresAuth: true, requiresPrestataire: true }
   },
   {
