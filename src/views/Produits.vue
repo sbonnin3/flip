@@ -4,13 +4,14 @@
 
     <div class="tab-container">
       <button :class="{ active: selectedTab === 'Restauration' }"
-              @click="selectTab('Restauration')">Restauration</button>
+        @click="selectTab('Restauration')">Restauration</button>
       <button :class="{ active: selectedTab === 'Boutique' }" @click="selectTab('Boutique')">Boutique</button>
     </div>
 
     <div v-show="selectedTab === 'Restauration'">
       <div v-if="stands.length" class="cards-container">
-        <div v-for="restaurant in stands.filter(stand => stand.type === 'restaurants')" :key="restaurant.idRestau" class="card" @click="openModalRestau(restaurant)">
+        <div v-for="restaurant in stands.filter(stand => stand.type === 'restaurants')" :key="restaurant.idRestau"
+          class="card" @click="openModalRestau(restaurant)">
           <img :src="restaurant.image" alt="Image du restaurant" class="card-image" />
           <div class="card-content">
             <h2 class="card-title">{{ restaurant.nom }}</h2>
@@ -51,7 +52,8 @@
                 </div>
                 <div class="order_total">
                   <div class="order_total_content text-md-right">
-                    <div class="order_total_title">Prix total: {{ cart.reduce((total, item) => total + item.prix * item.quantite, 0) }}€ </div>
+                    <div class="order_total_title">Prix total: {{ cart.reduce((total, item) => total + item.prix *
+                      item.quantite, 0) }}€ </div>
                   </div>
                 </div>
                 <div class="cart_buttons">
@@ -81,29 +83,22 @@
         </div>
       </div>
 
-      <ConnexionModal
-          v-if="showLoginModal"
-          :visible="showLoginModal"
-          @close="closeLoginModal"
-          @login-success="handleLoginSuccess"
-      />
+      <ConnexionModal v-if="showLoginModal" :visible="showLoginModal" @close="closeLoginModal"
+        @login-success="handleLoginSuccess" />
 
-      <PaymentModal ref="paymentForm"
-                    v-if="showPaymentModal"
-                    :visible="showPaymentModal"
-                    @close="closePaymentModal"
-                    @payment-success="handlePaymentSuccess"
-      />
+      <PaymentModal ref="paymentForm" v-if="showPaymentModal" :visible="showPaymentModal" @close="closePaymentModal"
+        @payment-success="handlePaymentSuccess" />
 
       <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
         <div class="modal-content">
           <span class="close-button" @click="closeModalRestau">&times;</span>
           <h2>{{ selectedModalRestau.nom }}</h2>
           <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image"
-               style=" width: 50%; height: 50%"/>
+            style=" width: 50%; height: 50%" />
           <div v-for="stand in stands.filter(stand => stand.idRestau === selectedModalRestau.idRestau)" :key="stand.id">
             <p><strong>Nourritures :</strong></p>
-            <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <div v-if="stand.nourritures && stand.nourritures.length" class="buttons-container"
+              style="display: flex; flex-wrap: wrap; gap: 10px;">
               <div v-for="nourriture in stand.nourritures" :key="nourriture.nom" class="article-button">
                 <button class="article-button-content" @click="addToCart(nourriture)">
                   <img :src="nourriture.image" alt="Image de l'article" class="article-image" />
@@ -111,8 +106,11 @@
                 </button>
               </div>
             </div>
+            <p v-else>Aucune nourriture disponible.</p>
+
             <p><strong>Boissons :</strong></p>
-            <div class="buttons-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <div v-if="stand.boissons && stand.boissons.length" class="buttons-container"
+              style="display: flex; flex-wrap: wrap; gap: 10px;">
               <div v-for="boisson in stand.boissons" :key="boisson.nom" class="article-button">
                 <button class="article-button-content" @click="addToCart(boisson)">
                   <img :src="boisson.image" alt="Image de l'article" class="article-image">
@@ -120,6 +118,8 @@
                 </button>
               </div>
             </div>
+            <p v-else>Aucune boisson disponible.</p>
+
             <p><strong>Note</strong></p>
             <Note :averageRating="stand.notes" />
             <p><strong>Commentaires :</strong></p>
@@ -217,35 +217,25 @@
       </div>
     </div>
 
-    <ConnexionModal
-        v-if="showLoginModal"
-        :visible="showLoginModal"
-        @close="closeLoginModal"
-        @login-success="handleLoginSuccess"
-    />
+    <ConnexionModal v-if="showLoginModal" :visible="showLoginModal" @close="closeLoginModal"
+      @login-success="handleLoginSuccess" />
 
-    <PaymentModal
-        v-if="showPaymentModalBoutique"
-        :visible="showPaymentModalBoutique"
-        :showPickupTime="false"
-        @close="closePaymentModalBoutique"
-        @payment-success="handlePaymentSuccessJeu"
-    />
+    <PaymentModal v-if="showPaymentModalBoutique" :visible="showPaymentModalBoutique" :showPickupTime="false"
+      @close="closePaymentModalBoutique" @payment-success="handlePaymentSuccessJeu" />
 
   </div>
 </template>
 
 <script>
-
-import {jeux, souvenirs, stands, reservationsJeux, commandes} from '@/datasource/data';
-import {mapActions, mapGetters} from 'vuex';
+import { jeux, souvenirs, reservationsJeux, commandes } from '@/datasource/data';
+import { mapActions, mapGetters } from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
 import Note from "@/components/StarRating.vue";
 
 export default {
   name: "PagePrestataires",
-  components: {PaymentModal, ConnexionModal, Note},
+  components: { PaymentModal, ConnexionModal, Note },
   data() {
     return {
       selectedTab: "Restauration",
@@ -266,18 +256,28 @@ export default {
       newRating: 0,
       jeux,
       souvenirs,
-      stands,
       reservationsJeux,
       commandes,
     };
   },
   mounted() {
+    const storedRestaurants = JSON.parse(localStorage.getItem("restaurants"));
+    if (storedRestaurants) {
+      this.$store.commit("SET_RESTAURANTS", storedRestaurants);
+    }
+    this.$store.dispatch("initializeStore");
     const selectedTab = this.$route.query.tab;
     if (selectedTab) {
       this.selectTab(selectedTab);
     }
   },
   watch: {
+    restaurants: {
+      handler(newRestaurants) {
+        this.stands = newRestaurants;
+      },
+      immediate: true, // Recharge les données immédiatement
+    },
     '$route.query.tab'(newTab) {
       if (newTab) {
         this.selectTab(newTab);
@@ -285,7 +285,10 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['userOrders','comptes']),
+    ...mapGetters(['userOrders', 'comptes', 'restaurants']),
+    stands() {
+      return this.restaurants || []; // Retourne une liste vide par défaut
+    },
     hasPurchased() {
       return (productId) => {
         return this.userOrders.some(order => order.articles.some(article => article.id === productId));
@@ -344,7 +347,7 @@ export default {
       }
     },
 
-    confirmReservationBoutique(){
+    confirmReservationBoutique() {
       const currentUser = this.$store.state.userSession;
 
       if (!currentUser) {
@@ -366,9 +369,9 @@ export default {
       const currentUser = this.$store.state.userSession;
       if (this.cart.length > 0) {
         const maxOrderNumber = Math.max(
-            ...this.cart.map((article) => article.orderNumber || 0),
-            ...this.getExistingOrderNumbers(), // Inclure les commandes déjà passées
-            0 // Valeur par défaut si aucune commande n'existe
+          ...this.cart.map((article) => article.orderNumber || 0),
+          ...this.getExistingOrderNumbers(), // Inclure les commandes déjà passées
+          0 // Valeur par défaut si aucune commande n'existe
         );
         // Grouper les articles par restaurant
         const ordersByRestaurant = this.cart.reduce((acc, article) => {
@@ -417,14 +420,14 @@ export default {
     getExistingOrderNumbers() {
       // Récupère tous les numéros de commandes existants à partir des données d'historique
       return this.$store.state.userOrders
-          ? this.$store.state.userOrders.map((order) => order.orderNumber || 0)
-          : [];
+        ? this.$store.state.userOrders.map((order) => order.orderNumber || 0)
+        : [];
     },
 
-    handlePaymentSuccessJeu(){
+    handlePaymentSuccessJeu() {
       const currentUser = this.$store.state.userSession;
       const maxOrderNumber = this.reservationsJeux.reduce((max, reservation) =>
-          Math.max(max, reservation.orderNumber || 0), 0);
+        Math.max(max, reservation.orderNumber || 0), 0);
       this.reservationsJeux.push({
         jeuID: this.selectedModalJeu._id,
         userId: currentUser.id,
@@ -447,13 +450,13 @@ export default {
     closeCardCommandMessage() {
       this.cardCommandMessage = '';
     },
-    openPaymentModal(){
+    openPaymentModal() {
       this.showPaymentModal = true;
     },
     closePaymentModal() {
       this.showPaymentModal = false;
     },
-    openPaymentModalBoutique(){
+    openPaymentModalBoutique() {
       this.showPaymentModalBoutique = true;
     },
     closePaymentModalBoutique() {
@@ -467,7 +470,7 @@ export default {
         itemInCart.quantite += 1;
         this.cardCommandMessage = "Article ajouté dans le panier !"
       } else {
-        this.cart.push({...article, quantite: 1, restaurant: this.selectedModalRestau.nom});
+        this.cart.push({ ...article, quantite: 1, restaurant: this.selectedModalRestau.nom });
         this.cardCommandMessage = "Article ajouté dans le panier !"
       }
     },
@@ -537,7 +540,6 @@ export default {
 </script>
 
 <style scoped>
-
 .sendComment {
   background-color: #4CAF50;
   color: white;
@@ -772,11 +774,13 @@ textarea {
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;
-  max-height: 60vh; /* Hauteur maximale relative à la fenêtre */
+  max-height: 60vh;
+  /* Hauteur maximale relative à la fenêtre */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: left;
   position: relative;
-  overflow-y: auto; /* Barre de défilement verticale */
+  overflow-y: auto;
+  /* Barre de défilement verticale */
 }
 
 
@@ -815,9 +819,11 @@ textarea {
 }
 
 .article-image {
-  width: 40px; /* taille de l'image */
+  width: 40px;
+  /* taille de l'image */
   height: 40px;
-  margin-right: 10px; /* espacement entre l'image et le texte */
+  margin-right: 10px;
+  /* espacement entre l'image et le texte */
   border-radius: 5px;
 }
 
@@ -1071,15 +1077,19 @@ button {
 
 .cart_item {
   display: grid;
-  grid-template-columns: 35em 13em 13em 13em 30em; /* Réduit les largeurs des colonnes */
-  gap: 5px; /* Réduit davantage l'espacement entre les colonnes */
+  grid-template-columns: 35em 13em 13em 13em 30em;
+  /* Réduit les largeurs des colonnes */
+  gap: 5px;
+  /* Réduit davantage l'espacement entre les colonnes */
   align-items: center;
   border-bottom: 1px solid #e8e8e8;
-  padding: 8px 0; /* Réduit l'espace vertical */
+  padding: 8px 0;
+  /* Réduit l'espace vertical */
 }
 
 .cart_item_image img {
-  width: 70px; /* Réduit la taille de l'image pour gagner de l'espace */
+  width: 70px;
+  /* Réduit la taille de l'image pour gagner de l'espace */
   height: auto;
   border-radius: 5px;
 }
@@ -1088,27 +1098,34 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 3px; /* Réduit l'espacement entre les lignes d'informations */
+  gap: 3px;
+  /* Réduit l'espacement entre les lignes d'informations */
 }
 
 .cart_item_title {
-  font-size: 18px; /* Taille réduite pour compacter */
+  font-size: 18px;
+  /* Taille réduite pour compacter */
   color: #888;
 }
 
 .cart_item_text {
-  font-size: 20px; /* Taille ajustée pour plus de compacité */
+  font-size: 20px;
+  /* Taille ajustée pour plus de compacité */
   color: #333;
-  white-space: nowrap; /* Empêche les débordements */
+  white-space: nowrap;
+  /* Empêche les débordements */
   text-overflow: ellipsis;
 }
 
 .cart_item_quantity,
 .cart_item_price {
   text-align: center;
-  font-size: 14px; /* Taille légèrement réduite */
-  padding: 0; /* Supprime tout espace interne */
-  margin: 0; /* Supprime tout espace externe */
+  font-size: 14px;
+  /* Taille légèrement réduite */
+  padding: 0;
+  /* Supprime tout espace interne */
+  margin: 0;
+  /* Supprime tout espace externe */
 }
 
 
@@ -1117,10 +1134,14 @@ button {
   padding: 10px 15px;
   background: #f1f1f1;
   border-radius: 5px;
-  display: flex; /* Aligne les éléments sur une ligne */
-  justify-content: center; /* Centre les éléments horizontalement */
-  align-items: center; /* Centre verticalement */
-  gap: 10px; /* Espacement entre les éléments */
+  display: flex;
+  /* Aligne les éléments sur une ligne */
+  justify-content: center;
+  /* Centre les éléments horizontalement */
+  align-items: center;
+  /* Centre verticalement */
+  gap: 10px;
+  /* Espacement entre les éléments */
 }
 
 .order_total_title,
@@ -1135,8 +1156,10 @@ button {
   text-align: right;
   display: flex;
   justify-content: flex-end;
-  gap: 15px; /* Espacement entre les boutons */
-  padding: 15px; /* Ajoute un espace autour des boutons */
+  gap: 15px;
+  /* Espacement entre les boutons */
+  padding: 15px;
+  /* Ajoute un espace autour des boutons */
 }
 
 .cart_button_clear_logo {
@@ -1172,6 +1195,4 @@ button {
 .cart_button_checkout:hover {
   background-color: #45a049;
 }
-
-
 </style>

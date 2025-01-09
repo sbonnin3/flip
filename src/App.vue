@@ -118,6 +118,9 @@ export default {
     mounted() {
       this.updateNavTitles();
     },
+    created() {
+      this.$store.dispatch('loadRestaurants');
+    },
   }
 }
 </script>

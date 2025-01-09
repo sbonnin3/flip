@@ -9,7 +9,49 @@
       <button :class="{ active: selectedTab === 'Emplacement' }" @click="selectTab('Emplacement')">Mon
         emplacement</button>
       <button :class="{ active: selectedTab === 'MesTournois' }" @click="selectTab('MesTournois')">Mes tournois</button>
-      <button :class="{ active: selectedTab === 'MonRestaurant' }" @click="selectTab('MesRestaurant')">Mon restaurant</button>
+      <button :class="{ active: selectedTab === 'MonRestaurant' }" @click="selectTab('MonRestaurant')">Mon
+        restaurant</button>
+    </div>
+
+    <div v-show="selectedTab === 'MonRestaurant'">
+      <template v-if="restaurant">
+        <h2>Mon Restaurant</h2>
+        <p><strong>Nom :</strong> {{ restaurant.nom }}</p>
+        <p>
+          <strong>Image :</strong>
+          <img :src="restaurant.image" alt="Image du restaurant" style="max-width: 300px;" />
+        </p>
+        <button @click="openEditRestaurantModal">Modifier le restaurant</button>
+      </template>
+
+      <template v-else>
+        <div>
+          <label for="newRestaurantName">Nom du restaurant :</label>
+          <input id="newRestaurantName" v-model="newRestaurantName" type="text" />
+        </div>
+        <div>
+          <label for="newRestaurantImage">Image du restaurant :</label>
+          <input id="newRestaurantImage" type="file" @change="handleNewRestaurantImage" />
+        </div>
+        <button @click="handleCreateRestaurant">Créer un restaurant</button>
+      </template>
+      <div v-if="showEditRestaurantModal" class="modal">
+        <div class="modal-content">
+          <span class="close-button" @click="closeEditRestaurantModal">&times;</span>
+          <h2>Modifier le restaurant</h2>
+          <div class="inputBox">
+            <label for="editRestaurantName">Nom du restaurant :</label>
+            <input id="editRestaurantName" v-model="editRestaurantDetails.nom" type="text" />
+          </div>
+          <div class="imageBox">
+            <label for="editRestaurantImage">Image du restaurant :</label>
+            <input id="editRestaurantImage" type="file" @change="handleEditRestaurantImage" />
+            <img :src="editRestaurantDetails.image" alt="Prévisualisation" style="max-width: 100%; margin-top: 10px;" />
+          </div>
+          <button @click="saveEditedRestaurant" class="confirm-button">Enregistrer</button>
+          <button @click="closeEditRestaurantModal" class="cancel-button">Annuler</button>
+        </div>
+      </div>
     </div>
 
     <!-- Onglet des jeux du flip -->
@@ -232,7 +274,7 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import { points, stands, jeux, jeuxCreation } from "@/datasource/data.js";
 import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -249,6 +291,13 @@ export default {
   },
   data() {
     return {
+      showEditRestaurantModal: false,
+      editRestaurantDetails: {
+        nom: '',
+        image: '',
+      },
+      newRestaurantName: '',
+      newRestaurantImage: '',
       showTournoiModal: false,
       newTournoi: {
         nom: '',
@@ -308,7 +357,14 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userSession"]),
+    ...mapGetters(["userSession", "restaurantByUser"]),
+    restaurant() {
+    if (!this.userSession) return null;
+
+    return this.$store.state.restaurants.find((restaurant) =>
+      restaurant.comptes.includes(this.userSession.id)
+    );
+  },
     availablePoints() {
       return points.filter(point =>
         point.category === "Emplacement" &&
@@ -322,9 +378,122 @@ export default {
     },
   },
   created() {
+    console.log("Restaurants :", this.restaurants);
+    console.log("User Session :", this.userSession);
     this.$store.dispatch("initializeStore");
   },
   methods: {
+    openEditRestaurantModal() {
+      this.showEditRestaurantModal = true;
+      this.editRestaurantDetails.nom = this.restaurant.nom;
+      this.editRestaurantDetails.image = this.restaurant.image;
+    },
+    closeEditRestaurantModal() {
+      this.showEditRestaurantModal = false;
+    },
+    saveEditedRestaurant() {
+      if (!this.editRestaurantDetails.nom || !this.editRestaurantDetails.image) {
+        alert('Veuillez remplir tous les champs.');
+        return;
+      }
+
+      const updatedRestaurant = {
+        ...this.restaurant,
+        nom: this.editRestaurantDetails.nom,
+        image: this.editRestaurantDetails.image,
+      };
+
+      this.$store.dispatch('updateRestaurant', updatedRestaurant);
+      this.closeEditRestaurantModal();
+      alert('Restaurant modifié avec succès !');
+    },
+    handleEditRestaurantImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.editRestaurantDetails.image = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    testCreation() {
+      console.log("Création de restaurant déclenchée");
+    },
+    ...mapActions(['createRestaurant']),
+    createRestaurant({ commit, state }, restaurantData) {
+    console.log("Création d'un restaurant dans le store avec : ", restaurantData);
+
+    const newRestaurant = {
+      ...restaurantData,
+      id: Date.now(), // Génère un ID unique
+      idRestau: `R${Math.floor(Math.random() * 1000)}`, // Génère un ID restaurant
+      type: "restaurants", // Définit le type comme "restaurant"
+      comptes: [state.userSession.id], // Lie l'utilisateur connecté au restaurant
+      nourritures: [], // Initialise les nourritures vides
+      boissons: [], // Initialise les boissons vides
+      notes: [], // Initialise les notes vides
+      commentaires: [], // Initialise les commentaires vides
+    };
+
+    // Ajout au store (mutation)
+    commit("ADD_RESTAURANT", newRestaurant);
+
+    // Enregistrement dans le fichier local
+    this.dispatch("saveRestaurantToLocalFile", newRestaurant);
+
+    console.log("Restaurant créé :", newRestaurant);
+  },
+  saveRestaurantToLocalFile(restaurant) {
+    const stands = JSON.parse(localStorage.getItem("stands") || "[]");
+    stands.push(restaurant);
+    localStorage.setItem("stands", JSON.stringify(stands));
+    console.log("Restaurant enregistré dans localStorage");
+  },
+    updateRestaurant() {
+      this.$store.dispatch('updateRestaurant', this.restaurant);
+    },
+    handleNewRestaurantImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.newRestaurantImage = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    handleCreateRestaurant() {
+  if (!this.newRestaurantName || !this.newRestaurantImage) {
+    alert("Veuillez remplir tous les champs pour créer un restaurant.");
+    return;
+  }
+
+  const newRestaurant = {
+    id: Date.now(),
+    nom: this.newRestaurantName,
+    image: this.newRestaurantImage,
+    type: "restaurants",
+    comptes: [this.$store.state.userSession.id],
+    nourritures: [], // Champs par défaut pour éviter les erreurs
+    boissons: [],
+    notes: [],
+    commentaires: [],
+  };
+
+  // Ajouter à localStorage
+  const stands = JSON.parse(localStorage.getItem("stands")) || [];
+  stands.push(newRestaurant);
+  localStorage.setItem("stands", JSON.stringify(stands));
+
+  // Mettre à jour le store
+  this.$store.commit("SET_RESTAURANTS", stands);
+
+  // Réinitialiser les champs
+  this.newRestaurantName = "";
+  this.newRestaurantImage = "";
+  alert("Restaurant créé avec succès !");
+},
     openTournoiModal() {
       this.showTournoiModal = true;
     },

@@ -12,6 +12,7 @@ export default new Vuex.Store({
     tournois: [],
     jeux: [],
     comptes: comptes,
+    restaurants: [], // Charge les restaurants au démarrage
     userSession: null,
     souvenirs: [],
     reservations: reservations,
@@ -21,8 +22,23 @@ export default new Vuex.Store({
     stands: [],
   },
   mutations: {
-    SET_USER_SESSION(state, user) {
-      state.userSession = user;
+    UPDATE_RESTAURANT(state, updatedRestaurant) {
+      const index = state.restaurants.findIndex(
+        (restaurant) => restaurant.id === updatedRestaurant.id
+      );
+      if (index !== -1) {
+        state.restaurants.splice(index, 1, updatedRestaurant);
+      }
+    },
+    ADD_RESTAURANT(state, restaurant) {
+      state.restaurants = [...state.restaurants, restaurant]; // Ajouter de manière immuable
+      console.log("Restaurant ajouté :", restaurant);
+    },
+    SET_RESTAURANTS(state, restaurants) {
+      state.restaurants = restaurants;
+    },
+    SET_USER_SESSION(state, session) {
+      state.userSession = session;
     },
     REMOVE_COMPTE(state, id) {
       state.comptes = state.comptes.filter((compte) => compte.id !== id);
@@ -82,6 +98,61 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    updateRestaurant({ commit, state }, updatedRestaurant) {
+      commit("UPDATE_RESTAURANT", updatedRestaurant);
+      localStorage.setItem("stands", JSON.stringify(state.restaurants)); // Sauvegarde des restaurants modifiés
+    },      
+    createRestaurant({ commit }, restaurantData) {
+      console.log("Création d'un restaurant dans le store avec : ", restaurantData);
+      const newRestaurant = {
+        ...restaurantData,
+        id: Date.now(), // ID unique pour le restaurant
+        type: "restaurants", // Type de l'objet
+        comptes: [restaurantData.userId], // Associer l'utilisateur
+      };
+  
+      // Ajouter le restaurant dans le store
+      commit("ADD_RESTAURANT", newRestaurant);
+    },
+    async initializeStore({ commit }) {
+      try {
+        // Charger les restaurants depuis localStorage ou initialiser un tableau vide
+        let stands = [];
+        const storedStands = localStorage.getItem("stands");
+    
+        if (storedStands) {
+          try {
+            stands = JSON.parse(storedStands);
+          } catch (parseError) {
+            console.error("Erreur lors de l'analyse JSON du localStorage. Réinitialisation des stands.", parseError);
+            stands = [];
+          }
+        }
+    
+        // Si aucun stand n'est trouvé, charger depuis le fichier stands.js
+        if (!stands.length) {
+          const { stands: defaultStands } = require("@/datasource/stands.js");
+          stands = defaultStands;
+    
+          // Sauvegarder les stands par défaut dans localStorage
+          localStorage.setItem("stands", JSON.stringify(stands));
+        }
+    
+        // Assurer que chaque stand a les champs essentiels
+        stands = stands.map((stand) => ({
+          ...stand,
+          nourritures: stand.nourritures || [],
+          boissons: stand.boissons || [],
+          notes: stand.notes || [],
+          commentaires: stand.commentaires || [],
+        }));
+    
+        // Commit des stands au store
+        commit("SET_RESTAURANTS", stands);
+      } catch (error) {
+        console.error("Erreur lors de l'initialisation des restaurants :", error);
+      }
+    },    
     async fetchTournoisByPrestataire({ commit, state }) {
       if (!state.userSession) return;
 
@@ -95,14 +166,9 @@ export default new Vuex.Store({
       // Committer les tournois pour le prestataire
       commit('SET_TOURNOIS', tournoisForPrestataire);
     },
-    async initializeStore({ commit }) {
-      try {
-        // Charger les données des tournois depuis le fichier data
-        const tournois = require("@/datasource/data").tournois;
-        commit("SET_TOURNOIS", tournois);
-      } catch (error) {
-        console.error("Erreur lors de l'initialisation du store :", error);
-      }
+    loadRestaurants({ commit }) {
+      const restaurants = require('@/datasource/stands.js').stands; // Charge depuis stands.js
+      commit('SET_RESTAURANTS', restaurants);
     },
     async setUserSession({ commit, dispatch }, user) {
       commit("SET_USER_SESSION", user);
@@ -208,10 +274,16 @@ export default new Vuex.Store({
     },
   },
   getters: {
+    restaurantByUser: (state) => (userId) => {
+      return state.restaurants.find((restaurant) =>
+        restaurant.comptes.includes(userId)
+      );
+    },
     tournois: (state) => state.tournois,
     jeux: (state) => state.jeux,
     stands: (state) => state.stands,
     comptes: (state) => state.comptes,
+    restaurants: (state) => state.restaurants,
     userSession: (state) => state.userSession,
     souvenirs: (state) => state.souvenirs,
     reservationsByPrestataire: (state) => (prestataireId) => {
