@@ -170,4 +170,13 @@ export const comptes = [
         prenom: "orga5",
         email: "orga5@gmail.com",
     },
+    {
+        id: 12360,
+        role: "createur",
+        identifiant: "c2",
+        motDePasse: "c2",
+        nom: "c2",
+        prenom: "c2",
+        email: "c2.c2@example.com",
+    },
 ];

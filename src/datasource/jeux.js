@@ -8,7 +8,7 @@ export const jeux = [
         age_minimum: 8,
         duree: 15,
         editeur: "Black Rock",
-        nom_stand: "Stand1",
+        nom_stand: ["stand1"],
         prix: "15",
     },
     {
@@ -20,7 +20,7 @@ export const jeux = [
         age_minimum: 7,
         duree: 30,
         editeur: "Black Rock",
-        nom_stand: "Stand2",
+        nom_stand: ["stand2"],
         prix: "30",
     },
     {
@@ -32,7 +32,7 @@ export const jeux = [
         age_minimum: 7,
         duree: 10,
         editeur: "Subverti",
-        nom_stand: "Stand3",
+        nom_stand: ["stand3"],
         prix: "10",
     },
     {
@@ -44,7 +44,7 @@ export const jeux = [
         age_minimum: 8,
         duree: 30,
         editeur: "Goliath",
-        nom_stand: "Stand4",
+        nom_stand: ["stand1"],
         prix: "28",
     },
     {
@@ -56,7 +56,7 @@ export const jeux = [
         age_minimum: 8,
         duree: 60,
         editeur: "Gigamic",
-        nom_stand: "Stand5",
+        nom_stand: ["stand2"],
         prix: "15,50",
     },
     {
@@ -68,7 +68,7 @@ export const jeux = [
         age_minimum: 16,
         duree: 20,
         editeur: "Bakakou",
-        nom_stand: "Stand6",
+        nom_stand: ["stand2"],
         prix: "22",
     },
     {
@@ -80,7 +80,7 @@ export const jeux = [
         age_minimum: 10,
         duree: 45,
         editeur: "Amigo",
-        nom_stand: "Stand7",
+        nom_stand: ["stand3"],
         prix: "14",
     },
     {
@@ -92,7 +92,7 @@ export const jeux = [
         age_minimum: 10,
         duree: 20,
         editeur: "Savana",
-        nom_stand: "Stand8",
+        nom_stand: ["stand1"],
         prix: "15",
     },
     {
@@ -104,7 +104,7 @@ export const jeux = [
         age_minimum: 3,
         duree: 45,
         editeur: "Amigo",
-        nom_stand: "Stand9",
+        nom_stand: ["stand3"],
         prix: "17",
     },
 ];

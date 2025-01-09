@@ -61,7 +61,7 @@
               <p class="card-players">Nombre de joueurs : {{ jeu.nombre_de_joueurs.join(', ') }}</p>
               <p class="card-age">Âge minimum : {{ jeu.age_minimum }} ans</p>
               <p class="card-duration">Durée : {{ jeu.duree }} min</p>
-              <p class="card-stand">Nom du stand : {{ jeu.nom_stand }}</p>
+              <p class="card-stand">Nom du stand : {{ jeu.nomsDesStands }}</p>
             </div>
           </div>
         </div>
@@ -96,7 +96,21 @@
           <p><strong>Âge minimum :</strong> {{ selectedJeu.age_minimum }} ans</p>
           <p><strong>Durée :</strong> {{ selectedJeu.duree }} minutes</p>
           <p><strong>Éditeur :</strong> {{ selectedJeu.editeur }}</p>
-          <p><strong>Nom du stand :</strong> {{ selectedJeu.nom_stand }}</p>
+          <p><strong>Nom du stand :</strong> {{ selectedJeu.nomsDesStands }}</p>
+          <button @click="openReservationJeuConfirmation" class="reset-button">Réserver</button>
+        </div>
+      </div>
+
+      <div v-if="showConfirmationJeux" class="confirmation-modal">
+        <div class="modal-content">
+          <span class="close-button" @click="closeConfirmationJeux">&times;</span>
+          <h2>Confirmer la réservation</h2>
+          <p>Voulez-vous vraiment réserver le jeu {{ selectedJeu.name }} au stand {{ selectedJeu.nomsDesStands }} ?</p>
+
+            <div class="form-buttons">
+              <button type="submit" class="confirm-button" @submit.prevent="confirmReservationJeux">Confirmer</button>
+              <button type="button" @click="closeConfirmationJeux" class="cancel-button">Annuler</button>
+            </div>
         </div>
       </div>
 
@@ -173,7 +187,7 @@
 </template>
 
 <script>
-import { reservations, tournois, jeux } from '@/datasource/data';
+import { reservations, tournois, jeux, stands, reservationStandJeu } from '@/datasource/data';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
 
@@ -187,13 +201,16 @@ export default {
       selectedJeu: null,
       selectedTournoi: null,
       showConfirmation: false,
+      showConfirmationJeux: false,
       showLoginModal: false,
       showPaymentModal: false,
       pickupTime: '',
       reservationMessage: '',
       reservations,
+      reservationStandJeu,
       tournois,
       jeux,
+      stands,
       teamName: '',
       searchName: '',
       searchPlayers: '',
@@ -205,6 +222,23 @@ export default {
       jeuTypes: [...new Set(jeux.map(jeu => jeu.type))],
     };
   },
+  created() {
+    // Ajouter le champ nomStand dans chaque jeu
+    this.jeux = jeux.map(jeu => {
+      // Vérifiez si `nom_stand` est défini et est un tableau
+      const nomsDesStands = Array.isArray(jeu.nom_stand)
+          ? jeu.nom_stand.map(idStand => {
+            const stand = stands.find(s => s.idStand === idStand);
+            return stand ? stand.nom : "Stand inconnu"; // Retourne "Stand inconnu" si aucun stand n'est trouvé
+          })
+          : [];
+
+      return {
+        ...jeu,
+        nomsDesStands: nomsDesStands.join(", "), // Combine les noms en une chaîne
+      };
+    });
+  },
   computed: {
     filteredJeux() {
       return this.jeux.filter(jeu => {
@@ -214,7 +248,7 @@ export default {
         const ageMatch = this.searchAge ? jeu.age_minimum <= Number(this.searchAge) : true;
         const durationMatch = this.searchDuration ? jeu.duree <= Number(this.searchDuration) : true;
         const editeurMatch = jeu.editeur.toLowerCase().includes(this.searchEditeur.toLowerCase());
-        const standMatch = jeu.nom_stand.toLowerCase().includes(this.searchStand.toLowerCase());
+        const standMatch = jeu.nomsDesStands.toLowerCase().includes(this.searchStand.toLowerCase());
 
         return nameMatch && typeMatch && playersMatch && ageMatch && durationMatch && editeurMatch && standMatch;
       });
@@ -247,6 +281,9 @@ export default {
     },
     closeConfirmation() {
       this.showConfirmation = false;
+    },
+    closeConfirmationJeux() {
+      this.showConfirmationJeux = false;
     },
     formatDate(dates) {
       if (Array.isArray(dates)) {
@@ -286,6 +323,14 @@ export default {
       if (currentUser) {
         this.reservationDate = null; // Réinitialise la sélection
         this.showConfirmation = true;
+      } else {
+        this.showLoginModal = true;
+      }
+    },
+    openReservationJeuConfirmation() {
+      const currentUser = this.$store.state.userSession;
+      if (currentUser) {
+        this.showConfirmationJeux = true;
       } else {
         this.showLoginModal = true;
       }
@@ -344,6 +389,17 @@ export default {
       this.closeConfirmation(); // Fermer le modal
       this.openPaymentModal();
       this.closeModal();
+    },
+    confirmReservationJeux() {
+      const currentUser = this.$store.state.userSession;
+      this.reservationStandJeu.push({
+        jeuID: this.selectedJeu._id,
+        standID: this.selectedJeu.nomsDesStands,
+        userId: currentUser.id,
+      })
+      this.reservationMessage = "Réservation confirmée !"
+      this.closeConfirmationJeux();
+      this.closeModal()
     },
     resetReservationFields() {
       this.reservationDate = '';
