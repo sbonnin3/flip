@@ -1,13 +1,11 @@
 <template>
   <div class="prestataire-container">
     <h1 class="page-title">Produits</h1>
-
     <div class="tab-container">
       <button :class="{ active: selectedTab === 'Restauration' }"
         @click="selectTab('Restauration')">Restauration</button>
       <button :class="{ active: selectedTab === 'Boutique' }" @click="selectTab('Boutique')">Boutique</button>
     </div>
-
     <div v-show="selectedTab === 'Restauration'">
       <div v-if="stands.length" class="cards-container">
         <div v-for="restaurant in stands.filter(stand => stand.type === 'restaurants')" :key="restaurant.idRestau"
@@ -19,7 +17,6 @@
         </div>
       </div>
       <p v-else>Aucun restaurants disponible.</p>
-
       <div class="cart_section">
         <div class="container-fluid">
           <div class="row">
@@ -65,7 +62,6 @@
           </div>
         </div>
       </div>
-
       <div v-if="showConfirmation" class="confirmation-modal">
         <div class="modal-content">
           <span class="close-button" @click="closeConfirmation">&times;</span>
@@ -75,17 +71,14 @@
           <button class="cancel-button" @click="closeConfirmation">Annuler</button>
         </div>
       </div>
-
       <div v-if="commandMessage" class="reservation-message">
         <div class="modal-content">
           <p>{{ commandMessage }}</p>
           <button @click="closeCommandMessage">OK</button>
         </div>
       </div>
-
       <ConnexionModal v-if="showLoginModal" :visible="showLoginModal" @close="closeLoginModal"
         @login-success="handleLoginSuccess" />
-
       <PaymentModal ref="paymentForm" v-if="showPaymentModal" :visible="showPaymentModal" @close="closePaymentModal"
         @payment-success="handlePaymentSuccess" />
 
@@ -154,9 +147,7 @@
           </div>
         </div>
       </div>
-
       <p v-else>Aucun jeux disponible.</p>
-
       <h2 class="page-other_title">SOUVENIRS</h2>
       <div v-if="souvenirs.length" class="cards-container">
         <div v-for="souvenir in souvenirs" :key="souvenir._id" class="card">
@@ -169,7 +160,6 @@
       </div>
       <p v-else>Aucun souvenirs disponible.</p>
     </div>
-
     <div v-if="selectedModalJeu" class="modal">
       <div class="modal-content">
         <span class="close-button" @click="closeModalJeu">&times;</span>
@@ -183,7 +173,6 @@
         <button class="button cart_button_checkout" @click="openCommandConfirmationBoutique">Commander</button>
       </div>
     </div>
-
     <div v-if="showConfirmationBoutique" class="confirmation-modal">
       <div class="modal-content">
         <span class="close-button" @click="closeConfirmationBoutique">&times;</span>
@@ -193,30 +182,24 @@
         <button class="cancel-button" @click="closeConfirmationBoutique">Annuler</button>
       </div>
     </div>
-
     <div v-if="commandMessage" class="reservation-message">
       <div class="modal-content">
         <p>{{ commandMessage }}</p>
         <button @click="closeCommandMessage">OK</button>
       </div>
     </div>
-
     <ConnexionModal v-if="showLoginModal" :visible="showLoginModal" @close="closeLoginModal"
       @login-success="handleLoginSuccess" />
-
     <PaymentModal v-if="showPaymentModalBoutique" :visible="showPaymentModalBoutique" :showPickupTime="false"
       @close="closePaymentModalBoutique" @payment-success="handlePaymentSuccessJeu" />
-
   </div>
 </template>
-
 <script>
 import { jeux, souvenirs, reservationsJeux, commandes } from '@/datasource/data';
 import { mapActions, mapGetters } from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
 import Note from "@/components/StarRating.vue";
-
 export default {
   name: "PagePrestataires",
   components: { PaymentModal, ConnexionModal, Note },
@@ -317,7 +300,6 @@ export default {
     },
     confirmReservation() {
       const currentUser = this.$store.state.userSession;
-
       if (!currentUser) {
         this.showLoginModal = true;
         return;
@@ -330,10 +312,8 @@ export default {
         this.closeConfirmation();
       }
     },
-
     confirmReservationBoutique() {
       const currentUser = this.$store.state.userSession;
-
       if (!currentUser) {
         this.showLoginModal = true;
       } else {
@@ -341,14 +321,12 @@ export default {
         this.closeConfirmationBoutique();
       }
     },
-
     closeLoginModal() {
       this.showLoginModal = false;
     },
     handleLoginSuccess() {
       this.commandMessage = "Connexion réussie !";
     },
-
     handlePaymentSuccess() {
       const currentUser = this.$store.state.userSession;
       if (this.cart.length > 0) {
@@ -374,11 +352,9 @@ export default {
           acc[restaurantName].articles.push(article);
           return acc;
         }, {});
-
         // Mettre à jour currentOrder avec un tableau de commandes
         const newOrders = Object.values(ordersByRestaurant);
         this.setCurrentOrder(newOrders);  // Envoi un tableau de commandes à currentOrder
-
         // Ajouter les commandes à l'historique
         newOrders.forEach((restaurantOrder) => {
           console.log('Commande:', restaurantOrder);
@@ -386,8 +362,6 @@ export default {
             ...restaurantOrder,
           });
         });
-
-
         this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
         const recap = this.$refs.paymentForm.generateRecap();
         if (recap) {
@@ -400,14 +374,12 @@ export default {
         this.closePaymentModal();
       }
     },
-
     getExistingOrderNumbers() {
       // Récupère tous les numéros de commandes existants à partir des données d'historique
       return this.$store.state.userOrders
         ? this.$store.state.userOrders.map((order) => order.orderNumber || 0)
         : [];
     },
-
     handlePaymentSuccessJeu() {
       const currentUser = this.$store.state.userSession;
       const maxOrderNumber = this.reservationsJeux.reduce((max, reservation) =>
@@ -423,7 +395,6 @@ export default {
       this.closeConfirmationBoutique();
       this.closePaymentModalBoutique();
     },
-
     deleteCommand() {
       this.cart = [];
       this.commandMessage = 'Votre commande a été effacée !'
@@ -446,15 +417,12 @@ export default {
     closePaymentModalBoutique() {
       this.showPaymentModalBoutique = false;
     },
-
     addToCart(article) {
       if (!article.nom || !article.prix || !article.image) {
         console.error("Article invalide :", article);
         return;
       }
-
       const itemInCart = this.cart.find(item => item.nom === article.nom);
-
       if (itemInCart) {
         itemInCart.quantite += 1;
         this.cardCommandMessage = "Article ajouté dans le panier !";
@@ -466,10 +434,8 @@ export default {
     },
     deleteArticle(article) {
       const itemInCartToDelete = this.cart.find(item => item.nom === article.nom);
-
       if (itemInCartToDelete) {
         itemInCartToDelete.quantite -= 1;
-
         if (itemInCartToDelete.quantite <= 0) {
           this.cart = this.cart.filter(item => item.nom !== article.nom);
           this.commandMessage = 'Article retiré du panier.'
@@ -527,7 +493,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 .sendComment {
   background-color: #4CAF50;
@@ -538,7 +503,6 @@ export default {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
 textarea {
   width: 100%;
   padding: 10px;
@@ -546,14 +510,12 @@ textarea {
   border: 1px solid #ddd;
   border-radius: 5px;
 }
-
 .comments {
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 10px;
   border: 1px solid black;
 }
-
 .confirmation-modal,
 .modal-overlay {
   position: fixed;
@@ -567,7 +529,6 @@ textarea {
   align-items: center;
   z-index: 1000;
 }
-
 .modal-content {
   background: white;
   padding: 20px;
@@ -576,7 +537,6 @@ textarea {
   max-width: 400px;
   position: relative;
 }
-
 .close-button {
   position: absolute;
   top: 10px;
@@ -586,7 +546,6 @@ textarea {
   font-size: 20px;
   cursor: pointer;
 }
-
 .confirm-button {
   background: #4caf50;
   color: white;
@@ -595,7 +554,6 @@ textarea {
   cursor: pointer;
   margin-right: 10px;
 }
-
 .cancel-button {
   background: #f44336;
   color: white;
@@ -603,7 +561,6 @@ textarea {
   border: none;
   cursor: pointer;
 }
-
 .reservation-message {
   position: fixed;
   top: 0;
@@ -615,7 +572,6 @@ textarea {
   align-items: center;
   justify-content: center;
 }
-
 .reservation-message .modal-content {
   background-color: #fff;
   padding: 20px;
@@ -625,7 +581,6 @@ textarea {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
-
 .reservation-message button {
   background-color: #4CAF50;
   color: white;
@@ -636,11 +591,9 @@ textarea {
   font-size: 0.9em;
   margin-top: 10px;
 }
-
 .reservation-message button:hover {
   background-color: #45a049;
 }
-
 .modal,
 .reservation-modal {
   position: fixed;
@@ -653,7 +606,6 @@ textarea {
   align-items: center;
   justify-content: center;
 }
-
 .confirmation-modal {
   position: fixed;
   top: 0;
@@ -665,7 +617,6 @@ textarea {
   align-items: center;
   justify-content: center;
 }
-
 .confirmation-modal .modal-content {
   background-color: #fff;
   padding: 20px;
@@ -675,15 +626,12 @@ textarea {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
-
-
 .modal-image {
   width: 100%;
   height: 300px;
   object-fit: cover;
   margin-bottom: 20px;
 }
-
 .close-button {
   position: absolute;
   top: 10px;
@@ -691,7 +639,6 @@ textarea {
   font-size: 24px;
   cursor: pointer;
 }
-
 .reserve-button {
   background-color: #4CAF50;
   color: #fff;
@@ -701,11 +648,9 @@ textarea {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
 .reserve-button:hover {
   background-color: #45a049;
 }
-
 .confirm-button,
 .cancel-button {
   background-color: #4CAF50;
@@ -717,17 +662,14 @@ textarea {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
 .confirm-button:hover {
   background-color: #45a049;
 }
-
 .tab-container {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
 }
-
 .tab-container button {
   padding: 10px 20px;
   border: none;
@@ -738,13 +680,11 @@ textarea {
   margin: 0 10px;
   transition: color 0.3s ease, border-bottom-color 0.3s ease;
 }
-
 .tab-container button:hover,
 .tab-container button.active {
   color: #d22328;
   border-bottom-color: #d22328;
 }
-
 .modal,
 .reservation-modal {
   position: fixed;
@@ -757,7 +697,6 @@ textarea {
   align-items: center;
   justify-content: center;
 }
-
 .modal-content {
   background-color: #fff;
   padding: 20px;
@@ -771,15 +710,12 @@ textarea {
   overflow-y: auto;
   /* Barre de défilement verticale */
 }
-
-
 .modal-image {
   width: 100%;
   height: 300px;
   object-fit: cover;
   margin-bottom: 20px;
 }
-
 .close-button {
   position: absolute;
   top: 10px;
@@ -787,7 +723,6 @@ textarea {
   font-size: 24px;
   cursor: pointer;
 }
-
 .article-button-content {
   display: flex;
   align-items: center;
@@ -802,11 +737,9 @@ textarea {
   cursor: pointer;
   text-align: left;
 }
-
 .article-button-content:hover {
   background-color: #45a049;
 }
-
 .article-image {
   width: 40px;
   /* taille de l'image */
@@ -815,33 +748,27 @@ textarea {
   /* espacement entre l'image et le texte */
   border-radius: 5px;
 }
-
 form {
   display: flex;
   flex-direction: column;
 }
-
 form label {
   margin: 10px 0 5px;
 }
-
 form input {
   padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ddd;
   border-radius: 5px;
 }
-
 form button {
   align-self: flex-start;
 }
-
 .tab-container {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
 }
-
 .tab-container button {
   padding: 10px 20px;
   border: none;
@@ -852,36 +779,30 @@ form button {
   margin: 0 10px;
   transition: color 0.3s ease, border-bottom-color 0.3s ease;
 }
-
 .tab-container button:hover,
 .tab-container button.active {
   color: #d22328;
   border-bottom-color: #d22328;
 }
-
 .prestataire-container {
   padding-top: 100px;
   text-align: center;
 }
-
 .page-title {
   font-size: 2em;
   margin-bottom: 20px;
 }
-
 .page-other_title {
   font-size: 1.5em;
   margin-bottom: 30px;
   margin-top: 30px;
 }
-
 .cards-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
 }
-
 .card {
   background-color: #fff;
   border-radius: 10px;
@@ -891,27 +812,22 @@ form button {
   transition: transform 0.3s ease;
   cursor: pointer;
 }
-
 .card:hover {
   transform: scale(1.05);
   background-color: #fce012;
 }
-
 .card-image {
   width: 100%;
   height: 300px;
   object-fit: cover;
 }
-
 .card-content {
   padding: 15px;
 }
-
 .card-title {
   font-size: 1.5em;
   margin: 10px 0;
 }
-
 .card-type,
 .card-price,
 .card-player {
@@ -919,7 +835,6 @@ form button {
   color: #555;
   margin: 5px 0;
 }
-
 .modal,
 .reservation-modal {
   position: fixed;
@@ -932,14 +847,12 @@ form button {
   align-items: center;
   justify-content: center;
 }
-
 .modal-image {
   width: 100%;
   height: 300px;
   object-fit: cover;
   margin-bottom: 20px;
 }
-
 .close-button {
   position: absolute;
   top: 10px;
@@ -947,27 +860,22 @@ form button {
   font-size: 24px;
   cursor: pointer;
 }
-
 form {
   display: flex;
   flex-direction: column;
 }
-
 form label {
   margin: 10px 0 5px;
 }
-
 form input {
   padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ddd;
   border-radius: 5px;
 }
-
 form button {
   align-self: flex-start;
 }
-
 button {
   padding: 10px 20px;
   border: none;
@@ -975,7 +883,6 @@ button {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
 /*.cart {
   background-color: #fff;
   border: 1px solid #ddd;
@@ -985,14 +892,12 @@ button {
   margin: 20px auto;
   box-shadow: 0 4px 8px 4px rgba(0, 0, 0, 0.1);
 }
-
 .cart h3 {
   font-size: 1.5rem;
   margin-bottom: 15px;
   text-align: center;
   color: #333;
 }
-
 .cart-item {
   display: flex;
   justify-content: space-between;
@@ -1001,20 +906,17 @@ button {
   padding: 10px;
   border-bottom: 1px solid #ddd;
 }
-
 .cart-item p {
   margin: 0;
   font-size: 1rem;
   color: #555;
 }
-
 .cart p:last-of-type {
   font-weight: bold;
   font-size: 1.2rem;
   text-align: right;
   color: #333;
 }
-
 .reserve-button {
   background-color: #4CAF50;
   color: #fff;
@@ -1025,45 +927,36 @@ button {
   transition: background-color 0.3s ease;
   font-size: 1rem;
 }
-
 .reserve-button:hover {
   background-color: #45a049;
 }
-
 .reserve-button:active {
   background-color: #45a049;
 }
-
 .reserve-button + .reserve-button {
   margin-left: 10px;
 }
-
 .reserve-button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
-
 @media (max-width: 480px) {
   .cart {
     padding: 15px;
   }
-
   .cart h3 {
     font-size: 1.3rem;
   }
-
   .reserve-button {
     width: 100%;
     margin: 10px 0;
   }
 }*/
-
 .cart_list {
   padding: 0;
   margin: 0;
   list-style: none;
 }
-
 .cart_item {
   display: grid;
   grid-template-columns: 35em 13em 13em 13em 30em;
@@ -1075,14 +968,12 @@ button {
   padding: 8px 0;
   /* Réduit l'espace vertical */
 }
-
 .cart_item_image img {
   width: 70px;
   /* Réduit la taille de l'image pour gagner de l'espace */
   height: auto;
   border-radius: 5px;
 }
-
 .cart_item_info {
   display: flex;
   flex-direction: column;
@@ -1090,13 +981,11 @@ button {
   gap: 3px;
   /* Réduit l'espacement entre les lignes d'informations */
 }
-
 .cart_item_title {
   font-size: 18px;
   /* Taille réduite pour compacter */
   color: #888;
 }
-
 .cart_item_text {
   font-size: 20px;
   /* Taille ajustée pour plus de compacité */
@@ -1105,7 +994,6 @@ button {
   /* Empêche les débordements */
   text-overflow: ellipsis;
 }
-
 .cart_item_quantity,
 .cart_item_price {
   text-align: center;
@@ -1116,8 +1004,6 @@ button {
   margin: 0;
   /* Supprime tout espace externe */
 }
-
-
 .order_total {
   margin-top: 20px;
   padding: 10px 15px;
@@ -1132,14 +1018,12 @@ button {
   gap: 10px;
   /* Espacement entre les éléments */
 }
-
 .order_total_title,
 .order_total_amount {
   font-size: 16px;
   font-weight: bold;
   color: #333;
 }
-
 .cart_buttons {
   margin-top: 20px;
   text-align: right;
@@ -1150,12 +1034,10 @@ button {
   padding: 15px;
   /* Ajoute un espace autour des boutons */
 }
-
 .cart_button_clear_logo {
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
 .cart_button_clear,
 .cart_button_checkout {
   border: none;
@@ -1165,22 +1047,18 @@ button {
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
 .cart_button_clear {
   background-color: #f64242;
   color: #ffffff;
 }
-
 .cart_button_clear:hover {
   background-color: #fa0000;
   color: white;
 }
-
 .cart_button_checkout {
   background-color: #4CAF50;
   color: #fff;
 }
-
 .cart_button_checkout:hover {
   background-color: #45a049;
 }

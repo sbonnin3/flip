@@ -4,9 +4,7 @@ import { commandes, reservations, reservationsJeux, comptes } from "@/datasource
 import { getAllJeux } from "@/services/jeuxService";
 import { getAllSouvenirs } from "@/services/souvenirsService";
 import { getAllStands } from "@/services/standsService";
-
 Vue.use(Vuex);
-
 export default new Vuex.Store({
   state: {
     tournois: [],
@@ -163,14 +161,11 @@ export default new Vuex.Store({
     },    
     async fetchTournoisByPrestataire({ commit, state }) {
       if (!state.userSession) return;
-
       const prestataireId = state.userSession.id;
-
       // Filtrer les tournois par l'ID du prestataire
       const tournoisForPrestataire = state.tournois.filter(
         (tournoi) => tournoi.prestataireId === prestataireId
       );
-
       // Committer les tournois pour le prestataire
       commit('SET_TOURNOIS', tournoisForPrestataire);
     },
@@ -237,7 +232,6 @@ export default new Vuex.Store({
         console.error('Erreur lors de la récupération des ventes :', error);
       }
     },
-
     clearUserSession({ commit }) {
       commit('CLEAR_USER_SESSION');
     },
@@ -298,15 +292,11 @@ export default new Vuex.Store({
       const tournoisIds = state.tournois
         .filter(tournoi => tournoi.prestataireId === prestataireId) // Filtrer les tournois par prestataire
         .map(tournoi => tournoi._id); // Récupérer les IDs des tournois
-
       console.log("IDs des tournois du prestataire :", tournoisIds); // Ajoutez ce log
-
       const reservations = state.reservations.filter(
         reservation => tournoisIds.includes(reservation.tournoiId)
       );
-
       console.log("Réservations trouvées :", reservations); // Ajoutez ce log
-
       return reservations;
     },
     userOrders: (state) => {
