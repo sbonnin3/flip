@@ -105,12 +105,41 @@
         <div class="modal-content">
           <span class="close-button" @click="closeConfirmationJeux">&times;</span>
           <h2>Confirmer la réservation</h2>
-          <p>Voulez-vous vraiment réserver le jeu {{ selectedJeu.name }} au stand {{ selectedJeu.nomsDesStands }} ?</p>
+          <p>
+            Voulez-vous vraiment réserver le jeu <strong>{{ selectedJeu.name }}</strong>
+            au stand <strong>{{ selectedJeu.nomsDesStands }}</strong> ?
+          </p>
 
-            <div class="form-buttons">
-              <button type="submit" class="confirm-button" @click="confirmReservationJeux">Confirmer</button>
-              <button type="button" @click="closeConfirmationJeux" class="cancel-button">Annuler</button>
-            </div>
+          <!-- Sélection de la date prédéfinie -->
+          <div class="form-group">
+            <label for="predefinedDate" class="inline-label">Sélectionnez une date :</label>
+            <select id="predefinedDate" v-model="selectedDate" class="form-select">
+              <option
+                  v-for="date in predefinedDates"
+                  :key="`${date.jour}-${date.mois}-${date.annee}`"
+                  :value="date"
+              >
+                {{ formatDateJeux(date) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reservationTime" class="inline-label">Saisissez une heure :</label>
+            <input
+                id="reservationTime"
+                type="time"
+                v-model="selectedTime"
+                required
+                class="form-input"
+            />
+          </div>
+
+          <!-- Boutons -->
+          <div class="form-buttons">
+            <button type="submit" class="confirm-button" @click="confirmReservationJeux">Confirmer</button>
+            <button type="button" @click="closeConfirmationJeux" class="cancel-button">Annuler</button>
+          </div>
         </div>
       </div>
 
@@ -219,6 +248,9 @@ export default {
       searchEditeur: '',
       searchStand: '',
       selectedTypes: [],
+      predefinedDates: this.generatePredefinedDates(), // Liste des dates prédéfinies
+      selectedDate: null, // Date sélectionnée
+      selectedTime: '', // Heure saisie par l'utilisateur
       jeuTypes: [...new Set(jeux.map(jeu => jeu.type))],
     };
   },
@@ -284,6 +316,8 @@ export default {
     },
     closeConfirmationJeux() {
       this.showConfirmationJeux = false;
+      this.selectedDate = null;
+      this.selectedTime = '';
     },
     formatDate(dates) {
       if (Array.isArray(dates)) {
@@ -390,15 +424,58 @@ export default {
       this.openPaymentModal();
       this.closeModal();
     },
+    generatePredefinedDates() {
+      // Génère les dates entre le 9 juillet 2025 et le 20 juillet 2025
+      const startDate = new Date(2025, 6, 9); // 6 = juillet (index 0)
+      const endDate = new Date(2025, 6, 20);
+      const dates = [];
+
+      for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+        dates.push({
+          jour: d.getDate(),
+          mois: d.getMonth() + 1,
+          annee: d.getFullYear(),
+        });
+      }
+
+      return dates;
+    },
+    formatDateJeux({ jour, mois, annee }) {
+      // Ajoute des zéros initiaux au jour et au mois
+      const formattedDay = jour.toString().padStart(2, '0');
+      const formattedMonth = mois.toString().padStart(2, '0');
+      return `${formattedDay}/${formattedMonth}/${annee}`;
+    },
     confirmReservationJeux() {
       const currentUser = this.$store.state.userSession;
+
+      if (!this.selectedDate || !this.selectedTime) {
+        alert('Veuillez sélectionner une date et saisir une heure valide.');
+        return;
+      }
+
+      // Extraire les heures et minutes à partir du champ "time"
+      const [hours, minutes] = this.selectedTime.split(':').map(Number);
+
+      // Construire la structure de date demandée
+      const reservationDate = {
+        ...this.selectedDate, // Date prédéfinie
+        heures: hours,
+        min: minutes,
+      };
+
       const stand = this.$store.state.stands.find(s => s.nom === this.selectedJeu.nomsDesStands && s.type === "stand de jeux");
       this.reservationStandJeu.push({
         jeuID: this.selectedJeu._id,
         standID: stand.idStand,
         userId: currentUser.id,
+        date: reservationDate,
       })
-      this.reservationMessage = "Réservation confirmée !"
+
+      const formattedDate = this.formatDateJeux(reservationDate);
+      const formattedTime = this.formatTime(reservationDate);
+
+      this.reservationMessage = `Réservation confirmée pour le ${formattedDate} à ${formattedTime} !`;
       this.closeConfirmationJeux();
       this.closeJeuModal();
     },
@@ -754,6 +831,45 @@ form button {
   max-width: 600px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.inline-label {
+  margin-right: 15px;
+  font-weight: bold;
+  color: #333;
+  white-space: nowrap; /* Empêche le retour à la ligne du label */
+}
+
+.form-select,
+.form-input {
+  flex: 1; /* Permet aux champs de prendre une largeur adaptée */
+  max-width: 300px; /* Définit une largeur maximale pour éviter des champs trop larges */
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: #f04e23;
+}
+
+.confirm-button,
+.cancel-button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .confirm-button,

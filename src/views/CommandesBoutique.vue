@@ -8,8 +8,9 @@
       <h2 class="section-title">Toutes les ventes</h2>
       <div v-for="(commande, index) in commandesJeu" :key="index" class="card">
         <div class="card-content">
-          <h3 class="card-title">Nom du jeu : {{ commande.jeuNom }}</h3>
+          <h3 class="card-title">Commande numéro {{ commande.orderNumber }}</h3>
           <div class="article">
+            <p class="article-name">Nom du jeu : {{ commande.jeuNom }}</p>
             <p class="article-price">Prix : {{ commande.prix }}€</p>
           </div>
           <p class="card-status">{{ commande.status }}</p>

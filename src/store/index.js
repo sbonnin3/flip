@@ -1,24 +1,33 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { commandes, reservations, reservationsJeux, comptes, reservationStandJeu} from "@/datasource/data";
+import {
+  commandes,
+  reservations,
+  reservationsJeux,
+  comptes,
+  reservationStandJeu,
+  stands,
+  jeux,
+  tournois, souvenirs
+} from "@/datasource/data";
 import { getAllJeux } from "@/services/jeuxService";
 import { getAllSouvenirs } from "@/services/souvenirsService";
 import { getAllStands } from "@/services/standsService";
 Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
-    tournois: [],
-    jeux: [],
+    tournois: tournois,
+    jeux: jeux,
     comptes: comptes,
     restaurants: [], // Charge les restaurants au démarrage
     userSession: null,
-    souvenirs: [],
+    souvenirs: souvenirs,
     reservations: reservations,
     reservationsJeux: reservationsJeux,
     reservationStand: reservationStandJeu,
     userOrders: commandes,
     currentOrder: [],
-    stands: [],
+    stands: stands,
   },
   mutations: {
     UPDATE_RESTAURANT(state, updatedRestaurant) {

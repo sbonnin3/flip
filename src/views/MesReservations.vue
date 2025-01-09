@@ -13,12 +13,14 @@
         <thead>
         <tr>
           <th>Nom du Jeu</th>
+          <th>Date</th>
           <th>Status</th>
         </tr>
         </thead>
         <tbody>
         <tr v-for="reservation in reservationStandJeu" :key="reservation.reservationJeuStandId">
           <td>{{ reservation.jeuNom }}</td>
+          <td>{{ formatDate(reservation.date || reservation.dateReservation) }}</td>
           <td>{{ reservation.status }}</td>
         </tr>
         </tbody>
@@ -62,6 +64,34 @@ export default {
               status: reservationStandJeu.status || 'Préparer la table.',
             };
           });
+    },
+  },
+  methods: {
+    formatDate(date) {
+      if (!date) return "Date invalide";
+
+      // Gérer le cas où la date est sous forme d'objet
+      if (typeof date === 'object' && date.jour !== undefined) {
+        const { jour, mois, annee, heures, min } = date;
+        return `${jour.toString().padStart(2, '0')}/${mois.toString().padStart(2, '0')}/${annee} à ${heures?.toString().padStart(2, '0') || '00'}h${min?.toString().padStart(2, '0') || '00'}`;
+      }
+
+      // Gérer le cas où la date est au format ISO (chaîne)
+      if (typeof date === 'string') {
+        const parsedDate = new Date(date);
+        if (!isNaN(parsedDate)) {
+          return parsedDate.toLocaleDateString("fr-FR", {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+        }
+      }
+
+      // Si le champ est absent ou invalide
+      return "Date invalide";
     },
   },
   mounted() {
