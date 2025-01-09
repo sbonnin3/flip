@@ -28,8 +28,13 @@ export default new Vuex.Store({
       }
     },
     ADD_RESTAURANT(state, restaurant) {
-      state.restaurants = [...state.restaurants, restaurant]; // Ajouter de manière immuable
-      console.log("Restaurant ajouté :", restaurant);
+      state.restaurants.push(restaurant);
+    },
+    UPDATE_POINT_AVAILABILITY(state, { idPoint, disponible }) {
+      const point = state.points.find((p) => p.idPoint === idPoint);
+      if (point) {
+        point.disponible = disponible;
+      }
     },
     SET_RESTAURANTS(state, restaurants) {
       state.restaurants = restaurants;
@@ -106,6 +111,11 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    addRestaurant({ commit }, restaurant) {
+      // Ajoute le restaurant et met à jour la disponibilité du point sur la carte
+      commit("ADD_RESTAURANT", restaurant);
+      commit("UPDATE_POINT_AVAILABILITY", { idPoint: restaurant.idPoint, disponible: false });
+    },
     updateRestaurant({ commit, state }, updatedRestaurant) {
       commit("UPDATE_RESTAURANT", updatedRestaurant);
       localStorage.setItem("stands", JSON.stringify(state.restaurants)); // Sauvegarde des restaurants modifiés
@@ -122,44 +132,9 @@ export default new Vuex.Store({
       // Ajouter le restaurant dans le store
       commit("ADD_RESTAURANT", newRestaurant);
     },
-    async initializeStore({ commit }) {
-      try {
-        // Charger les restaurants depuis localStorage ou initialiser un tableau vide
-        let stands = [];
-        const storedStands = localStorage.getItem("stands");
-    
-        if (storedStands) {
-          try {
-            stands = JSON.parse(storedStands);
-          } catch (parseError) {
-            console.error("Erreur lors de l'analyse JSON du localStorage. Réinitialisation des stands.", parseError);
-            stands = [];
-          }
-        }
-    
-        // Si aucun stand n'est trouvé, charger depuis le fichier stands.js
-        if (!stands.length) {
-          const { stands: defaultStands } = require("@/datasource/stands.js");
-          stands = defaultStands;
-    
-          // Sauvegarder les stands par défaut dans localStorage
-          localStorage.setItem("stands", JSON.stringify(stands));
-        }
-    
-        // Assurer que chaque stand a les champs essentiels
-        stands = stands.map((stand) => ({
-          ...stand,
-          nourritures: stand.nourritures || [],
-          boissons: stand.boissons || [],
-          notes: stand.notes || [],
-          commentaires: stand.commentaires || [],
-        }));
-    
-        // Commit des stands au store
-        commit("SET_RESTAURANTS", stands);
-      } catch (error) {
-        console.error("Erreur lors de l'initialisation des restaurants :", error);
-      }
+    initializeStore({ commit }) {
+      const { stands } = require("@/datasource/stands.js");
+      commit("SET_RESTAURANTS", stands);
     },    
     async fetchTournoisByPrestataire({ commit, state }) {
       if (!state.userSession) return;

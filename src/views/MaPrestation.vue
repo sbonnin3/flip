@@ -435,9 +435,7 @@ export default {
     },
   },
   created() {
-    console.log("Restaurants :", this.restaurants);
-    console.log("User Session :", this.userSession);
-    this.$store.dispatch("initializeStore");
+    this.$store.dispatch("initializeRestaurants");
   },
   methods: {
     toggleArticleInRestaurant(article) {
@@ -490,7 +488,7 @@ export default {
         nom: this.editRestaurantDetails.nom,
         image: this.editRestaurantDetails.image,
       };
-      this.$store.dispatch('updateRestaurant', updatedRestaurant);
+      this.$store.dispatch("updateRestaurant", updatedRestaurant);
       this.closeEditRestaurantModal();
       alert('Restaurant modifié avec succès !');
     },
@@ -527,17 +525,6 @@ export default {
       this.dispatch("saveRestaurantToLocalFile", newRestaurant);
       console.log("Restaurant créé :", newRestaurant);
     },
-    saveRestaurantToLocalStorage() {
-      const stands = JSON.parse(localStorage.getItem("stands")) || [];
-      const index = stands.findIndex((stand) => stand.id === this.restaurant.id);
-      if (index !== -1) {
-        stands[index] = this.restaurant;
-      } else {
-        stands.push(this.restaurant);
-      }
-      localStorage.setItem("stands", JSON.stringify(stands));
-      console.log("Restaurant mis à jour dans localStorage.");
-    },
     updateRestaurant() {
       this.$store.dispatch('updateRestaurant', this.restaurant);
     },
@@ -552,30 +539,27 @@ export default {
       }
     },
     handleCreateRestaurant() {
-      if (!this.newRestaurantName || !this.newRestaurantImage) {
-        alert("Veuillez remplir tous les champs pour créer un restaurant.");
+      if (!this.newRestaurantName || !this.newRestaurantImage || !this.selectedPoint) {
+        alert("Veuillez remplir tous les champs et sélectionner un point sur la carte.");
         return;
       }
       const newRestaurant = {
-        id: Date.now(),
+        id: Date.now(), // Génère un ID unique pour le stand
+        idRestau: `R-${Date.now()}`, // Génère un ID unique pour le restaurant
         nom: this.newRestaurantName,
-        image: this.newRestaurantImage,
         type: "restaurants",
-        comptes: [this.$store.state.userSession.id],
-        nourritures: [], // Champs par défaut pour éviter les erreurs
-        boissons: [],
-        notes: [],
-        commentaires: [],
+        image: this.newRestaurantImage,
+        idPoint: this.selectedPoint.idPoint, // Numéro du point sélectionné sur la carte
+        comptes: [this.$store.state.userSession.id], // ID du prestataire connecté
+        nourritures: [], // Liste vide à l'initialisation
+        boissons: [], // Liste vide à l'initialisation
+        notes: [], // Liste vide à l'initialisation
+        commentaires: [], // Liste vide à l'initialisation
       };
-      // Ajouter à localStorage
-      const stands = JSON.parse(localStorage.getItem("stands")) || [];
-      stands.push(newRestaurant);
-      localStorage.setItem("stands", JSON.stringify(stands));
-      // Mettre à jour le store
-      this.$store.commit("SET_RESTAURANTS", stands);
-      // Réinitialiser les champs
+      this.$store.dispatch("addRestaurant", newRestaurant);
       this.newRestaurantName = "";
       this.newRestaurantImage = "";
+      this.selectedPoint = null;
       alert("Restaurant créé avec succès !");
     },
     openTournoiModal() {
@@ -714,6 +698,7 @@ export default {
     selectPoint(point) {
       this.selectedPoint = point;
       this.stand.idPoint = point.idPoint;
+      alert(`Point sélectionné : ${point.idPoint}`);
       this.$forceUpdate();
     },
     handleImageUpload(event) {
