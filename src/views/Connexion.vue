@@ -2,12 +2,6 @@
   <section>
     <div class="form-box">
       <div class="form-value">
-        <!-- Login / Registration Form Toggle -->
-        <div class="auth-toggle">
-          <button @click="toggleForm('login')" :class="{ active: isLogin }">Connexion</button>
-          <button @click="toggleForm('signup')" :class="{ active: !isLogin }">Inscription</button>
-        </div>
-
         <!-- Login Form -->
         <div v-if="isLogin">
           <h2>Se connecter</h2>
@@ -73,6 +67,11 @@
                 <option value="createur">Créateur</option>
               </select>
             </div>
+            <div v-if="role !== 'utilisateur'" class="inputbox">
+              <ion-icon name="key-outline"></ion-icon>
+              <input v-model="codeInscription" type="text" required />
+              <label for="codeInscription">Code d'inscription</label>
+            </div>
             <button type="submit">S'inscrire</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
@@ -101,6 +100,7 @@ export default {
   name: "PageInscription",
   data() {
     return {
+      codeInscription: "",
       isLogin: true,
       nom: "",
       prenom: "",
@@ -136,9 +136,16 @@ export default {
         this.errorMessage = "Veuillez fournir une adresse email valide.";
         return;
       }
+
+      if (this.role !== "utilisateur" && this.codeInscription !== "1234") {
+        this.errorMessage = "Code d'inscription incorrect.";
+        return;
+      }
+
       const existingUser = this.$store.getters.comptes.find(
         (compte) => compte.identifiant === this.identifiant
       );
+
       if (existingUser) {
         this.errorMessage = "Cet identifiant est déjà utilisé.";
       } else {
@@ -146,7 +153,7 @@ export default {
           id: Date.now(),
           nom: this.nom,
           prenom: this.prenom,
-          email: this.email, // Ajout de l'email
+          email: this.email,
           identifiant: this.identifiant,
           motDePasse: this.motDePasse,
           role: this.role,

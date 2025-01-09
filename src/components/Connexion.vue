@@ -3,11 +3,6 @@
     <div class="modal-container form-box">
       <button class="close-button" @click="closeModal">✖</button>
       <div class="auth-container">
-        <div class="auth-toggle">
-          <button @click="toggleForm('login')" :class="{ active: isLogin }">Connexion</button>
-          <button @click="toggleForm('signup')" :class="{ active: !isLogin }">Inscription</button>
-        </div>
-
         <div v-if="isLogin">
           <h2>Connexion</h2>
           <form @submit.prevent="login">
@@ -22,6 +17,9 @@
             <button type="submit">Se connecter</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
+          <div class="auth-toggle">
+          <button @click="toggleForm('signup')" :class="{ active: !isLogin }">M'inscrire</button>
+        </div>
         </div>
 
         <div v-else>
@@ -57,9 +55,16 @@
                 <option value="createur">Créateur</option>
               </select>
             </div>
+            <div v-if="role !== 'utilisateur'" class="inputbox">
+              <input v-model="codeInscription" type="text" id="codeInscription" required />
+              <label for="codeInscription">Code d'inscription:</label>
+            </div>
             <button type="submit">S'inscrire</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
+          <div class="auth-toggle">
+          <button @click="toggleForm('login')" :class="{ active: isLogin }">Connexion</button>
+        </div>
         </div>
       </div>
     </div>
@@ -86,6 +91,7 @@ export default {
       identifiant: "",
       motDePasse: "",
       role: "utilisateur",
+      codeInscription: "",
       errorMessage: "",
     };
   },
@@ -117,13 +123,20 @@ export default {
     },
 
     register() {
-      const existingUser = this.$store.getters.comptes.find(
-        (compte) => compte.identifiant === this.identifiant
-      );
       if (!this.email.includes("@")) {
         this.errorMessage = "Veuillez fournir une adresse email valide.";
         return;
       }
+
+      if (this.role !== "utilisateur" && this.codeInscription !== "1234") {
+        this.errorMessage = "Code d'inscription incorrect.";
+        return;
+      }
+
+      const existingUser = this.$store.getters.comptes.find(
+        (compte) => compte.identifiant === this.identifiant
+      );
+
       if (existingUser) {
         this.errorMessage = "Cet identifiant est déjà utilisé.";
       } else {
@@ -131,7 +144,7 @@ export default {
           id: Date.now(),
           nom: this.nom,
           prenom: this.prenom,
-          email: this.email, // Ajout de l'email
+          email: this.email,
           identifiant: this.identifiant,
           motDePasse: this.motDePasse,
           role: this.role,
@@ -286,8 +299,8 @@ p {
   border-bottom: 2px solid #fff;
 }
 
-.inputbox input:focus ~ label,
-.inputbox input:valid ~ label {
+.inputbox input:focus~label,
+.inputbox input:valid~label {
   top: -10px;
   font-size: 0.8em;
   color: white;
