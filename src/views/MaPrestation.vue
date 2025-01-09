@@ -2,13 +2,11 @@
   <div class="page-prestation">
     <h1 class="page-title">Gestion de ma prestation</h1>
     <div class="tab-container">
-      <button :class="{ active: selectedTab === 'Catalogue' }" @click="selectTab('Catalogue')">Catalogue</button>
-      <button :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Mes jeux </button>
-      <button :class="{ active: selectedTab === 'Emplacement' }" @click="selectTab('Emplacement')">Mon
-        emplacement</button>
-      <button :class="{ active: selectedTab === 'MesTournois' }" @click="selectTab('MesTournois')">Mes tournois</button>
-      <button :class="{ active: selectedTab === 'MonRestaurant' }" @click="selectTab('MonRestaurant')">Mon
-        restaurant</button>
+      <button v-if="isTabVisible('Catalogue')" :class="{ active: selectedTab === 'Catalogue' }" @click="selectTab('Catalogue')">Catalogue</button>
+      <button v-if="isTabVisible('Jeux')" :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Mes jeux</button>
+      <button v-if="isTabVisible('Emplacement')" :class="{ active: selectedTab === 'Emplacement' }" @click="selectTab('Emplacement')">Mon emplacement</button>
+      <button v-if="isTabVisible('MesTournois')" :class="{ active: selectedTab === 'MesTournois' }" @click="selectTab('MesTournois')">Mes tournois</button>
+      <button v-if="isTabVisible('MonRestaurant')" :class="{ active: selectedTab === 'MonRestaurant' }" @click="selectTab('MonRestaurant')">Mon restaurant</button>
     </div>
     <div v-show="selectedTab === 'MonRestaurant'">
       <template v-if="restaurant">
@@ -355,6 +353,9 @@ export default {
   },
   computed: {
     ...mapGetters(["userSession", "restaurantByUser"]),
+    userRole() {
+    return this.$store.state.userSession.role; // Supposant que le rôle est stocké ici
+  },
     uniqueArticles() {
       const allArticles = [];
       // Collect all articles from all stands
@@ -438,6 +439,17 @@ export default {
     this.$store.dispatch("initializeRestaurants");
   },
   methods: {
+    isTabVisible(tab) {
+  const role = this.userSession.role; // Supposant que le rôle de l'utilisateur est stocké ici
+  const tabPermissions = {
+    Catalogue: ["vendeur", "createur"],
+    Jeux: ["vendeur", "createur"],
+    Emplacement: ["vendeur", "createur", "restaurateur", "organisateur"],
+    MesTournois: ["organisateur"],
+    MonRestaurant: ["restaurateur"],
+  };
+  return tabPermissions[tab]?.includes(role);
+},
     toggleArticleInRestaurant(article) {
       if (!this.restaurant) {
         alert("Veuillez créer un restaurant avant d'ajouter ou supprimer des articles.");
