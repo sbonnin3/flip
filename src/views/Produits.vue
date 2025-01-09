@@ -1,5 +1,11 @@
 <template>
   <div class="prestataire-container">
+    <div v-if="showAddModal" class="confirmation-modal">
+      <div class="modal-content">
+        <p>{{ addMessage }}</p>
+        <button class="confirm-button" @click="showAddModal = false">OK</button>
+      </div>
+    </div>
     <h1 class="page-title">Produits</h1>
     <div class="tab-container">
       <button :class="{ active: selectedTab === 'Restauration' }"
@@ -89,21 +95,22 @@
           <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image" />
 
           <p><strong>Nourritures :</strong></p>
-          <div v-if="selectedModalRestau.nourritures && selectedModalRestau.nourritures.length">
-            <div v-for="nourriture in selectedModalRestau.nourritures" :key="nourriture.nom" class="article-button">
-              <button class="article-button-content" @click="addToCart(nourriture)">
-                <img :src="nourriture.image" alt="Image de l'article" class="article-image" />
-                {{ nourriture.nom }} - {{ nourriture.prix }}€
+          <div v-if="selectedModalRestau.nourritures && selectedModalRestau.nourritures.length" class="items-container">
+            <div v-for="nourriture in selectedModalRestau.nourritures" :key="nourriture.nom" class="item-card">
+              <button class="item-button-content" @click="addToCart(nourriture)">
+                <img :src="nourriture.image" alt="Image de l'article" class="item-image" />
+                <p>{{ nourriture.nom }} - {{ nourriture.prix }}€</p>
               </button>
             </div>
           </div>
           <p v-else>Aucune nourriture disponible.</p>
+
           <p><strong>Boissons :</strong></p>
-          <div v-if="selectedModalRestau.boissons && selectedModalRestau.boissons.length">
-            <div v-for="boisson in selectedModalRestau.boissons" :key="boisson.nom" class="article-button">
-              <button class="article-button-content" @click="addToCart(boisson)">
-                <img :src="boisson.image" alt="Image de l'article" class="article-image" />
-                {{ boisson.nom }} - {{ boisson.prix }}€
+          <div v-if="selectedModalRestau.boissons && selectedModalRestau.boissons.length" class="items-container">
+            <div v-for="boisson in selectedModalRestau.boissons" :key="boisson.nom" class="item-card">
+              <button class="item-button-content" @click="addToCart(boisson)">
+                <img :src="boisson.image" alt="Image de l'article" class="item-image" />
+                <p>{{ boisson.nom }} - {{ boisson.prix }}€</p>
               </button>
             </div>
           </div>
@@ -206,6 +213,10 @@ export default {
   data() {
     return {
       selectedTab: "Restauration",
+      alertMessage: null, // Message d'alerte temporaire
+      alertTimeout: null,
+      showAddModal: false, // Contrôle l'affichage de la fenêtre modale
+      addMessage: '',
       selectedModalJeu: null,
       selectedModalRestau: null,
       cart: [],
@@ -425,13 +436,20 @@ export default {
       const itemInCart = this.cart.find(item => item.nom === article.nom);
       if (itemInCart) {
         itemInCart.quantite += 1;
-        this.cardCommandMessage = "Article ajouté dans le panier !";
       } else {
         this.cart.push({ ...article, quantite: 1, restaurant: this.selectedModalRestau.nom });
-        this.cardCommandMessage = "Article ajouté dans le panier !";
       }
-      this.$store.commit('ADD_TO_CART', article);
+
+      // Définir le message à afficher dans la modale
+      this.addMessage = `"${article.nom}" a été ajouté au panier !`;
+      this.showAddModal = true;
+
+      // Masquer automatiquement la modale après 3 secondes
+      setTimeout(() => {
+        this.showAddModal = false;
+      }, 3000);
     },
+
     deleteArticle(article) {
       const itemInCartToDelete = this.cart.find(item => item.nom === article.nom);
       if (itemInCartToDelete) {
@@ -493,6 +511,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .sendComment {
   background-color: #4CAF50;
@@ -503,6 +522,7 @@ export default {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
+
 textarea {
   width: 100%;
   padding: 10px;
@@ -510,12 +530,14 @@ textarea {
   border: 1px solid #ddd;
   border-radius: 5px;
 }
+
 .comments {
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 10px;
   border: 1px solid black;
 }
+
 .confirmation-modal,
 .modal-overlay {
   position: fixed;
@@ -529,6 +551,7 @@ textarea {
   align-items: center;
   z-index: 1000;
 }
+
 .modal-content {
   background: white;
   padding: 20px;
@@ -537,6 +560,7 @@ textarea {
   max-width: 400px;
   position: relative;
 }
+
 .close-button {
   position: absolute;
   top: 10px;
@@ -546,6 +570,7 @@ textarea {
   font-size: 20px;
   cursor: pointer;
 }
+
 .confirm-button {
   background: #4caf50;
   color: white;
@@ -554,6 +579,7 @@ textarea {
   cursor: pointer;
   margin-right: 10px;
 }
+
 .cancel-button {
   background: #f44336;
   color: white;
@@ -561,6 +587,7 @@ textarea {
   border: none;
   cursor: pointer;
 }
+
 .reservation-message {
   position: fixed;
   top: 0;
@@ -572,6 +599,7 @@ textarea {
   align-items: center;
   justify-content: center;
 }
+
 .reservation-message .modal-content {
   background-color: #fff;
   padding: 20px;
@@ -581,6 +609,7 @@ textarea {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
+
 .reservation-message button {
   background-color: #4CAF50;
   color: white;
@@ -591,9 +620,11 @@ textarea {
   font-size: 0.9em;
   margin-top: 10px;
 }
+
 .reservation-message button:hover {
   background-color: #45a049;
 }
+
 .modal,
 .reservation-modal {
   position: fixed;
@@ -606,6 +637,7 @@ textarea {
   align-items: center;
   justify-content: center;
 }
+
 .confirmation-modal {
   position: fixed;
   top: 0;
@@ -617,6 +649,7 @@ textarea {
   align-items: center;
   justify-content: center;
 }
+
 .confirmation-modal .modal-content {
   background-color: #fff;
   padding: 20px;
@@ -626,12 +659,14 @@ textarea {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
+
 .modal-image {
   width: 100%;
   height: 300px;
   object-fit: cover;
   margin-bottom: 20px;
 }
+
 .close-button {
   position: absolute;
   top: 10px;
@@ -639,6 +674,7 @@ textarea {
   font-size: 24px;
   cursor: pointer;
 }
+
 .reserve-button {
   background-color: #4CAF50;
   color: #fff;
@@ -648,9 +684,11 @@ textarea {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
+
 .reserve-button:hover {
   background-color: #45a049;
 }
+
 .confirm-button,
 .cancel-button {
   background-color: #4CAF50;
@@ -662,14 +700,17 @@ textarea {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
+
 .confirm-button:hover {
   background-color: #45a049;
 }
+
 .tab-container {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
 }
+
 .tab-container button {
   padding: 10px 20px;
   border: none;
@@ -680,11 +721,13 @@ textarea {
   margin: 0 10px;
   transition: color 0.3s ease, border-bottom-color 0.3s ease;
 }
+
 .tab-container button:hover,
 .tab-container button.active {
   color: #d22328;
   border-bottom-color: #d22328;
 }
+
 .modal,
 .reservation-modal {
   position: fixed;
@@ -697,6 +740,7 @@ textarea {
   align-items: center;
   justify-content: center;
 }
+
 .modal-content {
   background-color: #fff;
   padding: 20px;
@@ -710,12 +754,14 @@ textarea {
   overflow-y: auto;
   /* Barre de défilement verticale */
 }
+
 .modal-image {
   width: 100%;
   height: 300px;
   object-fit: cover;
   margin-bottom: 20px;
 }
+
 .close-button {
   position: absolute;
   top: 10px;
@@ -723,6 +769,7 @@ textarea {
   font-size: 24px;
   cursor: pointer;
 }
+
 .article-button-content {
   display: flex;
   align-items: center;
@@ -737,9 +784,11 @@ textarea {
   cursor: pointer;
   text-align: left;
 }
+
 .article-button-content:hover {
   background-color: #45a049;
 }
+
 .article-image {
   width: 40px;
   /* taille de l'image */
@@ -748,27 +797,33 @@ textarea {
   /* espacement entre l'image et le texte */
   border-radius: 5px;
 }
+
 form {
   display: flex;
   flex-direction: column;
 }
+
 form label {
   margin: 10px 0 5px;
 }
+
 form input {
   padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ddd;
   border-radius: 5px;
 }
+
 form button {
   align-self: flex-start;
 }
+
 .tab-container {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
 }
+
 .tab-container button {
   padding: 10px 20px;
   border: none;
@@ -779,30 +834,36 @@ form button {
   margin: 0 10px;
   transition: color 0.3s ease, border-bottom-color 0.3s ease;
 }
+
 .tab-container button:hover,
 .tab-container button.active {
   color: #d22328;
   border-bottom-color: #d22328;
 }
+
 .prestataire-container {
   padding-top: 100px;
   text-align: center;
 }
+
 .page-title {
   font-size: 2em;
   margin-bottom: 20px;
 }
+
 .page-other_title {
   font-size: 1.5em;
   margin-bottom: 30px;
   margin-top: 30px;
 }
+
 .cards-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
 }
+
 .card {
   background-color: #fff;
   border-radius: 10px;
@@ -812,22 +873,27 @@ form button {
   transition: transform 0.3s ease;
   cursor: pointer;
 }
+
 .card:hover {
   transform: scale(1.05);
   background-color: #fce012;
 }
+
 .card-image {
   width: 100%;
   height: 300px;
   object-fit: cover;
 }
+
 .card-content {
   padding: 15px;
 }
+
 .card-title {
   font-size: 1.5em;
   margin: 10px 0;
 }
+
 .card-type,
 .card-price,
 .card-player {
@@ -835,6 +901,7 @@ form button {
   color: #555;
   margin: 5px 0;
 }
+
 .modal,
 .reservation-modal {
   position: fixed;
@@ -847,12 +914,14 @@ form button {
   align-items: center;
   justify-content: center;
 }
+
 .modal-image {
   width: 100%;
   height: 300px;
   object-fit: cover;
   margin-bottom: 20px;
 }
+
 .close-button {
   position: absolute;
   top: 10px;
@@ -860,22 +929,27 @@ form button {
   font-size: 24px;
   cursor: pointer;
 }
+
 form {
   display: flex;
   flex-direction: column;
 }
+
 form label {
   margin: 10px 0 5px;
 }
+
 form input {
   padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ddd;
   border-radius: 5px;
 }
+
 form button {
   align-self: flex-start;
 }
+
 button {
   padding: 10px 20px;
   border: none;
@@ -883,80 +957,13 @@ button {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-/*.cart {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 20px;
-  max-width: 400px;
-  margin: 20px auto;
-  box-shadow: 0 4px 8px 4px rgba(0, 0, 0, 0.1);
-}
-.cart h3 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  text-align: center;
-  color: #333;
-}
-.cart-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-.cart-item p {
-  margin: 0;
-  font-size: 1rem;
-  color: #555;
-}
-.cart p:last-of-type {
-  font-weight: bold;
-  font-size: 1.2rem;
-  text-align: right;
-  color: #333;
-}
-.reserve-button {
-  background-color: #4CAF50;
-  color: #fff;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 1rem;
-}
-.reserve-button:hover {
-  background-color: #45a049;
-}
-.reserve-button:active {
-  background-color: #45a049;
-}
-.reserve-button + .reserve-button {
-  margin-left: 10px;
-}
-.reserve-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-@media (max-width: 480px) {
-  .cart {
-    padding: 15px;
-  }
-  .cart h3 {
-    font-size: 1.3rem;
-  }
-  .reserve-button {
-    width: 100%;
-    margin: 10px 0;
-  }
-}*/
+
 .cart_list {
   padding: 0;
   margin: 0;
   list-style: none;
 }
+
 .cart_item {
   display: grid;
   grid-template-columns: 35em 13em 13em 13em 30em;
@@ -968,12 +975,14 @@ button {
   padding: 8px 0;
   /* Réduit l'espace vertical */
 }
+
 .cart_item_image img {
   width: 70px;
   /* Réduit la taille de l'image pour gagner de l'espace */
   height: auto;
   border-radius: 5px;
 }
+
 .cart_item_info {
   display: flex;
   flex-direction: column;
@@ -981,11 +990,13 @@ button {
   gap: 3px;
   /* Réduit l'espacement entre les lignes d'informations */
 }
+
 .cart_item_title {
   font-size: 18px;
   /* Taille réduite pour compacter */
   color: #888;
 }
+
 .cart_item_text {
   font-size: 20px;
   /* Taille ajustée pour plus de compacité */
@@ -994,6 +1005,7 @@ button {
   /* Empêche les débordements */
   text-overflow: ellipsis;
 }
+
 .cart_item_quantity,
 .cart_item_price {
   text-align: center;
@@ -1004,6 +1016,7 @@ button {
   margin: 0;
   /* Supprime tout espace externe */
 }
+
 .order_total {
   margin-top: 20px;
   padding: 10px 15px;
@@ -1018,12 +1031,14 @@ button {
   gap: 10px;
   /* Espacement entre les éléments */
 }
+
 .order_total_title,
 .order_total_amount {
   font-size: 16px;
   font-weight: bold;
   color: #333;
 }
+
 .cart_buttons {
   margin-top: 20px;
   text-align: right;
@@ -1034,10 +1049,12 @@ button {
   padding: 15px;
   /* Ajoute un espace autour des boutons */
 }
+
 .cart_button_clear_logo {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 .cart_button_clear,
 .cart_button_checkout {
   border: none;
@@ -1047,19 +1064,94 @@ button {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 .cart_button_clear {
   background-color: #f64242;
   color: #ffffff;
 }
+
 .cart_button_clear:hover {
   background-color: #fa0000;
   color: white;
 }
+
 .cart_button_checkout {
   background-color: #4CAF50;
   color: #fff;
 }
+
 .cart_button_checkout:hover {
   background-color: #45a049;
+}
+
+.alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1em;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.confirm-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.confirm-button:hover {
+  background-color: #45a049;
+}
+
+.items-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.item-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  padding: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.item-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.item-button-content {
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.item-image {
+  width: 100%;
+  max-width: 120px;
+  height: auto;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  object-fit: cover;
 }
 </style>
