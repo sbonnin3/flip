@@ -267,6 +267,12 @@ export default new Vuex.Store({
     },
   },
   getters: {
+    getUserRole: (state) => (userId) => {
+      console.log("Recherche du rôle pour l'utilisateur ID :", userId);
+      const compte = state.comptes.find((compte) => compte.id === userId);
+      console.log("Compte trouvé :", compte);
+      return compte ? compte.role : null;
+    },    
     restaurantByUser: (state) => (userId) => {
       return state.restaurants.find((restaurant) =>
         restaurant.comptes.includes(userId)
