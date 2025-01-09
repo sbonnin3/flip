@@ -10,17 +10,6 @@ export const stands = [
     //     commentaires: [int], //= id des commentaires attribués au prestataire
     // },
     {
-        id: 1234,
-        nom: 'Boutique',
-        type: "boutique",
-        image: require('@/assets/images/stand_blackrock.png'),
-        idPoint: 12,
-        comptes: [12345],
-        articles: [
-            {nom: "Gobbit", prix: 10}
-        ]
-    },
-    {
         id: 1235,
         idRestau: "R1",
         nom: 'L\'orientale',
@@ -149,5 +138,29 @@ export const stands = [
         ],
         commentaires:[
         ],
+    },
+    {
+        id: 1240,
+        idStand: "stand1",
+        nom: 'Les jeux de Xavier',
+        type: "stand de jeux",
+        idPoint: 12,
+        comptes: [12343],
+    },
+    {
+        id: 1241,
+        idStand: "stand2",
+        nom: 'Strat & Fun',
+        type: "stand de jeux",
+        idPoint: 13,
+        comptes: [12349],
+    },
+    {
+        id: 1242,
+        idStand: "stand3",
+        nom: 'Petit génie',
+        type: "stand de jeux",
+        idPoint: 14,
+        comptes: [12360],
     },
 ];

@@ -108,7 +108,7 @@
           <p>Voulez-vous vraiment réserver le jeu {{ selectedJeu.name }} au stand {{ selectedJeu.nomsDesStands }} ?</p>
 
             <div class="form-buttons">
-              <button type="submit" class="confirm-button" @submit.prevent="confirmReservationJeux">Confirmer</button>
+              <button type="submit" class="confirm-button" @click="confirmReservationJeux">Confirmer</button>
               <button type="button" @click="closeConfirmationJeux" class="cancel-button">Annuler</button>
             </div>
         </div>
@@ -392,14 +392,15 @@ export default {
     },
     confirmReservationJeux() {
       const currentUser = this.$store.state.userSession;
+      const stand = stands.find(s => s.nom === this.selectedJeu.nomsDesStands && s.type === "stand de jeux");
       this.reservationStandJeu.push({
         jeuID: this.selectedJeu._id,
-        standID: this.selectedJeu.nomsDesStands,
+        standID: stand.id,
         userId: currentUser.id,
       })
       this.reservationMessage = "Réservation confirmée !"
       this.closeConfirmationJeux();
-      this.closeModal()
+      this.closeJeuModal();
     },
     resetReservationFields() {
       this.reservationDate = '';

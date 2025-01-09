@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { commandes, reservations, reservationsJeux, comptes } from "@/datasource/data";
+import { commandes, reservations, reservationsJeux, comptes, reservationStandJeu} from "@/datasource/data";
 import { getAllJeux } from "@/services/jeuxService";
 import { getAllSouvenirs } from "@/services/souvenirsService";
 import { getAllStands } from "@/services/standsService";
@@ -17,6 +17,7 @@ export default new Vuex.Store({
     souvenirs: [],
     reservations: reservations,
     reservationsJeux: reservationsJeux,
+    reservationStand: reservationStandJeu,
     userOrders: commandes,
     currentOrder: [],
     stands: [],
@@ -85,6 +86,9 @@ export default new Vuex.Store({
     },
     SET_RESERVATIONS_JEUX(state, reservationJeu) {
       state.reservationsJeux = reservationJeu;
+    },
+    SET_RESERVATIONS_STANDJEU(state, reservationStandJeu){
+      state.reservationStand = reservationStandJeu;
     },
     SET_SOUVENIR(state, souvenirs) {
       state.souvenirs = souvenirs;
@@ -223,6 +227,10 @@ export default new Vuex.Store({
       const userReservationsJeux = reservationsJeux.filter(reservationJeu => reservationJeu.userId === userId);
       commit('SET_RESERVATIONS_JEUX', userReservationsJeux);
     },
+    fetchUserReservationsStandJeu({ commit }, userId) {
+      const userReservationsStandJeu = reservationStandJeu.filter(reservationStandJeu => reservationStandJeu.userId === userId);
+      commit('SET_RESERVATIONS_STANDJEU', userReservationsStandJeu);
+    },
     async fetchAllOrders({ commit }) {
       try {
         commit('SET_COMMANDES', commandes);
@@ -246,6 +254,9 @@ export default new Vuex.Store({
     },
     addReservationJeux({ commit }, reservationJeu) {
       commit('ADD_RESERVATION_JEUX', reservationJeu);
+    },
+    addReservationStandJeu({ commit }, reservationsStandJeu){
+      commit('ADD_RESERVATION_STANDJEU', reservationsStandJeu);
     },
     addArticleOrder({ commit, state }, order) {
       const updatedOrders = [...state.userOrders, order];
@@ -339,6 +350,15 @@ export default new Vuex.Store({
       if (state.userSession) {
         return state.reservationsJeux.filter(
           (reservationJeu) => reservationJeu.userId === state.userSession.id
+        );
+      }
+      return [];
+    },
+    userReservationsStandJeu: (state) => {
+      console.log("ReservationsStandJeu in state:", state.reservationStand);
+      if (state.userSession) {
+        return state.reservationStand.filter(
+            (reservationStandJeu) => reservationStandJeu.userId === state.userSession.id
         );
       }
       return [];
