@@ -55,7 +55,6 @@
                 <option value="organisateur">Organisateur</option>
                 <option value="vendeur">Vendeur</option>
                 <option value="createur">Créateur</option>
-                <option value="administrateur">Administrateur</option>
               </select>
             </div>
             <button type="submit">S'inscrire</button>

@@ -1,8 +1,6 @@
 <template>
   <div class="page-prestation">
     <h1 class="page-title">Gestion de ma prestation</h1>
-
-
     <div class="tab-container">
       <button :class="{ active: selectedTab === 'Catalogue' }" @click="selectTab('Catalogue')">Catalogue</button>
       <button :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Mes jeux </button>
@@ -12,7 +10,6 @@
       <button :class="{ active: selectedTab === 'MonRestaurant' }" @click="selectTab('MonRestaurant')">Mon
         restaurant</button>
     </div>
-
     <div v-show="selectedTab === 'MonRestaurant'">
       <template v-if="restaurant">
         <h2>Mon Restaurant</h2>
@@ -72,9 +69,7 @@
         </div>
       </div>
     </div>
-
     <!-- Onglet des jeux du flip -->
-
     <div v-show="selectedTab === 'Catalogue'">
       <div class="cards-container" v-if="jeux.length">
         <div v-for="jeu in jeux" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
@@ -103,7 +98,6 @@
         </div>
       </div>
     </div>
-
     <div v-show="selectedTab === 'Jeux'">
       <div class="cards-container" v-if="jeuxCreation.length">
         <div v-for="jeu in jeuxCreation" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
@@ -120,12 +114,10 @@
       </div>
       <p v-else> Vous n'avez aucun jeux.</p>
       <button class="create-button" @click="openCreationConfirmation">Créer un jeu</button>
-
       <div v-if="showConfirmation" class="confirmation-modal">
         <div class="modal-content">
           <span class="close-button" @click="closeConfirmation">&times;</span>
           <h2>Création du jeu </h2>
-
           <div class="inputBox">
             <label for="name">Nom du jeu :</label>
             <input v-model="gameDetails.name" type="text" id="name" />
@@ -158,9 +150,7 @@
           <button @click="closeConfirmation" class="cancel-button">Annuler</button>
         </div>
       </div>
-
     </div>
-
     <div v-show="selectedTab === 'MesTournois'">
       <div v-if="mesTournois.length">
         <div class="cards-container">
@@ -181,9 +171,7 @@
         </div>
       </div>
       <p v-else>Aucun tournoi créé pour l'instant.</p>
-
       <button class="create-button" @click="openTournoiModal">Créer un tournoi</button>
-
       <div v-if="showTournoiModal" class="modal">
         <div class="modal-content">
           <span class="close-button" @click="closeTournoiModal">&times;</span>
@@ -227,7 +215,6 @@
         </div>
       </div>
     </div>
-
     <!-- Onglet pour sélectionner l'emplacement du stand -->
     <div v-show="selectedTab === 'Emplacement'">
       <div class="prestation-emplacement">
@@ -237,13 +224,11 @@
             <label for="nom">Nom du Stand :</label>
             <input type="text" v-model="stand.nom" id="nom" required />
           </div>
-
           <div class="form-group">
             <label for="description">Description de la prestation :</label>
             <textarea v-model="stand.description" id="description" rows="4" placeholder="Décrivez votre prestation..."
               required></textarea>
           </div>
-
           <!-- Image du stand -->
           <div class="form-group">
             <label for="image">Image du Stand :</label>
@@ -252,7 +237,6 @@
               <img :src="stand.image" alt="Image du stand" class="stand-image" />
             </div>
           </div>
-
           <div class="form-group map-container">
             <label>Sélectionnez un emplacement sur la carte :</label>
             <div class="map-controls">
@@ -261,12 +245,10 @@
                 <option value="satellite">Vue Satellite</option>
               </select>
             </div>
-
             <l-map :zoom="zoom" :center="center" :max-bounds="bounds" :min-zoom="minZoom" :max-zoom="maxZoom"
               :options="mapOptions" style="height: 500px;" @ready="mapReady">
               <l-tile-layer :url="layers[selectedLayer].url"
                 :attribution="layers[selectedLayer].attribution"></l-tile-layer>
-
               <l-marker v-for="point in availablePoints" :key="point.idPoint" :lat-lng="point.coordinates"
                 :icon="getIconForPoint(point)" @click="selectPoint(point)">
                 <l-tooltip>
@@ -274,7 +256,6 @@
                 </l-tooltip>
               </l-marker>
             </l-map>
-
             <p v-if="selectedPoint" class="selected-point-info">
               Point sélectionné : {{ selectedPoint.idPoint }}
             </p>
@@ -282,7 +263,6 @@
               Veuillez sélectionner un point sur la carte
             </p>
           </div>
-
           <!-- Bouton d'enregistrement -->
           <button type="submit" class="save-button">{{ isNewStand ? 'Créer le stand' : 'Enregistrer les modifications'
             }}</button>
@@ -291,7 +271,6 @@
     </div>
   </div>
 </template>
-
 <script>
 import { mapGetters, mapActions } from "vuex";
 import { points, stands, jeux, jeuxCreation } from "@/datasource/data.js";
@@ -380,7 +359,6 @@ export default {
     ...mapGetters(["userSession", "restaurantByUser"]),
     uniqueArticles() {
       const allArticles = [];
-
       // Collect all articles from all stands
       this.stands.forEach((stand) => {
         if (stand.nourritures) {
@@ -401,7 +379,6 @@ export default {
           uniqueMap.set(article.nom, article);
         }
       });
-
       return Array.from(uniqueMap.values());
     },
     restaurantArticles() {
@@ -409,19 +386,16 @@ export default {
       const restaurant = this.stands.find((stand) =>
         stand.comptes.includes(this.$store.state.userSession.id)
       );
-
       if (restaurant) {
         const nourritures = restaurant.nourritures || [];
         const boissons = restaurant.boissons || [];
         return [...nourritures, ...boissons].map((item) => item.nom);
       }
-
       return [];
     },
     allArticles() {
       const restaurants = this.$store.state.restaurants; // Récupère tous les restaurants du store
       const articles = [];
-
       restaurants.forEach((restaurant) => {
         // Ajoute les nourritures
         if (restaurant.nourritures) {
@@ -432,7 +406,6 @@ export default {
             });
           });
         }
-
         // Ajoute les boissons
         if (restaurant.boissons) {
           restaurant.boissons.forEach((boisson) => {
@@ -443,12 +416,10 @@ export default {
           });
         }
       });
-
       return articles;
     },
     restaurant() {
       if (!this.userSession) return null;
-
       return this.$store.state.restaurants.find((restaurant) =>
         restaurant.comptes.includes(this.userSession.id)
       );
@@ -472,48 +443,42 @@ export default {
   },
   methods: {
     addToRestaurant(article) {
-    if (!this.restaurant) {
-      alert("Veuillez créer un restaurant avant d'ajouter des articles.");
-      return;
-    }
-
-    // Ajouter l'article à la catégorie appropriée (nourritures ou boissons)
-    if (article.type === "Nourriture") {
-      this.restaurant.nourritures.push(article);
-    } else if (article.type === "Boisson") {
-      this.restaurant.boissons.push(article);
-    }
-
-    // Mettre à jour le store
-    this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
-
-    alert(`L'article "${article.nom}" a été ajouté à votre restaurant.`);
-  },
-  removeFromRestaurant(article) {
-    if (!this.restaurant) {
-      alert("Aucun restaurant sélectionné pour retirer des articles.");
-      return;
-    }
-
-    // Supprimer l'article de la catégorie appropriée
-    if (article.type === "Nourriture") {
-      this.restaurant.nourritures = this.restaurant.nourritures.filter(
-        (item) => item.nom !== article.nom
-      );
-    } else if (article.type === "Boisson") {
-      this.restaurant.boissons = this.restaurant.boissons.filter(
-        (item) => item.nom !== article.nom
-      );
-    }
-
-    // Mettre à jour le store
-    this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
-
-    alert(`L'article "${article.nom}" a été supprimé de votre restaurant.`);
-  },
+      if (!this.restaurant) {
+        alert("Veuillez créer un restaurant avant d'ajouter des articles.");
+        return;
+      }
+      // Ajouter l'article à la catégorie appropriée (nourritures ou boissons)
+      if (article.type === "Nourriture") {
+        this.restaurant.nourritures.push(article);
+      } else if (article.type === "Boisson") {
+        this.restaurant.boissons.push(article);
+      }
+      // Mettre à jour le store
+      this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
+      alert(`L'article "${article.nom}" a été ajouté à votre restaurant.`);
+    },
+    removeFromRestaurant(article) {
+      if (!this.restaurant) {
+        alert("Aucun restaurant sélectionné pour retirer des articles.");
+        return;
+      }
+      // Supprimer l'article de la catégorie appropriée
+      if (article.type === "Nourriture") {
+        this.restaurant.nourritures = this.restaurant.nourritures.filter(
+          (item) => item.nom !== article.nom
+        );
+      } else if (article.type === "Boisson") {
+        this.restaurant.boissons = this.restaurant.boissons.filter(
+          (item) => item.nom !== article.nom
+        );
+      }
+      // Mettre à jour le store
+      this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
+      alert(`L'article "${article.nom}" a été supprimé de votre restaurant.`);
+    },
     isRestaurantArticle(article) {
-    return this.restaurantArticles.includes(article.nom);
-  },
+      return this.restaurantArticles.includes(article.nom);
+    },
     openEditRestaurantModal() {
       this.showEditRestaurantModal = true;
       this.editRestaurantDetails.nom = this.restaurant.nom;
@@ -527,13 +492,11 @@ export default {
         alert('Veuillez remplir tous les champs.');
         return;
       }
-
       const updatedRestaurant = {
         ...this.restaurant,
         nom: this.editRestaurantDetails.nom,
         image: this.editRestaurantDetails.image,
       };
-
       this.$store.dispatch('updateRestaurant', updatedRestaurant);
       this.closeEditRestaurantModal();
       alert('Restaurant modifié avec succès !');
@@ -554,7 +517,6 @@ export default {
     ...mapActions(['createRestaurant']),
     createRestaurant({ commit, state }, restaurantData) {
       console.log("Création d'un restaurant dans le store avec : ", restaurantData);
-
       const newRestaurant = {
         ...restaurantData,
         id: Date.now(), // Génère un ID unique
@@ -566,13 +528,10 @@ export default {
         notes: [], // Initialise les notes vides
         commentaires: [], // Initialise les commentaires vides
       };
-
       // Ajout au store (mutation)
       commit("ADD_RESTAURANT", newRestaurant);
-
       // Enregistrement dans le fichier local
       this.dispatch("saveRestaurantToLocalFile", newRestaurant);
-
       console.log("Restaurant créé :", newRestaurant);
     },
     saveRestaurantToLocalFile(restaurant) {
@@ -599,7 +558,6 @@ export default {
         alert("Veuillez remplir tous les champs pour créer un restaurant.");
         return;
       }
-
       const newRestaurant = {
         id: Date.now(),
         nom: this.newRestaurantName,
@@ -611,15 +569,12 @@ export default {
         notes: [],
         commentaires: [],
       };
-
       // Ajouter à localStorage
       const stands = JSON.parse(localStorage.getItem("stands")) || [];
       stands.push(newRestaurant);
       localStorage.setItem("stands", JSON.stringify(stands));
-
       // Mettre à jour le store
       this.$store.commit("SET_RESTAURANTS", stands);
-
       // Réinitialiser les champs
       this.newRestaurantName = "";
       this.newRestaurantImage = "";
@@ -670,23 +625,19 @@ export default {
         alert("Veuillez ajouter au moins une date.");
         return;
       }
-
       for (const date of this.newTournoi.dates) {
         if (!date.placesRestantes || date.placesRestantes < 1) {
           alert("Veuillez entrer un nombre de places valide pour chaque date.");
           return;
         }
       }
-
       const tournoi = {
         ...this.newTournoi,
         _id: Date.now().toString(),
         prestataireId: this.$store.state.userSession.id, // Lien avec le prestataire
       };
-
       // Ajouter le tournoi dans le store
       this.$store.commit('ADD_TOURNOI', tournoi);
-
       // Réinitialiser le formulaire et fermer le modal
       this.closeTournoiModal();
     },
@@ -709,7 +660,6 @@ export default {
       this.showConfirmation = false;
     },
     confirmCreation() {
-
     },
     restorePointsState() {
       const pointsState = JSON.parse(localStorage.getItem('pointsState') || '{}');
@@ -730,7 +680,6 @@ export default {
         this.updatePointAvailability(this.stand.idPoint, false);
         return;
       }
-
       const roleToTypeMap = {
         createur: "stand",
         restaurateur: "restaurant",
@@ -738,7 +687,6 @@ export default {
         organisateur: "tournois"
       };
       this.stand.type = roleToTypeMap[this.userSession.role] || "autre";
-
       const existingStand = stands.find(stand => stand.comptes.includes(this.userSession.id));
       if (existingStand) {
         this.stand = { ...existingStand };
@@ -763,7 +711,6 @@ export default {
           iconAnchor: [15, 30],
           popupAnchor: [0, -30],
         };
-
       return L.icon(iconConfig);
     },
     selectPoint(point) {
@@ -797,13 +744,10 @@ export default {
         alert("Veuillez sélectionner un point sur la carte.");
         return;
       }
-
       if (this.originalPointId && this.originalPointId !== this.stand.idPoint) {
         this.updatePointAvailability(this.originalPointId, true);
       }
-
       this.updatePointAvailability(this.stand.idPoint, false);
-
       if (this.isNewStand) {
         this.stand.id = stands.length + 1;
         stands.push({ ...this.stand });
@@ -815,9 +759,7 @@ export default {
           alert("Modifications enregistrées avec succès !");
         }
       }
-
       this.saveStandToLocalStorage();
-
       this.isNewStand = false;
       this.originalPointId = this.stand.idPoint;
     },
@@ -847,7 +789,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 .article-card {
   border: 1px solid #ddd;
@@ -1113,7 +1054,8 @@ export default {
 }
 
 .add-button {
-  background-color: #4caf50; /* Vert */
+  background-color: #4caf50;
+  /* Vert */
   color: white;
   padding: 5px 10px;
   border: none;
@@ -1127,7 +1069,8 @@ export default {
 }
 
 .remove-button {
-  background-color: #f44336; /* Rouge */
+  background-color: #f44336;
+  /* Rouge */
   color: white;
   padding: 5px 10px;
   border: none;
@@ -1150,22 +1093,6 @@ export default {
   gap: 20px;
   justify-content: center;
 }
-
-/*button {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #0056b3;
-}*/
 
 .modal-content {
   background-color: #fff;
@@ -1205,7 +1132,6 @@ button:hover {
   width: 80%;
   max-width: 600px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-
 }
 
 .confirm-button,
