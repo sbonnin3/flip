@@ -169,18 +169,49 @@ export default {
       return "";
     },
     getIconForPoint(point) {
-  if (point.category === 'Emplacement' && !point.disponible) {
-    // Si le point est un emplacement occupé, déterminer l'icône en fonction du type de prestataire
-    const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
-    if (standAssocie) {
-      // Harmoniser le type pour les restaurants
-      const standType = standAssocie.type.toLowerCase();
-      const iconKey = standType === 'restaurants' ? 'Restauration' : standType.charAt(0).toUpperCase() + standType.slice(1);
+  console.log("Traitement du point :", point);
+
+  // Si la catégorie n'est pas "Emplacement", utiliser directement l'icône associée à la catégorie
+  if (point.category !== "Emplacement") {
+    const icon = this.icons[point.category] || this.icons.Emplacement; // Icône par défaut si non trouvée
+    console.log("Icône pour la catégorie :", point.category, "=>", icon);
+    return icon;
+  }
+
+  // Pour les points de catégorie "Emplacement", vérifier les stands associés
+  const standAssocie = this.$store.state.stands.find(
+    (stand) => stand.idPoint === point.idPoint
+  );
+
+  if (standAssocie) {
+    console.log("Stand associé :", standAssocie);
+
+    // Récupérer le compte lié au stand
+    const compteId = standAssocie.comptes[0];
+    const compte = this.$store.state.comptes.find((compte) => compte.id === compteId);
+
+    if (compte) {
+      console.log("Compte associé au stand :", compte);
+
+      // Associer le rôle à l'icône correspondante
+      const roleToIconMap = {
+        organisateur: "Tournois",
+        createur: "Stand",
+        restaurateur: "Restauration",
+        vendeur: "Boutique",
+      };
+
+      const iconKey = roleToIconMap[compte.role] || "Emplacement"; // Icône par défaut pour les rôles inconnus
+      console.log("Icône pour le rôle :", compte.role, "=>", this.icons[iconKey]);
       return this.icons[iconKey];
     }
+
+    console.log("Aucun compte trouvé pour ce stand.");
   }
-  // Retourne l'icône de la catégorie par défaut
-  return this.icons[point.category] || this.icons.Emplacement;
+
+  // Si aucun stand ou compte n'est trouvé, retourner l'icône par défaut pour "Emplacement"
+  console.log("Aucun stand trouvé pour ce point d'emplacement.");
+  return this.icons.Emplacement;
 },
     changeLayer() {
       // Logique pour changer la vue de la carte (rien de spécifique ici)
