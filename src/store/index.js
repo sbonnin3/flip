@@ -213,6 +213,13 @@ export default new Vuex.Store({
         console.error('Erreur lors de la récupération des ventes :', error);
       }
     },
+    async fetchAllReservationsStand({ commit }) {
+      try {
+        commit('SET_RESERVATIONS_STANDJEU', reservationStandJeu);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des reservations :', error);
+      }
+    },
     clearUserSession({ commit }) {
       commit('CLEAR_USER_SESSION');
     },
@@ -298,6 +305,9 @@ export default new Vuex.Store({
     },
     allSells(state){
       return state.reservationsJeux || [];
+    },
+    allReservationsStand(state){
+      return state.reservationStand || [];
     },
     userReservations: (state) => {
       console.log("Reservations in state:", state.reservations);

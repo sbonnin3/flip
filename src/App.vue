@@ -58,6 +58,9 @@ export default {
         if (this.userSession.role === "vendeur") {
           this.navTitles.push({ text: "Ventes" });
         }
+        if (this.userSession.role === "createur") {
+          this.navTitles.push({ text: "Mes réservations" });
+        }
         // Ajouter "Statistiques" pour tous les utilisateurs connectés
         this.navTitles.push({ text: "Statistiques" });
 
@@ -109,6 +112,8 @@ export default {
         route = "/Commandes";
       } else if (this.navTitles[index].text === "Ventes") {
         route = "/CommandesBoutique";
+      } else if (this.navTitles[index].text === "Mes réservations") {
+        route = "/MesReservations";
       }
 
       if (this.$route.path !== route) {

@@ -13,7 +13,8 @@ import MaPrestation from '../views/MaPrestation.vue';
 import Commandes from '../views/Commandes.vue';
 import Statistiques from '../views/Statistiques.vue';
 import store from '../store/index.js';
-import CommandesBoutique from "@/views/CommandesBoutique.vue";
+import CommandesBoutique from "../views/CommandesBoutique.vue";
+import MesReservations from "../views/MesReservations.vue";
 
 Vue.use(VueRouter);
 
@@ -77,6 +78,12 @@ const routes = [
     path: "/CommandesBoutique",
     name: "Ventes",
     component: CommandesBoutique,
+    meta: { requiresAuth: true, requiresPrestataire: true }
+  },
+  {
+    path: "/MesReservations",
+    name: "MesReservations",
+    component: MesReservations,
     meta: { requiresAuth: true, requiresPrestataire: true }
   },
   {
