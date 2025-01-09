@@ -79,6 +79,9 @@
             <h3 class="card-title">Stand : {{ commande.standName }}</h3>
             <div class="article">
               <p class="article-name">Nom du jeu : {{ commande.jeuNom }}</p>
+              <p class="article-quantity">
+                Date : {{ formatReservationDate(commande.date || commande.dateReservation) }}
+              </p>
             </div>
             <p class="card-status">{{ commande.status }}</p>
           </div>
@@ -163,7 +166,7 @@ export default {
         const formattedHeures = heures !== undefined ? heures.toString().padStart(2, '0') : '00';
         const formattedMinutes = min !== undefined ? min.toString().padStart(2, '0') : '00';
 
-        return `${formattedJour}/${formattedMois}/${annee} à ${formattedHeures}:${formattedMinutes}`;
+        return `${formattedJour}/${formattedMois}/${annee} à ${formattedHeures}h${formattedMinutes}`;
       }
 
       return 'Date invalide';
