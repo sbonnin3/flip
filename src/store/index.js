@@ -24,7 +24,7 @@ export default new Vuex.Store({
   mutations: {
     UPDATE_RESTAURANT(state, updatedRestaurant) {
       const index = state.restaurants.findIndex(
-          (resto) => resto.id === updatedRestaurant.id
+        (resto) => resto.id === updatedRestaurant.id
       );
       if (index !== -1) {
         state.restaurants.splice(index, 1, updatedRestaurant);
@@ -109,7 +109,7 @@ export default new Vuex.Store({
     updateRestaurant({ commit, state }, updatedRestaurant) {
       commit("UPDATE_RESTAURANT", updatedRestaurant);
       localStorage.setItem("stands", JSON.stringify(state.restaurants)); // Sauvegarde des restaurants modifiés
-    },
+    },      
     createRestaurant({ commit }, restaurantData) {
       console.log("Création d'un restaurant dans le store avec : ", restaurantData);
       const newRestaurant = {
@@ -118,7 +118,7 @@ export default new Vuex.Store({
         type: "restaurants", // Type de l'objet
         comptes: [restaurantData.userId], // Associer l'utilisateur
       };
-
+  
       // Ajouter le restaurant dans le store
       commit("ADD_RESTAURANT", newRestaurant);
     },
@@ -127,7 +127,7 @@ export default new Vuex.Store({
         // Charger les restaurants depuis localStorage ou initialiser un tableau vide
         let stands = [];
         const storedStands = localStorage.getItem("stands");
-
+    
         if (storedStands) {
           try {
             stands = JSON.parse(storedStands);
@@ -136,16 +136,16 @@ export default new Vuex.Store({
             stands = [];
           }
         }
-
+    
         // Si aucun stand n'est trouvé, charger depuis le fichier stands.js
         if (!stands.length) {
           const { stands: defaultStands } = require("@/datasource/stands.js");
           stands = defaultStands;
-
+    
           // Sauvegarder les stands par défaut dans localStorage
           localStorage.setItem("stands", JSON.stringify(stands));
         }
-
+    
         // Assurer que chaque stand a les champs essentiels
         stands = stands.map((stand) => ({
           ...stand,
@@ -154,13 +154,13 @@ export default new Vuex.Store({
           notes: stand.notes || [],
           commentaires: stand.commentaires || [],
         }));
-
+    
         // Commit des stands au store
         commit("SET_RESTAURANTS", stands);
       } catch (error) {
         console.error("Erreur lors de l'initialisation des restaurants :", error);
       }
-    },
+    },    
     async fetchTournoisByPrestataire({ commit, state }) {
       if (!state.userSession) return;
 
@@ -168,7 +168,7 @@ export default new Vuex.Store({
 
       // Filtrer les tournois par l'ID du prestataire
       const tournoisForPrestataire = state.tournois.filter(
-          (tournoi) => tournoi.prestataireId === prestataireId
+        (tournoi) => tournoi.prestataireId === prestataireId
       );
 
       // Committer les tournois pour le prestataire
@@ -194,10 +194,10 @@ export default new Vuex.Store({
     fetchReservationsByPrestataire({ commit, state }, prestataireId) {
       // Filtrer les réservations pour les tournois créés par le prestataire
       const reservationsForPrestataire = state.reservations.filter(
-          (reservation) => {
-            const tournoi = state.tournois.find(t => t.id === reservation.tournoiId);
-            return tournoi && tournoi.prestataireId === prestataireId;
-          }
+        (reservation) => {
+          const tournoi = state.tournois.find(t => t.id === reservation.tournoiId);
+          return tournoi && tournoi.prestataireId === prestataireId;
+        }
       );
       commit('SET_RESERVATIONS', reservationsForPrestataire);
     },
@@ -284,7 +284,7 @@ export default new Vuex.Store({
   getters: {
     restaurantByUser: (state) => (userId) => {
       return state.restaurants.find((restaurant) =>
-          restaurant.comptes.includes(userId)
+        restaurant.comptes.includes(userId)
       );
     },
     tournois: (state) => state.tournois,
@@ -296,13 +296,13 @@ export default new Vuex.Store({
     souvenirs: (state) => state.souvenirs,
     reservationsByPrestataire: (state) => (prestataireId) => {
       const tournoisIds = state.tournois
-          .filter(tournoi => tournoi.prestataireId === prestataireId) // Filtrer les tournois par prestataire
-          .map(tournoi => tournoi._id); // Récupérer les IDs des tournois
+        .filter(tournoi => tournoi.prestataireId === prestataireId) // Filtrer les tournois par prestataire
+        .map(tournoi => tournoi._id); // Récupérer les IDs des tournois
 
       console.log("IDs des tournois du prestataire :", tournoisIds); // Ajoutez ce log
 
       const reservations = state.reservations.filter(
-          reservation => tournoisIds.includes(reservation.tournoiId)
+        reservation => tournoisIds.includes(reservation.tournoiId)
       );
 
       console.log("Réservations trouvées :", reservations); // Ajoutez ce log
@@ -313,7 +313,7 @@ export default new Vuex.Store({
       console.log('User orders:', state.userOrders);  // Vérifie les données
       if (state.userSession) {
         return state.userOrders.filter(
-            (order => order.userId === state.userSession.id)
+          (order => order.userId === state.userSession.id)
         );
       }
       return [];
@@ -329,7 +329,7 @@ export default new Vuex.Store({
       console.log("Reservations in state:", state.reservations);
       if (state.userSession) {
         return state.reservations.filter(
-            (reservation) => reservation.userId === state.userSession.id
+          (reservation) => reservation.userId === state.userSession.id
         );
       }
       return [];
@@ -338,7 +338,7 @@ export default new Vuex.Store({
       console.log("ReservationsJeu in state:", state.reservationsJeux);
       if (state.userSession) {
         return state.reservationsJeux.filter(
-            (reservationJeu) => reservationJeu.userId === state.userSession.id
+          (reservationJeu) => reservationJeu.userId === state.userSession.id
         );
       }
       return [];
