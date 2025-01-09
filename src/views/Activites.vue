@@ -392,10 +392,10 @@ export default {
     },
     confirmReservationJeux() {
       const currentUser = this.$store.state.userSession;
-      const stand = stands.find(s => s.nom === this.selectedJeu.nomsDesStands && s.type === "stand de jeux");
+      const stand = this.$store.state.stands.find(s => s.nom === this.selectedJeu.nomsDesStands && s.type === "stand de jeux");
       this.reservationStandJeu.push({
         jeuID: this.selectedJeu._id,
-        standID: stand.id,
+        standID: stand.idStand,
         userId: currentUser.id,
       })
       this.reservationMessage = "Réservation confirmée !"
