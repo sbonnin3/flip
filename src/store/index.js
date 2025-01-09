@@ -22,11 +22,9 @@ export default new Vuex.Store({
   },
   mutations: {
     UPDATE_RESTAURANT(state, updatedRestaurant) {
-      const index = state.restaurants.findIndex(
-        (resto) => resto.id === updatedRestaurant.id
-      );
+      const index = state.restaurants.findIndex((restau) => restau.id === updatedRestaurant.id);
       if (index !== -1) {
-        state.restaurants.splice(index, 1, updatedRestaurant);
+        state.restaurants[index] = { ...updatedRestaurant };
       }
     },
     ADD_RESTAURANT(state, restaurant) {

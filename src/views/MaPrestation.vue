@@ -29,11 +29,9 @@
               <h4>{{ article.nom }}</h4>
               <p>Prix : {{ article.prix }} €</p>
               <p>Type : {{ article.type || 'Non spécifié' }}</p>
-              <button v-if="isRestaurantArticle(article)" @click="removeFromRestaurant(article)" class="remove-button">
-                Supprimer
-              </button>
-              <button v-else @click="addToRestaurant(article)" class="add-button">
-                Ajouter
+              <button @click="toggleArticleInRestaurant(article)"
+                :class="isRestaurantArticle(article) ? 'remove-button' : 'add-button'">
+                {{ isRestaurantArticle(article) ? 'Supprimer' : 'Ajouter' }}
               </button>
             </div>
           </div>
@@ -442,42 +440,37 @@ export default {
     this.$store.dispatch("initializeStore");
   },
   methods: {
-    addToRestaurant(article) {
+    toggleArticleInRestaurant(article) {
       if (!this.restaurant) {
-        alert("Veuillez créer un restaurant avant d'ajouter des articles.");
+        alert("Veuillez créer un restaurant avant d'ajouter ou supprimer des articles.");
         return;
       }
-      // Ajouter l'article à la catégorie appropriée (nourritures ou boissons)
-      if (article.type === "Nourriture") {
-        this.restaurant.nourritures.push(article);
-      } else if (article.type === "Boisson") {
-        this.restaurant.boissons.push(article);
+
+      const listKey = article.type === "Nourriture" ? "nourritures" : "boissons";
+      const articleIndex = this.restaurant[listKey].findIndex(
+        (item) => item.nom === article.nom
+      );
+
+      if (articleIndex !== -1) {
+        // Supprimer l'article
+        this.restaurant[listKey].splice(articleIndex, 1);
+        alert(`L'article "${article.nom}" a été supprimé de votre restaurant.`);
+      } else {
+        // Ajouter l'article
+        this.restaurant[listKey].push(article);
+        alert(`L'article "${article.nom}" a été ajouté à votre restaurant.`);
       }
-      // Mettre à jour le store
+
+      // Utilisez Vue.set pour garantir la réactivité
+      this.$set(this.restaurant, listKey, [...this.restaurant[listKey]]);
+
+      // Mettre à jour le store et localStorage
       this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
-      alert(`L'article "${article.nom}" a été ajouté à votre restaurant.`);
-    },
-    removeFromRestaurant(article) {
-      if (!this.restaurant) {
-        alert("Aucun restaurant sélectionné pour retirer des articles.");
-        return;
-      }
-      // Supprimer l'article de la catégorie appropriée
-      if (article.type === "Nourriture") {
-        this.restaurant.nourritures = this.restaurant.nourritures.filter(
-          (item) => item.nom !== article.nom
-        );
-      } else if (article.type === "Boisson") {
-        this.restaurant.boissons = this.restaurant.boissons.filter(
-          (item) => item.nom !== article.nom
-        );
-      }
-      // Mettre à jour le store
-      this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
-      alert(`L'article "${article.nom}" a été supprimé de votre restaurant.`);
+      this.saveRestaurantToLocalStorage();
     },
     isRestaurantArticle(article) {
-      return this.restaurantArticles.includes(article.nom);
+      const listKey = article.type === "Nourriture" ? "nourritures" : "boissons";
+      return this.restaurant[listKey]?.some((item) => item.nom === article.nom) || false;
     },
     openEditRestaurantModal() {
       this.showEditRestaurantModal = true;
@@ -534,11 +527,16 @@ export default {
       this.dispatch("saveRestaurantToLocalFile", newRestaurant);
       console.log("Restaurant créé :", newRestaurant);
     },
-    saveRestaurantToLocalFile(restaurant) {
-      const stands = JSON.parse(localStorage.getItem("stands") || "[]");
-      stands.push(restaurant);
+    saveRestaurantToLocalStorage() {
+      const stands = JSON.parse(localStorage.getItem("stands")) || [];
+      const index = stands.findIndex((stand) => stand.id === this.restaurant.id);
+      if (index !== -1) {
+        stands[index] = this.restaurant;
+      } else {
+        stands.push(this.restaurant);
+      }
       localStorage.setItem("stands", JSON.stringify(stands));
-      console.log("Restaurant enregistré dans localStorage");
+      console.log("Restaurant mis à jour dans localStorage.");
     },
     updateRestaurant() {
       this.$store.dispatch('updateRestaurant', this.restaurant);
@@ -789,6 +787,9 @@ export default {
   }
 };
 </script>
+
+
+
 <style scoped>
 .article-card {
   border: 1px solid #ddd;
@@ -807,6 +808,36 @@ export default {
 .article-other {
   background-color: #f0f0f0;
   /* Gris clair */
+}
+
+.add-button {
+  background-color: #4caf50;
+  /* Vert */
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-button:hover {
+  background-color: #45a049;
+}
+
+.remove-button {
+  background-color: #f44336;
+  /* Rouge */
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.remove-button:hover {
+  background-color: #e53935;
 }
 
 .article-image {
@@ -1051,36 +1082,6 @@ export default {
 .article-name {
   font-size: 1.2em;
   font-weight: bold;
-}
-
-.add-button {
-  background-color: #4caf50;
-  /* Vert */
-  color: white;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.add-button:hover {
-  background-color: #45a049;
-}
-
-.remove-button {
-  background-color: #f44336;
-  /* Rouge */
-  color: white;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.remove-button:hover {
-  background-color: #e53935;
 }
 
 .article-price {
