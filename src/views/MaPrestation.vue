@@ -22,6 +22,25 @@
           <img :src="restaurant.image" alt="Image du restaurant" style="max-width: 300px;" />
         </p>
         <button @click="openEditRestaurantModal">Modifier le restaurant</button>
+
+        <h3>Liste des Articles Disponibles</h3>
+        <div class="articles-container">
+          <div v-for="(article, index) in uniqueArticles" :key="index" class="article-card"
+            :class="{ 'article-restaurant': isRestaurantArticle(article), 'article-other': !isRestaurantArticle(article) }">
+            <img :src="article.image" alt="Image de l'article" class="article-image" />
+            <div class="article-info">
+              <h4>{{ article.nom }}</h4>
+              <p>Prix : {{ article.prix }} €</p>
+              <p>Type : {{ article.type || 'Non spécifié' }}</p>
+              <button v-if="isRestaurantArticle(article)" @click="removeFromRestaurant(article)" class="remove-button">
+                Supprimer
+              </button>
+              <button v-else @click="addToRestaurant(article)" class="add-button">
+                Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
       </template>
 
       <template v-else>
@@ -291,6 +310,7 @@ export default {
   },
   data() {
     return {
+      stands,
       showEditRestaurantModal: false,
       editRestaurantDetails: {
         nom: '',
@@ -358,13 +378,81 @@ export default {
   },
   computed: {
     ...mapGetters(["userSession", "restaurantByUser"]),
-    restaurant() {
-    if (!this.userSession) return null;
+    uniqueArticles() {
+      const allArticles = [];
 
-    return this.$store.state.restaurants.find((restaurant) =>
-      restaurant.comptes.includes(this.userSession.id)
-    );
-  },
+      // Collect all articles from all stands
+      this.stands.forEach((stand) => {
+        if (stand.nourritures) {
+          allArticles.push(
+            ...stand.nourritures.map((item) => ({ ...item, type: "Nourriture" }))
+          );
+        }
+        if (stand.boissons) {
+          allArticles.push(
+            ...stand.boissons.map((item) => ({ ...item, type: "Boisson" }))
+          );
+        }
+      });
+      // Filter unique articles by their name
+      const uniqueMap = new Map();
+      allArticles.forEach((article) => {
+        if (!uniqueMap.has(article.nom)) {
+          uniqueMap.set(article.nom, article);
+        }
+      });
+
+      return Array.from(uniqueMap.values());
+    },
+    restaurantArticles() {
+      // Get articles (nourritures and boissons) of the current restaurant
+      const restaurant = this.stands.find((stand) =>
+        stand.comptes.includes(this.$store.state.userSession.id)
+      );
+
+      if (restaurant) {
+        const nourritures = restaurant.nourritures || [];
+        const boissons = restaurant.boissons || [];
+        return [...nourritures, ...boissons].map((item) => item.nom);
+      }
+
+      return [];
+    },
+    allArticles() {
+      const restaurants = this.$store.state.restaurants; // Récupère tous les restaurants du store
+      const articles = [];
+
+      restaurants.forEach((restaurant) => {
+        // Ajoute les nourritures
+        if (restaurant.nourritures) {
+          restaurant.nourritures.forEach((nourriture) => {
+            articles.push({
+              ...nourriture,
+              type: 'Nourriture',
+            });
+          });
+        }
+
+        // Ajoute les boissons
+        if (restaurant.boissons) {
+          restaurant.boissons.forEach((boisson) => {
+            articles.push({
+              ...boisson,
+              type: 'Boisson',
+            });
+          });
+        }
+      });
+
+      return articles;
+    },
+    restaurant() {
+      if (!this.userSession) return null;
+
+      return this.$store.state.restaurants.find((restaurant) =>
+        restaurant.comptes.includes(this.userSession.id)
+      );
+    },
     availablePoints() {
       return points.filter(point =>
         point.category === "Emplacement" &&
@@ -383,6 +471,49 @@ export default {
     this.$store.dispatch("initializeStore");
   },
   methods: {
+    addToRestaurant(article) {
+    if (!this.restaurant) {
+      alert("Veuillez créer un restaurant avant d'ajouter des articles.");
+      return;
+    }
+
+    // Ajouter l'article à la catégorie appropriée (nourritures ou boissons)
+    if (article.type === "Nourriture") {
+      this.restaurant.nourritures.push(article);
+    } else if (article.type === "Boisson") {
+      this.restaurant.boissons.push(article);
+    }
+
+    // Mettre à jour le store
+    this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
+
+    alert(`L'article "${article.nom}" a été ajouté à votre restaurant.`);
+  },
+  removeFromRestaurant(article) {
+    if (!this.restaurant) {
+      alert("Aucun restaurant sélectionné pour retirer des articles.");
+      return;
+    }
+
+    // Supprimer l'article de la catégorie appropriée
+    if (article.type === "Nourriture") {
+      this.restaurant.nourritures = this.restaurant.nourritures.filter(
+        (item) => item.nom !== article.nom
+      );
+    } else if (article.type === "Boisson") {
+      this.restaurant.boissons = this.restaurant.boissons.filter(
+        (item) => item.nom !== article.nom
+      );
+    }
+
+    // Mettre à jour le store
+    this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
+
+    alert(`L'article "${article.nom}" a été supprimé de votre restaurant.`);
+  },
+    isRestaurantArticle(article) {
+    return this.restaurantArticles.includes(article.nom);
+  },
     openEditRestaurantModal() {
       this.showEditRestaurantModal = true;
       this.editRestaurantDetails.nom = this.restaurant.nom;
@@ -422,34 +553,34 @@ export default {
     },
     ...mapActions(['createRestaurant']),
     createRestaurant({ commit, state }, restaurantData) {
-    console.log("Création d'un restaurant dans le store avec : ", restaurantData);
+      console.log("Création d'un restaurant dans le store avec : ", restaurantData);
 
-    const newRestaurant = {
-      ...restaurantData,
-      id: Date.now(), // Génère un ID unique
-      idRestau: `R${Math.floor(Math.random() * 1000)}`, // Génère un ID restaurant
-      type: "restaurants", // Définit le type comme "restaurant"
-      comptes: [state.userSession.id], // Lie l'utilisateur connecté au restaurant
-      nourritures: [], // Initialise les nourritures vides
-      boissons: [], // Initialise les boissons vides
-      notes: [], // Initialise les notes vides
-      commentaires: [], // Initialise les commentaires vides
-    };
+      const newRestaurant = {
+        ...restaurantData,
+        id: Date.now(), // Génère un ID unique
+        idRestau: `R${Math.floor(Math.random() * 1000)}`, // Génère un ID restaurant
+        type: "restaurants", // Définit le type comme "restaurant"
+        comptes: [state.userSession.id], // Lie l'utilisateur connecté au restaurant
+        nourritures: [], // Initialise les nourritures vides
+        boissons: [], // Initialise les boissons vides
+        notes: [], // Initialise les notes vides
+        commentaires: [], // Initialise les commentaires vides
+      };
 
-    // Ajout au store (mutation)
-    commit("ADD_RESTAURANT", newRestaurant);
+      // Ajout au store (mutation)
+      commit("ADD_RESTAURANT", newRestaurant);
 
-    // Enregistrement dans le fichier local
-    this.dispatch("saveRestaurantToLocalFile", newRestaurant);
+      // Enregistrement dans le fichier local
+      this.dispatch("saveRestaurantToLocalFile", newRestaurant);
 
-    console.log("Restaurant créé :", newRestaurant);
-  },
-  saveRestaurantToLocalFile(restaurant) {
-    const stands = JSON.parse(localStorage.getItem("stands") || "[]");
-    stands.push(restaurant);
-    localStorage.setItem("stands", JSON.stringify(stands));
-    console.log("Restaurant enregistré dans localStorage");
-  },
+      console.log("Restaurant créé :", newRestaurant);
+    },
+    saveRestaurantToLocalFile(restaurant) {
+      const stands = JSON.parse(localStorage.getItem("stands") || "[]");
+      stands.push(restaurant);
+      localStorage.setItem("stands", JSON.stringify(stands));
+      console.log("Restaurant enregistré dans localStorage");
+    },
     updateRestaurant() {
       this.$store.dispatch('updateRestaurant', this.restaurant);
     },
@@ -464,36 +595,36 @@ export default {
       }
     },
     handleCreateRestaurant() {
-  if (!this.newRestaurantName || !this.newRestaurantImage) {
-    alert("Veuillez remplir tous les champs pour créer un restaurant.");
-    return;
-  }
+      if (!this.newRestaurantName || !this.newRestaurantImage) {
+        alert("Veuillez remplir tous les champs pour créer un restaurant.");
+        return;
+      }
 
-  const newRestaurant = {
-    id: Date.now(),
-    nom: this.newRestaurantName,
-    image: this.newRestaurantImage,
-    type: "restaurants",
-    comptes: [this.$store.state.userSession.id],
-    nourritures: [], // Champs par défaut pour éviter les erreurs
-    boissons: [],
-    notes: [],
-    commentaires: [],
-  };
+      const newRestaurant = {
+        id: Date.now(),
+        nom: this.newRestaurantName,
+        image: this.newRestaurantImage,
+        type: "restaurants",
+        comptes: [this.$store.state.userSession.id],
+        nourritures: [], // Champs par défaut pour éviter les erreurs
+        boissons: [],
+        notes: [],
+        commentaires: [],
+      };
 
-  // Ajouter à localStorage
-  const stands = JSON.parse(localStorage.getItem("stands")) || [];
-  stands.push(newRestaurant);
-  localStorage.setItem("stands", JSON.stringify(stands));
+      // Ajouter à localStorage
+      const stands = JSON.parse(localStorage.getItem("stands")) || [];
+      stands.push(newRestaurant);
+      localStorage.setItem("stands", JSON.stringify(stands));
 
-  // Mettre à jour le store
-  this.$store.commit("SET_RESTAURANTS", stands);
+      // Mettre à jour le store
+      this.$store.commit("SET_RESTAURANTS", stands);
 
-  // Réinitialiser les champs
-  this.newRestaurantName = "";
-  this.newRestaurantImage = "";
-  alert("Restaurant créé avec succès !");
-},
+      // Réinitialiser les champs
+      this.newRestaurantName = "";
+      this.newRestaurantImage = "";
+      alert("Restaurant créé avec succès !");
+    },
     openTournoiModal() {
       this.showTournoiModal = true;
     },
@@ -718,6 +849,36 @@ export default {
 </script>
 
 <style scoped>
+.article-card {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.article-restaurant {
+  background-color: #e6ffe6;
+  /* Vert clair */
+}
+
+.article-other {
+  background-color: #f0f0f0;
+  /* Gris clair */
+}
+
+.article-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.article-info {
+  text-align: left;
+}
+
 .page-prestation {
   padding-top: 100px;
   text-align: center;
@@ -940,6 +1101,54 @@ export default {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
+}
+
+.article {
+  margin: 10px 0;
+}
+
+.article-name {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.add-button {
+  background-color: #4caf50; /* Vert */
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-button:hover {
+  background-color: #45a049;
+}
+
+.remove-button {
+  background-color: #f44336; /* Rouge */
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.remove-button:hover {
+  background-color: #e53935;
+}
+
+.article-price {
+  color: green;
+}
+
+.articles-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
 }
 
 /*button {

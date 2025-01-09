@@ -89,74 +89,58 @@
       <PaymentModal ref="paymentForm" v-if="showPaymentModal" :visible="showPaymentModal" @close="closePaymentModal"
         @payment-success="handlePaymentSuccess" />
 
-      <div v-if="selectedModalRestau" class="modal" style="padding-top: 50px">
+      <div v-if="selectedModalRestau" class="modal">
         <div class="modal-content">
           <span class="close-button" @click="closeModalRestau">&times;</span>
           <h2>{{ selectedModalRestau.nom }}</h2>
-          <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image"
-            style=" width: 50%; height: 50%" />
-          <div v-for="stand in stands.filter(stand => stand.idRestau === selectedModalRestau.idRestau)" :key="stand.id">
-            <p><strong>Nourritures :</strong></p>
-            <div v-if="stand.nourritures && stand.nourritures.length" class="buttons-container"
-              style="display: flex; flex-wrap: wrap; gap: 10px;">
-              <div v-for="nourriture in stand.nourritures" :key="nourriture.nom" class="article-button">
-                <button class="article-button-content" @click="addToCart(nourriture)">
-                  <img :src="nourriture.image" alt="Image de l'article" class="article-image" />
-                  {{ nourriture.nom }} - {{ nourriture.prix }}€
-                </button>
-              </div>
-            </div>
-            <p v-else>Aucune nourriture disponible.</p>
+          <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image" />
 
-            <p><strong>Boissons :</strong></p>
-            <div v-if="stand.boissons && stand.boissons.length" class="buttons-container"
-              style="display: flex; flex-wrap: wrap; gap: 10px;">
-              <div v-for="boisson in stand.boissons" :key="boisson.nom" class="article-button">
-                <button class="article-button-content" @click="addToCart(boisson)">
-                  <img :src="boisson.image" alt="Image de l'article" class="article-image">
-                  {{ boisson.nom }} - {{ boisson.prix }}€
-                </button>
-              </div>
-            </div>
-            <p v-else>Aucune boisson disponible.</p>
-
-            <p><strong>Note</strong></p>
-            <Note :averageRating="stand.notes" />
-            <p><strong>Commentaires :</strong></p>
-            <div v-if="stand.commentaires.length" class="cards-container">
-              <div v-for="comment in stand.commentaires" :key="comment.id">
-                <p>{{ getUserName(comment.userId) }}</p>
-                <div class="comments"> {{ comment.texte }}</div>
-                <div v-if="comment.userId === $store.state.userSession.id">
-                  <button @click="editComment(comment)">Modifier</button>
-                  <button @click="deleteComment(comment)">Supprimer</button>
-                </div>
-              </div>
-            </div>
-            <div v-else>
-              <p>Aucun commentaire pour le moment.</p>
-            </div>
-            <div>
-              <h3>Laisser un avis</h3>
-              <form @submit.prevent="submitComment">
-                <textarea v-model="newComment" placeholder="Votre commentaire" required></textarea>
-                <button type="submit" class="sendComment">Envoyer</button>
-              </form>
-              <form @submit.prevent="submitRating">
-                <label for="rating">Note (0-5):</label>
-                <input type="number" id="rating" v-model="newRating" min="0" max="5" required />
-                <button type="submit" class="sendComment">Envoyer</button>
-              </form>
+          <p><strong>Nourritures :</strong></p>
+          <div v-if="selectedModalRestau.nourritures && selectedModalRestau.nourritures.length">
+            <div v-for="nourriture in selectedModalRestau.nourritures" :key="nourriture.nom" class="article-button">
+              <button class="article-button-content" @click="addToCart(nourriture)">
+                <img :src="nourriture.image" alt="Image de l'article" class="article-image" />
+                {{ nourriture.nom }} - {{ nourriture.prix }}€
+              </button>
             </div>
           </div>
-          <div v-if="cardCommandMessage" class="reservation-message">
-            <div class="modal-content">
-              <p>{{ cardCommandMessage }}</p>
-              <button @click="closeCardCommandMessage">OK</button>
+          <p v-else>Aucune nourriture disponible.</p>
+          <p><strong>Boissons :</strong></p>
+          <div v-if="selectedModalRestau.boissons && selectedModalRestau.boissons.length">
+            <div v-for="boisson in selectedModalRestau.boissons" :key="boisson.nom" class="article-button">
+              <button class="article-button-content" @click="addToCart(boisson)">
+                <img :src="boisson.image" alt="Image de l'article" class="article-image" />
+                {{ boisson.nom }} - {{ boisson.prix }}€
+              </button>
             </div>
           </div>
+          <p v-else>Aucune boisson disponible.</p>
+
+          <p><strong>Note</strong></p>
+          <Note :averageRating="selectedModalRestau.notes" />
+
+          <p><strong>Commentaires :</strong></p>
+          <div v-if="selectedModalRestau.commentaires && selectedModalRestau.commentaires.length">
+            <div v-for="comment in selectedModalRestau.commentaires" :key="comment.id">
+              <p>{{ getUserName(comment.userId) }}</p>
+              <div class="comments">{{ comment.texte }}</div>
+            </div>
+          </div>
+          <p v-else>Aucun commentaire pour le moment.</p>
+
+          <h3>Laisser un avis</h3>
+          <form @submit.prevent="submitComment">
+            <textarea v-model="newComment" placeholder="Votre commentaire"></textarea>
+            <button type="submit">Envoyer</button>
+          </form>
+          <form @submit.prevent="submitRating">
+            <label for="rating">Note (0-5):</label>
+            <input type="number" id="rating" v-model="newRating" min="0" max="5" />
+            <button type="submit">Envoyer</button>
+          </form>
         </div>
       </div>
+
     </div>
 
     <div v-if="selectedTab === 'Boutique'">
@@ -464,17 +448,22 @@ export default {
     },
 
     addToCart(article) {
+      if (!article.nom || !article.prix || !article.image) {
+        console.error("Article invalide :", article);
+        return;
+      }
+
       const itemInCart = this.cart.find(item => item.nom === article.nom);
 
       if (itemInCart) {
         itemInCart.quantite += 1;
-        this.cardCommandMessage = "Article ajouté dans le panier !"
+        this.cardCommandMessage = "Article ajouté dans le panier !";
       } else {
         this.cart.push({ ...article, quantite: 1, restaurant: this.selectedModalRestau.nom });
-        this.cardCommandMessage = "Article ajouté dans le panier !"
+        this.cardCommandMessage = "Article ajouté dans le panier !";
       }
+      this.$store.commit('ADD_TO_CART', article);
     },
-
     deleteArticle(article) {
       const itemInCartToDelete = this.cart.find(item => item.nom === article.nom);
 

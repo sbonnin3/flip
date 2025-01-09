@@ -24,7 +24,7 @@ export default new Vuex.Store({
   mutations: {
     UPDATE_RESTAURANT(state, updatedRestaurant) {
       const index = state.restaurants.findIndex(
-        (restaurant) => restaurant.id === updatedRestaurant.id
+        (resto) => resto.id === updatedRestaurant.id
       );
       if (index !== -1) {
         state.restaurants.splice(index, 1, updatedRestaurant);
@@ -61,6 +61,14 @@ export default new Vuex.Store({
     },
     ADD_COMPTE(state, nouveauCompte) {
       state.comptes.push(nouveauCompte);
+    },
+    ADD_TO_CART(state, article) {
+      const itemInCart = state.cart.find(item => item.nom === article.nom);
+      if (itemInCart) {
+        itemInCart.quantite += 1;
+      } else {
+        state.cart.push({ ...article, quantite: 1 });
+      }
     },
     ADD_TOURNOI(state, tournoi) {
       console.log("Tournoi ajouté au store :", tournoi);
