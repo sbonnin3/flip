@@ -311,7 +311,7 @@ export default {
         idPoint: null,
         comptes: [],
       },
-      selectedTab: "Catalogue",
+      selectedTab: "",
       selectedJeu: null,
       showConfirmation: false,
       gameDetails: {
@@ -436,20 +436,22 @@ export default {
     },
   },
   created() {
-    this.$store.dispatch("initializeRestaurants");
+    const tabsOrder = ["Catalogue", "Jeux", "Emplacement", "MesTournois", "MonRestaurant"];
+  this.selectedTab = tabsOrder.find((tab) => this.isTabVisible(tab)) || ""; // Trouve le premier onglet visible
+  this.$store.dispatch("initializeRestaurants");
   },
   methods: {
     isTabVisible(tab) {
-  const role = this.userSession.role; // Supposant que le rôle de l'utilisateur est stocké ici
-  const tabPermissions = {
-    Catalogue: ["vendeur", "createur"],
-    Jeux: ["vendeur", "createur"],
-    Emplacement: ["vendeur", "createur", "restaurateur", "organisateur"],
-    MesTournois: ["organisateur"],
-    MonRestaurant: ["restaurateur"],
-  };
-  return tabPermissions[tab]?.includes(role);
-},
+    const role = this.userSession.role; // Supposant que le rôle de l'utilisateur est stocké ici
+    const tabPermissions = {
+      Catalogue: ["vendeur", "createur"],
+      Jeux: ["vendeur", "createur"],
+      Emplacement: ["vendeur", "createur", "restaurateur", "organisateur"],
+      MesTournois: ["organisateur"],
+      MonRestaurant: ["restaurateur"],
+    };
+    return tabPermissions[tab]?.includes(role);
+  },
     toggleArticleInRestaurant(article) {
       if (!this.restaurant) {
         alert("Veuillez créer un restaurant avant d'ajouter ou supprimer des articles.");
