@@ -1,6 +1,6 @@
 <template>
   <div class="commandes-page">
-    <h1>{{this.standAttribue.nom}} - Commandes en cours</h1>
+    <h1>{{ this.standAttribue.nom }} - Commandes en cours</h1>
 
     <div v-if="articleCommandes.length === 0">
       <p>Aucune commande pour le moment.</p>
@@ -17,7 +17,7 @@
             <p class="article-price">Prix : {{ article.prix }}€</p>
           </div>
           <p class="card-status">{{ commande.status }}</p>
-          <p class="card-status">Heure de retrait : {{ commande.pickupTime + "h" || "Non définie"}}</p>
+          <p class="card-status">Heure de retrait : {{ commande.pickupTime + "h" || "Non définie" }}</p>
         </div>
       </div>
     </div>
@@ -25,18 +25,17 @@
 </template>
 
 <script>
-import {mapGetters} from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: "PageCommandes",
   computed: {
-    ...mapGetters(['allOrders']), // Récupère toutes les commandes depuis Vuex
+    ...mapGetters(['allOrders']),
 
     currentUser() {
-      return this.$store.state.userSession; // Restaurateur connecté
+      return this.$store.state.userSession;
     },
     standAttribue() {
-      // Trouve le stand correspondant au compte du restaurateur connecté
       if (!this.currentUser) {
         return null;
       }
@@ -50,15 +49,14 @@ export default {
         return [];
       }
 
-      // Filtre les commandes associées au stand du restaurateur
       return this.allOrders
-          .filter(commande => commande.restaurantNom === this.standAttribue.nom)
-          .map(commande => {
-            return {
-              ...commande,
-              status: commande.status || 'À préparer.',
-            };
-          });
+        .filter(commande => commande.restaurantNom === this.standAttribue.nom)
+        .map(commande => {
+          return {
+            ...commande,
+            status: commande.status || 'À préparer.',
+          };
+        });
     },
 
 

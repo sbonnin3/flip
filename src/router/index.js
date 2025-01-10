@@ -127,39 +127,32 @@ const router = new VueRouter({
   },
 });
 
-// Ajout de la logique de redirection pour les prestataires
 router.beforeEach((to, from, next) => {
   const user = store.getters.userSession;
 
-  // Si l'utilisateur n'est pas connecté et que la route nécessite une authentification
   if (to.meta.requiresAuth && !user) {
     return next('/Connexion');
   }
 
   if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
     return next('/Accueil');
-  }  
-
-  // Redirection pour les prestataires sur la page Carte
-  if (to.path === '/Carte' && user && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
-    return next('/PrestatairesCarte'); // Redirige les prestataires vers leur propre carte
   }
 
-  // Vérification si la route nécessite des droits administratifs
+  if (to.path === '/Carte' && user && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
+    return next('/PrestatairesCarte');
+  }
+
   if (to.meta.requiresAdmin && (!user || user.role !== 'administrateur')) {
     return next('/');
   }
 
-  // Vérification si l'utilisateur doit être un organisateur
   if (to.matched.some(record => record.meta.requiresOrganizer) && user.role !== 'organisateur') {
     return next('/Accueil');
   }
 
-  // Vérification si la route est réservée aux prestataires
   if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
     return next('/Accueil');
   }
-
   next();
 });
 

@@ -1,11 +1,11 @@
 <template>
   <div class="navbar-container">
     <nav class="navbar"
-         :class="{ 'navbar-transparent': !isScrolled && isOnHomePage, 'navbar-visible': isScrolled || !isOnHomePage }">
+      :class="{ 'navbar-transparent': !isScrolled && isOnHomePage, 'navbar-visible': isScrolled || !isOnHomePage }">
       <div class="nav-titles">
         <img src="../assets/images/logo.png" alt="logo" width="100px" height="80px" />
         <p v-for="(title, index) in displayedTitles" :key="index" :style="{ color: title.color }"
-           @click="emitMenuClicked(index)" :class="['nav-item', { active: activeIndex === index }]">
+          @click="emitMenuClicked(index)" :class="['nav-item', { active: activeIndex === index }]">
           {{ title.text }}
         </p>
       </div>
@@ -35,8 +35,6 @@ export default {
   computed: {
     displayedTitles() {
       let modifiedTitles = [...this.titles];
-
-      // Ajouter l'onglet 'Comptes' uniquement si l'utilisateur est admin
       if (this.userSession && this.userSession.role === 'administrateur') {
         const comptesIndex = modifiedTitles.findIndex(title => title.text === 'Comptes');
         if (comptesIndex === -1) {
@@ -47,27 +45,25 @@ export default {
       return modifiedTitles;
     },
     activeIndex() {
-      // Utiliser le chemin de la route actuelle pour trouver l'index actif
       const currentPath = this.$route.path.toLowerCase();
       return this.displayedTitles.findIndex(title => {
-        // Mapper chaque titre sur le chemin correspondant
         const titleToPathMap = {
-        "Accueil": "/Accueil",
-        "Carte": this.userSession && ["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)
-          ? "/PrestatairesCarte"
-          : "/Carte",
-        "Activités": "/Activites",
-        "Réservations": "/Reservations",
-        "Mon Compte": "/MonCompte",
-        "Connexion": "/Connexion",
-        "Comptes": "/Comptes",
-        "Produits": "/Produits",
-        "Statistiques": "/Statistiques",
-        "Ma Prestation": "/MaPrestation",
-        "Commandes": "/Commandes",
+          "Accueil": "/Accueil",
+          "Carte": this.userSession && ["restaurateur", "vendeur", "createur", "organisateur"].includes(this.userSession.role)
+            ? "/PrestatairesCarte"
+            : "/Carte",
+          "Activités": "/Activites",
+          "Réservations": "/Reservations",
+          "Mon Compte": "/MonCompte",
+          "Connexion": "/Connexion",
+          "Comptes": "/Comptes",
+          "Produits": "/Produits",
+          "Statistiques": "/Statistiques",
+          "Ma Prestation": "/MaPrestation",
+          "Commandes": "/Commandes",
           "Ventes": "/CommandesBoutique",
           "Mes réservations": "/MesReservations"
-      };
+        };
         return titleToPathMap[title.text]?.toLowerCase() === currentPath;
       });
     },

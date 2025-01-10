@@ -6,24 +6,15 @@
         <h2>Paiement</h2>
         <form @submit.prevent="processPayment">
 
-          <label for="paymentType">Bienvenue sur la fenêtre de paiement en ligne. Veuillez sélectionner votre moyen de paiement ci-dessous :</label>
+          <label for="paymentType">Bienvenue sur la fenêtre de paiement en ligne. Veuillez sélectionner votre moyen de
+            paiement ci-dessous :</label>
 
           <div class="selectedCard">
-            <div
-                class="selected-option"
-                @click="toggleDropdown"
-            >
+            <div class="selected-option" @click="toggleDropdown">
               {{ selected || "Choisir une option" }}
             </div>
-            <ul
-                v-if="dropdownOpen"
-                class="options"
-            >
-              <li
-                  v-for="option in options"
-                  :key="option"
-                  @click="selectOption(option)"
-              >
+            <ul v-if="dropdownOpen" class="options">
+              <li v-for="option in options" :key="option" @click="selectOption(option)">
                 {{ option }}
               </li>
             </ul>
@@ -31,32 +22,29 @@
 
           <div v-if="selected === 'Carte Bancaire'">
             <div class="inputbox">
-              <input v-model="paymentDetails.cardNumber" type="tel" placeholder="xxxx xxxx xxxx xxxx"
-                     maxlength="19"
-                     id="cardNumber" required/>
+              <input v-model="paymentDetails.cardNumber" type="tel" placeholder="xxxx xxxx xxxx xxxx" maxlength="19"
+                id="cardNumber" required />
               <label for="cardNumber">Numéro de carte :</label>
             </div>
             <div class="inputbox">
               <input v-model="paymentDetails.expirationDate" type="tel" placeholder="MM/AA" maxlength="7"
-                     id="expirationDate" required/>
+                id="expirationDate" required />
               <label for="expirationDate">Date d'expiration :</label>
             </div>
             <div class="inputbox">
-              <input v-model="paymentDetails.cvv" type="tel" placeholder="123" maxlength="4"
-                     id="cvv" required/>
+              <input v-model="paymentDetails.cvv" type="tel" placeholder="123" maxlength="4" id="cvv" required />
               <label for="cvv">CVC :</label>
             </div>
             <div class="inputbox">
-              <input v-model="paymentDetails.cardName" type="text" placeholder="PRENOM NOM"
-                     id="cardName" required/>
+              <input v-model="paymentDetails.cardName" type="text" placeholder="PRENOM NOM" id="cardName" required />
               <label for="cardName">Propiétaire de la carte :</label>
             </div>
           </div>
 
           <div v-if="selected === 'PayPal'">
             <div class="inputbox">
-              <input v-model="paymentDetails.paypalEmail" type="email" placeholder="paypal@gmail.com"
-                     id="paypalEmail" required/>
+              <input v-model="paymentDetails.paypalEmail" type="email" placeholder="paypal@gmail.com" id="paypalEmail"
+                required />
               <label for="paypalEmail">Email :</label>
             </div>
           </div>
@@ -76,7 +64,7 @@
 </template>
 
 <script>
-import {mapGetters} from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: 'PaymentModal',
@@ -123,9 +111,9 @@ export default {
     validatePayment() {
       if (this.selected === 'Carte Bancaire') {
         return this.paymentDetails.cardNumber &&
-            this.paymentDetails.expirationDate &&
-            this.paymentDetails.cvv &&
-            this.paymentDetails.cardName;
+          this.paymentDetails.expirationDate &&
+          this.paymentDetails.cvv &&
+          this.paymentDetails.cardName;
       } else if (this.selected === 'PayPal') {
         return this.paymentDetails.paypalEmail;
       }
@@ -142,7 +130,7 @@ export default {
     },
 
     getPickupTime() {
-      return this.pickupTime;  // Retourne l'heure de retrait
+      return this.pickupTime;
     },
 
     generateRecap() {
@@ -159,20 +147,19 @@ export default {
         }
 
         const articlesText = order.articles
-            .map(article => {
-              if (article.nom && article.quantite && article.prix) {
-                return `- ${article.nom}: ${article.quantite} x ${article.prix}€`;
-              } else {
-                console.error("Erreur dans un article :", article);
-                return "Erreur dans les données de l'article";
-              }
-            })
-            .join("\n");
+          .map(article => {
+            if (article.nom && article.quantite && article.prix) {
+              return `- ${article.nom}: ${article.quantite} x ${article.prix}€`;
+            } else {
+              console.error("Erreur dans un article :", article);
+              return "Erreur dans les données de l'article";
+            }
+          })
+          .join("\n");
 
-        // Calculer le total des prix pour les articles
         const total = order.articles.reduce((total, article) => {
           return total + (article.prix * article.quantite);
-        }, 0); // Initialiser total à 0
+        }, 0);
 
         return `Commande n° ${order.orderNumber} - Restaurant : ${order.restaurantNom || "Inconnu"}
    Articles :
@@ -262,8 +249,8 @@ label {
   transition: 0.3s;
 }
 
-.inputbox input:focus ~ label,
-.inputbox input:valid ~ label {
+.inputbox input:focus~label,
+.inputbox input:valid~label {
   top: -20px;
   font-size: 0.8em;
   color: white;
@@ -368,26 +355,26 @@ p {
 }
 
 .auth-container {
-  max-height: 600px; /* Hauteur maximale pour éviter que le contenu déborde */
-  overflow-x: hidden; /* Active la barre de défilement verticale si nécessaire */
+  max-height: 600px;
+  overflow-x: hidden;
   overflow-y: auto;
-  padding-right: 10px; /* Ajout d'un espace pour éviter que la barre de défilement ne masque le contenu */
+  padding-right: 10px;
 }
 
 .auth-container::-webkit-scrollbar {
-  width: 8px; /* Largeur de la barre de défilement */
+  width: 8px;
 }
 
 .auth-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.5); /* Couleur de la barre */
-  border-radius: 10px; /* Pour un style arrondi */
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
 }
 
 .auth-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.8); /* Couleur de la barre au survol */
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .auth-container::-webkit-scrollbar-track {
-  background: transparent; /* Fond transparent pour le track */
+  background: transparent;
 }
 </style>

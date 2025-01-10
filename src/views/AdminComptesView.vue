@@ -2,12 +2,10 @@
   <div class="admin-comptes-container">
     <h1>Gestion des Comptes</h1>
 
-    <!-- Barre de recherche -->
     <div class="search-container">
       <input v-model="searchQuery" type="text" placeholder="Rechercher dans les identifiants..." class="search-bar" />
     </div>
 
-    <!-- Filtres par rôle avec bouton Reset -->
     <div class="role-filters">
       <label v-for="role in uniqueRoles" :key="role">
         <input type="checkbox" :value="role" v-model="selectedRoles" />
@@ -16,7 +14,6 @@
       <button @click="resetFilters" class="reset-button">Réinitialiser</button>
     </div>
 
-    <!-- Tableau -->
     <table>
       <thead>
         <tr>
@@ -50,7 +47,6 @@
       </tbody>
     </table>
 
-    <!-- Modale pour la modification -->
     <div v-if="isEditModalOpen" class="modal-overlay">
       <div class="modal">
         <h2>Modifier le compte</h2>
@@ -70,7 +66,6 @@
             </option>
           </select>
         </label>
-        <!-- Message d'erreur -->
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         <div class="modal-actions">
           <button @click="saveEditCompte">Enregistrer</button>
@@ -86,13 +81,13 @@ export default {
   name: "AdminComptesView",
   data() {
     return {
-      searchQuery: "", // Texte saisi dans la barre de recherche
-      currentSort: "identifiant", // Colonne actuellement triée
-      sortAsc: true, // Ordre de tri (ascendant ou descendant)
-      selectedRoles: [], // Rôles sélectionnés dans les filtres
-      isEditModalOpen: false, // État d'ouverture de la modale
-      editedCompte: null, // Compte actuellement en cours d'édition
-      errorMessage: "", // Message d'erreur pour la validation
+      searchQuery: "",
+      currentSort: "identifiant",
+      sortAsc: true,
+      selectedRoles: [],
+      isEditModalOpen: false,
+      editedCompte: null,
+      errorMessage: "",
     };
   },
   computed: {
@@ -100,11 +95,9 @@ export default {
       return this.$store.state.comptes;
     },
     uniqueRoles() {
-      // Liste unique des rôles disponibles
       return [...new Set(this.comptes.map((compte) => compte.role))];
     },
     filteredAndSortedComptes() {
-      // Filtrage combiné par recherche et rôle
       let filteredComptes = this.comptes.filter((compte) => {
         const matchesSearch = this.searchQuery
           ? compte.identifiant.toLowerCase().includes(this.searchQuery.toLowerCase())
@@ -116,7 +109,6 @@ export default {
         return matchesSearch && matchesRole;
       });
 
-      // Tri des résultats filtrés
       return filteredComptes.sort((a, b) => {
         let modifier = this.sortAsc ? 1 : -1;
         if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
@@ -143,16 +135,15 @@ export default {
     },
     openEditModal(compte) {
       this.editedCompte = { ...compte };
-      this.errorMessage = ""; // Réinitialise le message d'erreur
+      this.errorMessage = "";
       this.isEditModalOpen = true;
     },
     closeEditModal() {
       this.editedCompte = null;
-      this.errorMessage = ""; // Réinitialise le message d'erreur
+      this.errorMessage = "";
       this.isEditModalOpen = false;
     },
     saveEditCompte() {
-      // Vérifie si l'identifiant existe déjà chez un autre compte
       const duplicate = this.comptes.some(
         (compte) =>
           compte.identifiant === this.editedCompte.identifiant &&
@@ -164,7 +155,6 @@ export default {
         return;
       }
 
-      // Sauvegarde le compte si aucune erreur
       this.$store.commit("UPDATE_COMPTE", this.editedCompte);
       this.closeEditModal();
     },
@@ -193,8 +183,8 @@ export default {
   --font-color-dark: #333;
   --font-color-light: #555;
   --border-color: #ddd;
-  --modal-bg: rgba(0, 0, 0, 0.7); /* Fond sombre pour popup */
-  --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Ombre flottante */
+  --modal-bg: rgba(0, 0, 0, 0.7);
+  --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .admin-comptes-container {
@@ -262,27 +252,27 @@ th:hover {
 }
 
 .role-administrateur {
-  background-color: #ffcccc; /* Rouge clair */
+  background-color: #ffcccc;
 }
 
 .role-restaurateur {
-  background-color: #ccffcc; /* Vert clair */
+  background-color: #ccffcc;
 }
 
 .role-vendeur {
-  background-color: #ccccff; /* Bleu clair */
+  background-color: #ccccff;
 }
 
 .role-createur {
-  background-color: #ffffcc; /* Jaune clair */
+  background-color: #ffffcc;
 }
 
 .role-organisateur {
-  background-color: #ffccff; /* Rose clair */
+  background-color: #ffccff;
 }
 
 .role-utilisateur {
-  background-color: #e6e6e6; /* Gris clair */
+  background-color: #e6e6e6;
 }
 
 .error-message {

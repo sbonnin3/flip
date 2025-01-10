@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import {mapGetters} from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: "PageCommandesBoutique",
@@ -52,6 +52,7 @@ export default {
   margin: auto;
   text-align: center;
 }
+
 .page-title {
   font-size: 2em;
   margin-bottom: 20px;

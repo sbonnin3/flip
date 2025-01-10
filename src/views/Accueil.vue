@@ -16,12 +16,12 @@
         <a href="https://www.jeux-festival.com/"><button type="submit" class="more-button">En savoir plus</button></a>
       </div>
       <img class="festivalimages" :class="{ 'slide-in': fadeImage }" :src="currentCarouselSlide.image"
-           alt="imagefestival">
+        alt="imagefestival">
     </div>
 
     <div class="carousel-indicators">
       <span v-for="(slide, index) in carouselSlides" :key="index" :class="{ active: currentCarouselIndex === index }"
-            class="indicator"></span>
+        class="indicator"></span>
     </div>
 
     <h1 class="down-container-title">Interessé ? plus d'informations qui vous donneront encore plus envie !</h1>
@@ -29,21 +29,27 @@
       <div class="section-one">
         <h2 class="section-title">De multiples jeux et activités</h2>
         <div class="section-content">
-          <p class="section-text">Jeux de <strong>société</strong>, jeux de <strong>cartes</strong>, jeux <strong>vidéo</strong>, jeux <strong>traditionnels</strong>, jeux en <strong>bois</strong>, jeux de <strong>rôles</strong>, (zones dédiées aux <strong>nouvelles technologies</strong> de jeu)...</p>
+          <p class="section-text">Jeux de <strong>société</strong>, jeux de <strong>cartes</strong>, jeux
+            <strong>vidéo</strong>, jeux <strong>traditionnels</strong>, jeux en <strong>bois</strong>, jeux de
+            <strong>rôles</strong>, (zones dédiées aux <strong>nouvelles technologies</strong> de jeu)...</p>
         </div>
         <img src="../assets/images/flipgamepicture.jpg" alt="Description de l'image" class="section-image">
       </div>
       <div class="section-two">
         <h2 class="section-title">Boutique et souvenirs</h2>
         <div class="section-content">
-          <p class="section-text">Le FLIP propose des souvenirs tels que des jeux <strong>exclusifs</strong>, des <strong>tee-shirts</strong>, des <strong>affiches</strong>, et des <strong>goodies</strong>. Des <strong>boutiques</strong> sont également disponibles</p>
+          <p class="section-text">Le FLIP propose des souvenirs tels que des jeux <strong>exclusifs</strong>, des
+            <strong>tee-shirts</strong>, des <strong>affiches</strong>, et des <strong>goodies</strong>. Des
+            <strong>boutiques</strong> sont également disponibles</p>
         </div>
         <img src="../assets/images/flipshoppicture.jpg" alt="Description de l'image" class="section-image">
       </div>
       <div class="section-three">
         <h2 class="section-title">Engagement écologique</h2>
         <div class="section-content">
-          <p class="section-text">L’événement met en place des actions pour <strong>réduire</strong> son <strong>impact environnemental</strong> (réduction des <strong>déchets</strong>, <strong>sensibilisation au tri</strong>, utilisation de <strong>matériaux recyclables</strong>)</p>
+          <p class="section-text">L’événement met en place des actions pour <strong>réduire</strong> son <strong>impact
+              environnemental</strong> (réduction des <strong>déchets</strong>, <strong>sensibilisation au tri</strong>,
+            utilisation de <strong>matériaux recyclables</strong>)</p>
         </div>
         <img src="../assets/images/flipenvironnementpicture.jpg" alt="Description de l'image" class="section-image">
       </div>
@@ -52,12 +58,12 @@
     </div>
     <h1 class="down-container-mid-part-title">Les services</h1>
     <div class="down-container-mid-part">
-        <router-link to="/Produits">
+      <router-link to="/Produits">
         <figure>
           <img src="../assets/images/burger.jpg" alt="Restauration" width="280" height="300">
           <figcaption>Restauration</figcaption>
         </figure>
-        </router-link>
+      </router-link>
 
       <a href @click="goToBoutique" class="figure-link">
         <figure>
@@ -81,44 +87,42 @@
       </a>
     </div>
     <router-link to="Carte">
-    <div class="voircarte">
-      Voir la carte
-    </div>
-    </router-link>
-      <h2 class="h2-down-container">Nos prestataires</h2>
-    <div class="down-container-down-part">
-<!-- liste prestataires qd y'aura json -->
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-    <form class="label-input-wrapper">
-      <label for="prestataire">Rechercher un prestataire</label>
-      <input id="prestataire" class="prestatairefiltreinput" type="text" placeholder="Rechercher... (nom)">
-    </form>
-    <br>
-    <div class="checkbox-container">
-    <div class="checkbox-wrapper-2">
-      <label for="restaurationCheckbox">Restaurateur</label>
-      <input type="checkbox" name="restaurationCheckbox" class="sc-gJwTLC ikxBAC">
-    </div>
-    <div class="checkbox-wrapper-2">
-      <label for="vendeurCheckbox">Vendeur</label>
-      <input type="checkbox" name="vendeurCheckbox" class="sc-gJwTLC ikxBAC">
-    </div>
-    <div class="checkbox-wrapper-2">
-      <label for="organisateurCheckbox">Organisateur</label>
-      <input type="checkbox" name="organisateurCheckbox" class="sc-gJwTLC ikxBAC">
-    </div>
-    <div class="checkbox-wrapper-2">
-      <label for="createurCheckbox">Créateur</label>
-      <input type="checkbox" name="createurCheckbox" class="sc-gJwTLC ikxBAC">
-    </div>
-    </div>
+      <div class="voircarte">
+        Voir la carte
       </div>
+    </router-link>
+    <h2 class="h2-down-container">Nos prestataires</h2>
+    <div class="down-container-down-part">
+      <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+      <form class="label-input-wrapper">
+        <label for="prestataire">Rechercher un prestataire</label>
+        <input id="prestataire" class="prestatairefiltreinput" type="text" placeholder="Rechercher... (nom)">
+      </form>
+      <br>
+      <div class="checkbox-container">
+        <div class="checkbox-wrapper-2">
+          <label for="restaurationCheckbox">Restaurateur</label>
+          <input type="checkbox" name="restaurationCheckbox" class="sc-gJwTLC ikxBAC">
+        </div>
+        <div class="checkbox-wrapper-2">
+          <label for="vendeurCheckbox">Vendeur</label>
+          <input type="checkbox" name="vendeurCheckbox" class="sc-gJwTLC ikxBAC">
+        </div>
+        <div class="checkbox-wrapper-2">
+          <label for="organisateurCheckbox">Organisateur</label>
+          <input type="checkbox" name="organisateurCheckbox" class="sc-gJwTLC ikxBAC">
+        </div>
+        <div class="checkbox-wrapper-2">
+          <label for="createurCheckbox">Créateur</label>
+          <input type="checkbox" name="createurCheckbox" class="sc-gJwTLC ikxBAC">
+        </div>
+      </div>
+    </div>
     <br><br><br><br><br><br><br><br><br>
 
 
     <footer class="footer">
       <div class="footer-container">
-        <!-- Contact Information Section -->
         <div class="footer-cta">
           <div class="cta-item">
             <i class="fas fa-map-marker-alt"></i>
@@ -143,7 +147,6 @@
           </div>
         </div>
 
-        <!-- Footer Content Section -->
         <div class="footer-content">
           <div class="footer-column">
             <div class="footer-logo">
@@ -182,7 +185,6 @@
           </div>
         </div>
 
-        <!-- Footer Bottom Section -->
         <div class="footer-bottom">
           <div class="footer-bottom-left">
             <p>&copy; 2024, All Rights Reserved. <a href="https://www.jeux-festival.com/">FLIP</a></p>
@@ -297,7 +299,6 @@ export default {
 </script>
 
 <style scoped>
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 
@@ -371,11 +372,11 @@ export default {
   color: black;
 }
 
-.leftuptextcontainer > h3 {
+.leftuptextcontainer>h3 {
   color: #444444;
 }
 
-.leftuptextcontainer > h5 {
+.leftuptextcontainer>h5 {
   color: gray;
 }
 
@@ -438,15 +439,18 @@ button:hover {
 
 .content-container {
   display: flex;
-  justify-content: center; /* Centre les sections horizontalement */
+  justify-content: center;
+  /* Centre les sections horizontalement */
   max-width: 1200px;
   margin: 0 auto;
   padding: 50px;
 }
 
-.section-one, .section-two, .section-three { /* Ajoute la section trois ici */
-  flex: 0 0 30%; /* Ajustement pour trois sections */
-  margin: 0 60px; /* Espace entre les sections */
+.section-one,
+.section-two,
+.section-three {
+  flex: 0 0 30%;
+  margin: 0 60px;
   padding: 20px;
   background-color: white;
   border-radius: 10px;
@@ -454,8 +458,10 @@ button:hover {
   transition: transform 0.3s;
 }
 
-.section-one:hover, .section-two:hover, .section-three:hover { /* Ajout du hover pour la section 3 */
-  transform: translateY(-5px); /* Effet de levée au survol */
+.section-one:hover,
+.section-two:hover,
+.section-three:hover {
+  transform: translateY(-5px);
 }
 
 .section-title {
@@ -529,16 +535,16 @@ button:hover {
 }
 
 .more-button:focus {
-  outline: 2px solid #ff4500; /* Contour rouge vif au focus */
+  outline: 2px solid #ff4500;
   outline-offset: 2px;
 }
 
 
 .down-container-mid-part {
   display: flex;
-  gap: 20px; /* Espacement horizontal entre les figures */
-  justify-content: center; /* Centre les figures dans le conteneur */
-  padding: 20px 0; /* Optionnel : padding vertical autour des figures */
+  gap: 20px;
+  justify-content: center;
+  padding: 20px 0;
 }
 
 
@@ -549,10 +555,12 @@ figure {
   overflow: hidden;
   cursor: pointer;
 }
-figure > * {
+
+figure>* {
   grid-area: 1/1;
   transition: .4s;
 }
+
 figure figcaption {
   display: grid;
   align-items: center;
@@ -562,20 +570,23 @@ figure figcaption {
   color: #0000;
   padding: .75rem;
   background: var(--c, rgba(255, 255, 255, 0.8));
-  clip-path: inset(0 var(--_i,100%) 0 0);
+  clip-path: inset(0 var(--_i, 100%) 0 0);
   -webkit-mask:
-      linear-gradient(#000 0 0),
-      linear-gradient(#000 0 0);
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   -webkit-mask-clip: text, padding-box;
   margin: -1px;
 }
-figure:hover figcaption{
+
+figure:hover figcaption {
   --_i: 0%;
 }
+
 figure:hover img {
   transform: scale(1.2);
 }
+
 @supports not (-webkit-mask-clip: text) {
   figure figcaption {
     -webkit-mask: none;
@@ -590,8 +601,8 @@ figure:hover img {
 }
 
 .voircarte {
-  background-color: #1A1A1A; /* Noir élégant */
-  color: #ffffff; /* Bleu lumineux pour le texte */
+  background-color: #1A1A1A;
+  color: #ffffff;
   padding: 12px 24px;
   border-radius: 10px;
   font-size: 16px;
@@ -605,7 +616,7 @@ figure:hover img {
 }
 
 .voircarte:before {
-  content: "🗺️"; /* Icône de localisation */
+  content: "🗺️";
   font-size: 18px;
   margin-right: 8px;
   position: relative;
@@ -613,14 +624,12 @@ figure:hover img {
   transition: transform 0.3s ease;
 }
 
-/* Animation de lumière au survol */
 .voircarte:hover {
-  background-color: #333333; /* Changement du fond en bleu */
+  background-color: #333333;
   font-weight: bold;
   transform: scale(1.05);
 }
 
-/* Ligne de lumière glissante */
 .voircarte::after {
   content: "";
   position: absolute;
@@ -674,23 +683,23 @@ figure:hover img {
 }
 
 
-.prestatairefiltre > label {
+.prestatairefiltre>label {
   padding: 20px;
 }
 
- .checkbox-wrapper-2 .ikxBAC {
-   appearance: none;
-   background-color: #dfe1e4;
-   border-radius: 72px;
-   border-style: none;
-   flex-shrink: 0;
-   height: 20px;
-   margin: 0;
-   position: relative;
-   width: 30px;
-   top: 3px;
-   margin-left: 5px;
- }
+.checkbox-wrapper-2 .ikxBAC {
+  appearance: none;
+  background-color: #dfe1e4;
+  border-radius: 72px;
+  border-style: none;
+  flex-shrink: 0;
+  height: 20px;
+  margin: 0;
+  position: relative;
+  width: 30px;
+  top: 3px;
+  margin-left: 5px;
+}
 
 .checkbox-wrapper-2 .ikxBAC::before {
   bottom: -6px;
@@ -753,17 +762,15 @@ figure:hover img {
   margin: 15px;
 }
 
-.down-container-down-part {
-}
+.down-container-down-part {}
 
 .staticlogo {
   position: absolute;
-  margin-bottom : 430px;
+  margin-bottom: 430px;
   margin-left: 100px;
   z-index: 1;
 }
 
-/* Global Footer Styles */
 .footer {
   width: 100%;
   background-color: black;
@@ -781,11 +788,10 @@ figure:hover img {
   gap: 60px;
 }
 
-/* Contact Information Section */
 .footer-cta {
   display: flex;
-  justify-content: space-evenly; /* On répartit l'espace uniformément */
-  align-items: center; /* On aligne verticalement les éléments au centre */
+  justify-content: space-evenly;
+  align-items: center;
   gap: 30px;
   flex-wrap: wrap;
   padding-bottom: 30px;
@@ -795,14 +801,14 @@ figure:hover img {
 .cta-item {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centrer les icônes et le texte */
+  align-items: center;
   gap: 15px;
   margin-bottom: 20px;
-  flex: 1 1 200px; /* Assurer un espacement flexible et éviter qu'ils ne s'étirent trop */
+  flex: 1 1 200px;
 }
 
 .cta-item i {
-  font-size: 32px; /* Agrandir un peu les icônes pour plus de visibilité */
+  font-size: 32px;
   color: #ff6f00;
   transition: color 0.3s ease;
 }
@@ -812,7 +818,7 @@ figure:hover img {
 }
 
 .cta-text {
-  text-align: center; /* Centrer le texte */
+  text-align: center;
 }
 
 .cta-text h4 {
@@ -827,8 +833,6 @@ figure:hover img {
   line-height: 1.6;
 }
 
-
-/* Footer Content Section */
 .footer-content {
   display: flex;
   justify-content: space-between;
@@ -889,7 +893,6 @@ figure:hover img {
   transform: translateY(-5px);
 }
 
-/* Footer Links */
 .footer-links {
   list-style: none;
   padding: 0;
@@ -911,7 +914,6 @@ figure:hover img {
   letter-spacing: 1px;
 }
 
-/* Subscribe Form */
 .subscribe-form {
   display: flex;
   flex-direction: column;
@@ -949,7 +951,6 @@ figure:hover img {
   transform: translateY(-3px);
 }
 
-/* Footer Bottom Section */
 .footer-bottom {
   display: flex;
   justify-content: space-between;
@@ -998,7 +999,6 @@ figure:hover img {
   transform: translateY(-3px);
 }
 
-/* Responsive Styles */
 @media (max-width: 1024px) {
   .footer-content {
     flex-direction: column;
@@ -1062,17 +1062,16 @@ figure:hover img {
   }
 }
 
-/* Animation for Hover Effects */
 @keyframes hover-effect {
   0% {
     transform: translateY(0);
   }
+
   100% {
     transform: translateY(-5px);
   }
 }
 
-/* Adding a shadow effect when hovered */
 .footer-logo img:hover {
   animation: hover-effect 0.3s ease forwards;
 }
@@ -1082,6 +1081,4 @@ figure:hover img {
 .footer-bottom-links li a:hover {
   animation: hover-effect 0.3s ease forwards;
 }
-
-
 </style>

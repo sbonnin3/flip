@@ -18,8 +18,8 @@
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
           <div class="auth-toggle">
-          <button @click="toggleForm('signup')" :class="{ active: !isLogin }">M'inscrire</button>
-        </div>
+            <button @click="toggleForm('signup')" :class="{ active: !isLogin }">M'inscrire</button>
+          </div>
         </div>
 
         <div v-else>
@@ -63,8 +63,8 @@
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
           <div class="auth-toggle">
-          <button @click="toggleForm('login')" :class="{ active: isLogin }">Connexion</button>
-        </div>
+            <button @click="toggleForm('login')" :class="{ active: isLogin }">Connexion</button>
+          </div>
         </div>
       </div>
     </div>
@@ -279,17 +279,13 @@ p {
 
 .auth-container {
   max-height: 600px;
-  /* Hauteur maximale pour éviter que le contenu déborde */
   overflow-x: hidden;
-  /* Active la barre de défilement verticale si nécessaire */
   overflow-y: auto;
   padding-right: 10px;
-  /* Ajout d'un espace pour éviter que la barre de défilement ne masque le contenu */
 }
 
 .auth-container::-webkit-scrollbar {
   width: 8px;
-  /* Largeur de la barre de défilement */
 }
 
 .inputbox {
@@ -308,18 +304,14 @@ p {
 
 .auth-container::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.5);
-  /* Couleur de la barre */
   border-radius: 10px;
-  /* Pour un style arrondi */
 }
 
 .auth-container::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.8);
-  /* Couleur de la barre au survol */
 }
 
 .auth-container::-webkit-scrollbar-track {
   background: transparent;
-  /* Fond transparent pour le track */
 }
 </style>

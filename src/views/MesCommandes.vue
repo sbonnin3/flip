@@ -6,14 +6,12 @@
       <button :class="{ active: selectedTab === 'Tournois' }" @click="selectTab('Tournois')">Tournois</button>
       <button :class="{ active: selectedTab === 'Articles' }" @click="selectTab('Articles')">Articles </button>
       <button :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Jeux</button>
-      <button :class="{ active: selectedTab === 'JeuxReserve' }" @click="selectTab('JeuxReserve')">Jeux réservés</button>
+      <button :class="{ active: selectedTab === 'JeuxReserve' }" @click="selectTab('JeuxReserve')">Jeux
+        réservés</button>
     </div>
 
     <div v-show="selectedTab === 'Tournois'">
-      <!-- Chargement des tournois -->
       <p v-if="!this.$store.state.tournois.length">Chargement des tournois...</p>
-
-      <!-- Commandes de tournois -->
       <div v-if="commandes && commandes.length">
         <h2 class="section-title">Commandes de tournois</h2>
         <div v-for="(commande, index) in commandes" :key="index" class="card">
@@ -34,13 +32,11 @@
     </div>
 
     <div v-show="selectedTab === 'Articles'">
-      <!-- Commandes d'articles par restaurant -->
       <div class="cards-container" v-if="articleCommandes && articleCommandes.length">
         <h2 class="section-title">Commandes d'Articles</h2>
         <div v-for="(commande, index) in articleCommandes" :key="'commande-' + index" class="card">
           <div class="card-content">
             <h3 class="card-title">Commande n° {{ commande.orderNumber }} chez {{ commande.restaurantNom }}</h3>
-            <!--h4 class="restaurant-name">Stand : {{ commande.restaurantNom }}</h4-->
             <div v-for="article in commande.articles" :key="article.nom" class="article">
               <p class="article-name">{{ article.nom }}</p>
               <p class="article-quantity">Quantité : {{ article.quantite }}</p>
@@ -97,7 +93,7 @@ import { mapGetters } from "vuex";
 
 export default {
   name: "PageMesCommandes",
-  data(){
+  data() {
     return {
       selectedTab: "Tournois",
     }
@@ -129,7 +125,7 @@ export default {
     articleCommandes() {
       return this.userOrders.map(commandes => {
         const restaurant = this.$store.state.stands.find(s => s.nom === commandes.restaurantNom);
-        console.log('Restaurant trouvé:', restaurant);  // Vérifie si le restaurant est bien trouvé
+        console.log('Restaurant trouvé:', restaurant);
         return {
           ...commandes,
           restaurantNom: restaurant ? restaurant.nom : 'Restaurant inconnu',
@@ -156,8 +152,6 @@ export default {
     },
     formatReservationDate(date) {
       if (!date) return 'Date invalide';
-
-      // Vérifier si la date est un objet réactif avec les propriétés nécessaires
       const { jour, mois, annee, heures, min } = date;
 
       if (jour !== undefined && mois !== undefined && annee !== undefined) {

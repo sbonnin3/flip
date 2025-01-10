@@ -213,9 +213,9 @@ export default {
   data() {
     return {
       selectedTab: "Restauration",
-      alertMessage: null, // Message d'alerte temporaire
+      alertMessage: null,
       alertTimeout: null,
-      showAddModal: false, // Contrôle l'affichage de la fenêtre modale
+      showAddModal: false,
       addMessage: '',
       selectedModalJeu: null,
       selectedModalRestau: null,
@@ -254,7 +254,7 @@ export default {
       handler(newRestaurants) {
         this.stands = newRestaurants;
       },
-      immediate: true, // Recharge les données immédiatement
+      immediate: true,
     },
     '$route.query.tab'(newTab) {
       if (newTab) {
@@ -265,7 +265,7 @@ export default {
   computed: {
     ...mapGetters(['userOrders', 'comptes', 'restaurants']),
     stands() {
-      return this.restaurants || []; // Retourne une liste vide par défaut
+      return this.restaurants || [];
     },
     hasPurchased() {
       return (productId) => {
@@ -343,10 +343,9 @@ export default {
       if (this.cart.length > 0) {
         const maxOrderNumber = Math.max(
           ...this.cart.map((article) => article.orderNumber || 0),
-          ...this.getExistingOrderNumbers(), // Inclure les commandes déjà passées
-          0 // Valeur par défaut si aucune commande n'existe
+          ...this.getExistingOrderNumbers(),
+          0
         );
-        // Grouper les articles par restaurant
         const ordersByRestaurant = this.cart.reduce((acc, article) => {
           const restaurantName = article.restaurant;
           const orderNumber = maxOrderNumber + Object.keys(acc).length + 1;
@@ -363,10 +362,8 @@ export default {
           acc[restaurantName].articles.push(article);
           return acc;
         }, {});
-        // Mettre à jour currentOrder avec un tableau de commandes
         const newOrders = Object.values(ordersByRestaurant);
-        this.setCurrentOrder(newOrders);  // Envoi un tableau de commandes à currentOrder
-        // Ajouter les commandes à l'historique
+        this.setCurrentOrder(newOrders);
         newOrders.forEach((restaurantOrder) => {
           console.log('Commande:', restaurantOrder);
           this.addArticleOrder({
@@ -386,7 +383,6 @@ export default {
       }
     },
     getExistingOrderNumbers() {
-      // Récupère tous les numéros de commandes existants à partir des données d'historique
       return this.$store.state.userOrders
         ? this.$store.state.userOrders.map((order) => order.orderNumber || 0)
         : [];
@@ -439,12 +435,8 @@ export default {
       } else {
         this.cart.push({ ...article, quantite: 1, restaurant: this.selectedModalRestau.nom });
       }
-
-      // Définir le message à afficher dans la modale
       this.addMessage = `"${article.nom}" a été ajouté au panier !`;
       this.showAddModal = true;
-
-      // Masquer automatiquement la modale après 3 secondes
       setTimeout(() => {
         this.showAddModal = false;
       }, 3000);
@@ -747,12 +739,10 @@ textarea {
   border-radius: 10px;
   max-width: 600px;
   max-height: 60vh;
-  /* Hauteur maximale relative à la fenêtre */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: left;
   position: relative;
   overflow-y: auto;
-  /* Barre de défilement verticale */
 }
 
 .modal-image {
@@ -791,10 +781,8 @@ textarea {
 
 .article-image {
   width: 40px;
-  /* taille de l'image */
   height: 40px;
   margin-right: 10px;
-  /* espacement entre l'image et le texte */
   border-radius: 5px;
 }
 
@@ -967,18 +955,14 @@ button {
 .cart_item {
   display: grid;
   grid-template-columns: 35em 13em 13em 13em 30em;
-  /* Réduit les largeurs des colonnes */
   gap: 5px;
-  /* Réduit davantage l'espacement entre les colonnes */
   align-items: center;
   border-bottom: 1px solid #e8e8e8;
   padding: 8px 0;
-  /* Réduit l'espace vertical */
 }
 
 .cart_item_image img {
   width: 70px;
-  /* Réduit la taille de l'image pour gagner de l'espace */
   height: auto;
   border-radius: 5px;
 }
@@ -988,21 +972,17 @@ button {
   flex-direction: column;
   justify-content: center;
   gap: 3px;
-  /* Réduit l'espacement entre les lignes d'informations */
 }
 
 .cart_item_title {
   font-size: 18px;
-  /* Taille réduite pour compacter */
   color: #888;
 }
 
 .cart_item_text {
   font-size: 20px;
-  /* Taille ajustée pour plus de compacité */
   color: #333;
   white-space: nowrap;
-  /* Empêche les débordements */
   text-overflow: ellipsis;
 }
 
@@ -1010,11 +990,8 @@ button {
 .cart_item_price {
   text-align: center;
   font-size: 14px;
-  /* Taille légèrement réduite */
   padding: 0;
-  /* Supprime tout espace interne */
   margin: 0;
-  /* Supprime tout espace externe */
 }
 
 .order_total {
@@ -1023,13 +1000,9 @@ button {
   background: #f1f1f1;
   border-radius: 5px;
   display: flex;
-  /* Aligne les éléments sur une ligne */
   justify-content: center;
-  /* Centre les éléments horizontalement */
   align-items: center;
-  /* Centre verticalement */
   gap: 10px;
-  /* Espacement entre les éléments */
 }
 
 .order_total_title,
@@ -1045,9 +1018,7 @@ button {
   display: flex;
   justify-content: flex-end;
   gap: 15px;
-  /* Espacement entre les boutons */
   padding: 15px;
-  /* Ajoute un espace autour des boutons */
 }
 
 .cart_button_clear_logo {

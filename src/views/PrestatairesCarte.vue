@@ -3,22 +3,20 @@
     <div class="map-container">
       <h1 class="page-title">Carte de Parthenay</h1>
 
-      <!-- Sélection de la vue de la carte -->
       <select v-model="selectedLayer" @change="changeLayer">
         <option value="osm">Vue Carte</option>
         <option value="satellite">Vue Satellite</option>
       </select>
 
-      <!-- Cases à cocher pour les catégories -->
       <div class="filter-section">
         <h3>Filtres de catégories :</h3>
         <label v-for="category in categories" :key="category">
-          <input type="checkbox" :value="category" v-model="selectedCategories" @change="syncEmplacementStatus(category)" />
+          <input type="checkbox" :value="category" v-model="selectedCategories"
+            @change="syncEmplacementStatus(category)" />
           {{ category }}
         </label>
       </div>
 
-      <!-- Cases à cocher pour les emplacements disponibles et occupés -->
       <div class="filter-section">
         <h3>Filtres d'emplacements :</h3>
         <label>
@@ -35,11 +33,9 @@
         :max-zoom="maxZoom" style="height: 700px; width: 100%;">
         <l-tile-layer :url="layers[selectedLayer].url" :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
-        <!-- Marqueurs avec info-bulle dynamique au survol -->
         <l-marker v-for="(point, index) in filteredPoints" :key="index" :lat-lng="point.coordinates"
           :icon="getIconForPoint(point)">
           <l-popup>{{ getPopupText(point) }}</l-popup>
-          <!-- Info-bulle au survol pour les Emplacements -->
           <l-tooltip v-if="point.category === 'Emplacement'">{{ getTooltipText(point) }}</l-tooltip>
         </l-marker>
       </l-map>
@@ -81,8 +77,8 @@ export default {
       selectedLayer: "osm",
       points,
       stands,
-      selectedCategories: initialCategories, // Toutes les catégories sélectionnées par défaut
-      emplacementStatus: ["available", "occupied"], // Les deux statuts sont sélectionnés par défaut
+      selectedCategories: initialCategories,
+      emplacementStatus: ["available", "occupied"],
       layers: {
         osm: {
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -144,10 +140,10 @@ export default {
       return this.points.filter(point => {
         const categoryMatch = this.selectedCategories.includes(point.category);
 
-        const isEmplacementAvailable = 
+        const isEmplacementAvailable =
           point.category === 'Emplacement' &&
           ((this.emplacementStatus.includes('available') && point.disponible) ||
-           (this.emplacementStatus.includes('occupied') && !point.disponible));
+            (this.emplacementStatus.includes('occupied') && !point.disponible));
 
         return categoryMatch && (point.category !== 'Emplacement' || isEmplacementAvailable);
       });
@@ -169,52 +165,46 @@ export default {
       return "";
     },
     getIconForPoint(point) {
-  console.log("Traitement du point :", point);
+      console.log("Traitement du point :", point);
 
-  // Si la catégorie n'est pas "Emplacement", utiliser directement l'icône associée à la catégorie
-  if (point.category !== "Emplacement") {
-    const icon = this.icons[point.category] || this.icons.Emplacement; // Icône par défaut si non trouvée
-    console.log("Icône pour la catégorie :", point.category, "=>", icon);
-    return icon;
-  }
+      if (point.category !== "Emplacement") {
+        const icon = this.icons[point.category] || this.icons.Emplacement; // Icône par défaut si non trouvée
+        console.log("Icône pour la catégorie :", point.category, "=>", icon);
+        return icon;
+      }
 
-  // Pour les points de catégorie "Emplacement", vérifier les stands associés
-  const standAssocie = this.$store.state.stands.find(
-    (stand) => stand.idPoint === point.idPoint
-  );
+      const standAssocie = this.$store.state.stands.find(
+        (stand) => stand.idPoint === point.idPoint
+      );
 
-  if (standAssocie) {
-    console.log("Stand associé :", standAssocie);
+      if (standAssocie) {
+        console.log("Stand associé :", standAssocie);
 
-    // Récupérer le compte lié au stand
-    const compteId = standAssocie.comptes[0];
-    const compte = this.$store.state.comptes.find((compte) => compte.id === compteId);
+        const compteId = standAssocie.comptes[0];
+        const compte = this.$store.state.comptes.find((compte) => compte.id === compteId);
 
-    if (compte) {
-      console.log("Compte associé au stand :", compte);
+        if (compte) {
+          console.log("Compte associé au stand :", compte);
 
-      // Associer le rôle à l'icône correspondante
-      const roleToIconMap = {
-        organisateur: "Tournois",
-        createur: "Stand",
-        restaurateur: "Restauration",
-        vendeur: "Boutique",
-      };
+          const roleToIconMap = {
+            organisateur: "Tournois",
+            createur: "Stand",
+            restaurateur: "Restauration",
+            vendeur: "Boutique",
+          };
 
-      const iconKey = roleToIconMap[compte.role] || "Emplacement"; // Icône par défaut pour les rôles inconnus
-      console.log("Icône pour le rôle :", compte.role, "=>", this.icons[iconKey]);
-      return this.icons[iconKey];
-    }
+          const iconKey = roleToIconMap[compte.role] || "Emplacement";
+          console.log("Icône pour le rôle :", compte.role, "=>", this.icons[iconKey]);
+          return this.icons[iconKey];
+        }
 
-    console.log("Aucun compte trouvé pour ce stand.");
-  }
+        console.log("Aucun compte trouvé pour ce stand.");
+      }
 
-  // Si aucun stand ou compte n'est trouvé, retourner l'icône par défaut pour "Emplacement"
-  console.log("Aucun stand trouvé pour ce point d'emplacement.");
-  return this.icons.Emplacement;
-},
+      console.log("Aucun stand trouvé pour ce point d'emplacement.");
+      return this.icons.Emplacement;
+    },
     changeLayer() {
-      // Logique pour changer la vue de la carte (rien de spécifique ici)
     },
     syncCategoryCheckbox() {
       if (!this.emplacementStatus.includes('available') && !this.emplacementStatus.includes('occupied')) {
@@ -240,6 +230,7 @@ export default {
 .page-carte {
   max-width: 100%;
 }
+
 .map-container {
   padding-top: 100px;
   max-width: 50%;

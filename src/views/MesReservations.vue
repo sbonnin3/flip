@@ -1,13 +1,9 @@
 <template>
   <div class="mesReservations-page">
     <h1>{{this.standAttribue.nom}} - Réservations de mes jeux</h1>
-
-    <!-- Si le prestataire n'a pas de réservations -->
     <div v-if="reservationStandJeu.length === 0">
       <p>Aucune réservation pour vos jeux.</p>
     </div>
-
-    <!-- Liste des réservations -->
     <div v-else>
       <table class="reservations-table">
         <thead>
@@ -42,7 +38,6 @@ export default {
       return this.$store.state.userSession;
     },
     standAttribue() {
-      // Trouve le stand correspondant au compte du créateur connecté
       if (!this.currentUser) {
         return null;
       }
@@ -70,13 +65,10 @@ export default {
     formatDate(date) {
       if (!date) return "Date invalide";
 
-      // Gérer le cas où la date est sous forme d'objet
       if (typeof date === 'object' && date.jour !== undefined) {
         const { jour, mois, annee, heures, min } = date;
         return `${jour.toString().padStart(2, '0')}/${mois.toString().padStart(2, '0')}/${annee} à ${heures?.toString().padStart(2, '0') || '00'}h${min?.toString().padStart(2, '0') || '00'}`;
       }
-
-      // Gérer le cas où la date est au format ISO (chaîne)
       if (typeof date === 'string') {
         const parsedDate = new Date(date);
         if (!isNaN(parsedDate)) {
@@ -89,8 +81,6 @@ export default {
           });
         }
       }
-
-      // Si le champ est absent ou invalide
       return "Date invalide";
     },
   },

@@ -6,7 +6,7 @@ export const reservations = [
         places: 1,
         date: { jour: 10, mois: 7, annee: 2025, heures: 19, min: 0 },
         prix: 5,
-        teamName: "Les Invincibles", // Exemple de nom d'équipe
+        teamName: "Les Invincibles",
     },
     {
         reservationId: 2,

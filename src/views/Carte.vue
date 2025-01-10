@@ -3,13 +3,11 @@
     <div class="map-container">
       <h1 class="page-title">Carte de Parthenay</h1>
 
-      <!-- Sélection de la vue de la carte -->
       <select v-model="selectedLayer" @change="changeLayer">
         <option value="osm">Vue Carte</option>
         <option value="satellite">Vue Satellite</option>
       </select>
 
-      <!-- Filtre des catégories -->
       <select v-model="selectedCategory" @change="filterPoints">
         <option value="">Toutes les catégories</option>
         <option v-for="category in categories" :key="category" :value="category">
@@ -21,16 +19,13 @@
              :max-zoom="maxZoom" :options="mapOptions" style="height: 700px; width: 100%;">
         <l-tile-layer :url="layers[selectedLayer].url" :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
-        <!-- Marqueurs avec les icônes appropriées et info-bulles au survol -->
         <l-marker v-for="(point, index) in filteredPoints" :key="index" :lat-lng="point.coordinates"
                   :icon="getIconForPoint(point)" @mouseover="enlargeIcon(point.idPoint)" @mouseout="resetIcon()"
                   @click="showStandInfo(point)">
-          <!-- Afficher le nom du stand au survol -->
           <l-tooltip>{{ getTooltipText(point) }}</l-tooltip>
         </l-marker>
       </l-map>
 
-      <!-- Fenêtre d'information du prestataire -->
       <div v-if="selectedStand" class="stand-info-panel">
         <button class="close-button" @click="closeStandInfo">X</button>
         <h2>{{ selectedStand.nom }}</h2>
@@ -159,17 +154,17 @@ export default {
 
 <style scoped>
   .page-carte {
-    padding-top: 50px; /* Réduit l'espacement pour que la carte soit mieux positionnée */
+    padding-top: 50px;
     max-width: 100%;
     font-family: 'Arial', sans-serif;
     background-color: #f4f4f9;
   }
 
   .map-container {
-    max-width: 75%; /* Agrandit la taille de la carte */
+    max-width: 75%;
     margin: 0 auto;
     position: relative;
-    padding-bottom: 40px; /* Espace sous la carte */
+    padding-bottom: 40px;
   }
 
   .page-title {

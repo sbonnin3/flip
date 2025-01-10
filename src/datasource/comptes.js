@@ -83,8 +83,8 @@ export const comptes = [
     {
         id: 12350,
         role: "restaurateur",
-        identifiant: "r2",
-        motDePasse: "r2",
+        identifiant: "derya",
+        motDePasse: "derya",
         nom: "Derya",
         prenom: "Derya",
         email: "derya.derya@example.com",

@@ -2,12 +2,10 @@
   <div class="reservations-page">
     <h1>Réservations de mes Tournois</h1>
 
-    <!-- Si le prestataire n'a pas de réservations -->
     <div v-if="reservations.length === 0">
       <p>Aucune réservation pour vos tournois.</p>
     </div>
 
-    <!-- Liste des réservations -->
     <div v-else>
       <table class="reservations-table">
         <thead>
@@ -66,19 +64,17 @@ export default {
     console.log("Utilisateur connecté :", this.$store.state.userSession);
     console.log("Réservations disponibles :", this.$store.state.reservations);
 
-    this.$store.dispatch('getAllTournois'); // Récupérer les tournois
+    this.$store.dispatch('getAllTournois');
   },
   methods: {
     formatDate(date) {
       if (!date) return "Date invalide";
 
-      // Gérer le cas où la date est sous forme d'objet
       if (typeof date === 'object' && date.jour !== undefined) {
         const { jour, mois, annee, heures, min } = date;
         return `${jour.toString().padStart(2, '0')}/${mois.toString().padStart(2, '0')}/${annee} à ${heures?.toString().padStart(2, '0') || '00'}:${min?.toString().padStart(2, '0') || '00'}`;
       }
 
-      // Gérer le cas où la date est au format ISO (chaîne)
       if (typeof date === 'string') {
         const parsedDate = new Date(date);
         if (!isNaN(parsedDate)) {
@@ -91,8 +87,6 @@ export default {
           });
         }
       }
-
-      // Si le champ est absent ou invalide
       return "Date invalide";
     },
   },

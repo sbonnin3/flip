@@ -37,7 +37,6 @@ export default {
 </script>
 
 <style scoped>
-/* Reprise des styles de la page d'inscription */
 * {
   margin: 0;
   padding: 0;
@@ -68,7 +67,7 @@ export default {
   align-items: center;
   flex-direction: column;
   padding: 20px;
-  color: white; /* Texte blanc */
+  color: white;
 }
 
 h2 {
@@ -105,5 +104,4 @@ div p {
   font-size: 1em;
   color: white;
 }
-
 </style>

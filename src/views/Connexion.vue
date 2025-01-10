@@ -2,7 +2,6 @@
   <section>
     <div class="form-box">
       <div class="form-value">
-        <!-- Login Form -->
         <div v-if="isLogin">
           <h2>Se connecter</h2>
           <form @submit.prevent="login">
@@ -18,18 +17,14 @@
             </div>
             <div class="forget">
               <label>
-                <!--                <input type="checkbox" /> Remember me-->
               </label>
               <label>
-                <!--                <a href="#">Forgot password?</a>-->
               </label>
             </div>
             <button type="submit">Se connecter</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
         </div>
-
-        <!-- Registration Form -->
         <div v-else>
           <h2>Inscription</h2>
           <form @submit.prevent="register">
@@ -76,14 +71,9 @@
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
         </div>
-
-        <!-- Register Link for Login Form -->
         <div v-if="isLogin" class="register">
           <p>Pas de compte ? <a href="#" @click="toggleForm('signup')">S'inscrire</a></p>
         </div>
-
-        <!-- Register Link for Signup Form -->
-
         <div v-else class="register">
           <p>Déja un compte ? <a href="#" @click="toggleForm('login')">Se connecter</a></p>
         </div>
@@ -193,7 +183,6 @@ section {
   position: relative;
   width: 400px;
   min-height: 500px;
-  /* Assure une hauteur suffisante pour le formulaire */
   background: transparent;
   border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 20px;
@@ -204,7 +193,6 @@ section {
   flex-direction: column;
   padding: 20px;
   margin-top: 125px;
-  /* Ajusté à 125px pour que le formulaire soit plus bas */
 }
 
 h2 {
@@ -226,7 +214,6 @@ h2 {
   top: 0;
   left: 5px;
   color: #ffffff;
-  /* Texte des labels en noir */
   font-size: 1em;
   pointer-events: none;
   transition: 0.3s;
@@ -249,13 +236,11 @@ h2 {
   font-size: 1em;
   padding: 0 35px 0 5px;
   color: #fff;
-  /* Texte des inputs en blanc */
 }
 
 .inputbox input:focus,
 .inputbox select:focus {
   border-bottom: 2px solid #fff;
-  /* Bordure blanche quand actif */
 }
 
 .inputbox ion-icon {
@@ -338,10 +323,8 @@ button:hover {
   margin-top: 10px;
 }
 
-/* Changer la couleur des éléments dans la liste déroulante (les options) en noir */
 select>option {
   color: #000;
-  /* Texte des options dans la liste en noir */
 }
 
 .inputbox>option {

@@ -2,11 +2,16 @@
   <div class="page-prestation">
     <h1 class="page-title">Gestion de ma prestation</h1>
     <div class="tab-container">
-      <button v-if="isTabVisible('Catalogue')" :class="{ active: selectedTab === 'Catalogue' }" @click="selectTab('Catalogue')">Catalogue</button>
-      <button v-if="isTabVisible('Jeux')" :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Mes jeux</button>
-      <button v-if="isTabVisible('Emplacement')" :class="{ active: selectedTab === 'Emplacement' }" @click="selectTab('Emplacement')">Mon emplacement</button>
-      <button v-if="isTabVisible('MesTournois')" :class="{ active: selectedTab === 'MesTournois' }" @click="selectTab('MesTournois')">Mes tournois</button>
-      <button v-if="isTabVisible('MonRestaurant')" :class="{ active: selectedTab === 'MonRestaurant' }" @click="selectTab('MonRestaurant')">Mon restaurant</button>
+      <button v-if="isTabVisible('Catalogue')" :class="{ active: selectedTab === 'Catalogue' }"
+        @click="selectTab('Catalogue')">Catalogue</button>
+      <button v-if="isTabVisible('Jeux')" :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Mes
+        jeux</button>
+      <button v-if="isTabVisible('Emplacement')" :class="{ active: selectedTab === 'Emplacement' }"
+        @click="selectTab('Emplacement')">Mon emplacement</button>
+      <button v-if="isTabVisible('MesTournois')" :class="{ active: selectedTab === 'MesTournois' }"
+        @click="selectTab('MesTournois')">Mes tournois</button>
+      <button v-if="isTabVisible('MonRestaurant')" :class="{ active: selectedTab === 'MonRestaurant' }"
+        @click="selectTab('MonRestaurant')">Mon restaurant</button>
     </div>
     <div v-show="selectedTab === 'MonRestaurant'">
       <template v-if="restaurant">
@@ -65,7 +70,6 @@
         </div>
       </div>
     </div>
-    <!-- Onglet des jeux du flip -->
     <div v-show="selectedTab === 'Catalogue'">
       <div class="cards-container" v-if="jeux.length">
         <div v-for="jeu in jeux" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
@@ -134,10 +138,6 @@
             <label for="duration">Durée (minutes) :</label>
             <input v-model="gameDetails.duree" type="text" id="duration" />
           </div>
-          <!--div class="inputBox">
-            <label for="standName">Nom du stand :</label>
-            <input v-model="gameDetails.nom_stand" type="text" id="standName" />
-          </div-->
           <div class="imageBox">
             <label for="imageGame">Image du jeu :</label>
             <input type="file" id="imageGame" />
@@ -211,11 +211,9 @@
         </div>
       </div>
     </div>
-    <!-- Onglet pour sélectionner l'emplacement du stand -->
     <div v-show="selectedTab === 'Emplacement'">
       <div class="prestation-emplacement">
         <form @submit.prevent="saveStand">
-          <!-- Nom du stand -->
           <div class="form-group">
             <label for="nom">Nom du Stand :</label>
             <input type="text" v-model="stand.nom" id="nom" required />
@@ -225,7 +223,6 @@
             <textarea v-model="stand.description" id="description" rows="4" placeholder="Décrivez votre prestation..."
               required></textarea>
           </div>
-          <!-- Image du stand -->
           <div class="form-group">
             <label for="image">Image du Stand :</label>
             <input type="file" @change="handleImageUpload" id="image" />
@@ -259,7 +256,6 @@
               Veuillez sélectionner un point sur la carte
             </p>
           </div>
-          <!-- Bouton d'enregistrement -->
           <button type="submit" class="save-button">{{ isNewStand ? 'Créer le stand' : 'Enregistrer les modifications'
             }}</button>
         </form>
@@ -354,11 +350,10 @@ export default {
   computed: {
     ...mapGetters(["userSession", "restaurantByUser"]),
     userRole() {
-    return this.$store.state.userSession.role; // Supposant que le rôle est stocké ici
-  },
+      return this.$store.state.userSession.role;
+    },
     uniqueArticles() {
       const allArticles = [];
-      // Collect all articles from all stands
       this.stands.forEach((stand) => {
         if (stand.nourritures) {
           allArticles.push(
@@ -371,7 +366,6 @@ export default {
           );
         }
       });
-      // Filter unique articles by their name
       const uniqueMap = new Map();
       allArticles.forEach((article) => {
         if (!uniqueMap.has(article.nom)) {
@@ -381,7 +375,6 @@ export default {
       return Array.from(uniqueMap.values());
     },
     restaurantArticles() {
-      // Get articles (nourritures and boissons) of the current restaurant
       const restaurant = this.stands.find((stand) =>
         stand.comptes.includes(this.$store.state.userSession.id)
       );
@@ -393,10 +386,9 @@ export default {
       return [];
     },
     allArticles() {
-      const restaurants = this.$store.state.restaurants; // Récupère tous les restaurants du store
+      const restaurants = this.$store.state.restaurants;
       const articles = [];
       restaurants.forEach((restaurant) => {
-        // Ajoute les nourritures
         if (restaurant.nourritures) {
           restaurant.nourritures.forEach((nourriture) => {
             articles.push({
@@ -405,7 +397,6 @@ export default {
             });
           });
         }
-        // Ajoute les boissons
         if (restaurant.boissons) {
           restaurant.boissons.forEach((boisson) => {
             articles.push({
@@ -437,21 +428,21 @@ export default {
   },
   created() {
     const tabsOrder = ["Catalogue", "Jeux", "Emplacement", "MesTournois", "MonRestaurant"];
-  this.selectedTab = tabsOrder.find((tab) => this.isTabVisible(tab)) || ""; // Trouve le premier onglet visible
-  this.$store.dispatch("initializeRestaurants");
+    this.selectedTab = tabsOrder.find((tab) => this.isTabVisible(tab)) || "";
+    this.$store.dispatch("initializeRestaurants");
   },
   methods: {
     isTabVisible(tab) {
-    const role = this.userSession.role; // Supposant que le rôle de l'utilisateur est stocké ici
-    const tabPermissions = {
-      Catalogue: ["vendeur", "createur"],
-      Jeux: ["vendeur", "createur"],
-      Emplacement: ["vendeur", "createur", "restaurateur", "organisateur"],
-      MesTournois: ["organisateur"],
-      MonRestaurant: ["restaurateur"],
-    };
-    return tabPermissions[tab]?.includes(role);
-  },
+      const role = this.userSession.role;
+      const tabPermissions = {
+        Catalogue: ["vendeur", "createur"],
+        Jeux: ["vendeur", "createur"],
+        Emplacement: ["vendeur", "createur", "restaurateur", "organisateur"],
+        MesTournois: ["organisateur"],
+        MonRestaurant: ["restaurateur"],
+      };
+      return tabPermissions[tab]?.includes(role);
+    },
     toggleArticleInRestaurant(article) {
       if (!this.restaurant) {
         alert("Veuillez créer un restaurant avant d'ajouter ou supprimer des articles.");
@@ -464,19 +455,13 @@ export default {
       );
 
       if (articleIndex !== -1) {
-        // Supprimer l'article
         this.restaurant[listKey].splice(articleIndex, 1);
         alert(`L'article "${article.nom}" a été supprimé de votre restaurant.`);
       } else {
-        // Ajouter l'article
         this.restaurant[listKey].push(article);
         alert(`L'article "${article.nom}" a été ajouté à votre restaurant.`);
       }
-
-      // Utilisez Vue.set pour garantir la réactivité
       this.$set(this.restaurant, listKey, [...this.restaurant[listKey]]);
-
-      // Mettre à jour le store et localStorage
       this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
       this.saveRestaurantToLocalStorage();
     },
@@ -524,18 +509,16 @@ export default {
       console.log("Création d'un restaurant dans le store avec : ", restaurantData);
       const newRestaurant = {
         ...restaurantData,
-        id: Date.now(), // Génère un ID unique
-        idRestau: `R${Math.floor(Math.random() * 1000)}`, // Génère un ID restaurant
-        type: "restaurants", // Définit le type comme "restaurant"
-        comptes: [state.userSession.id], // Lie l'utilisateur connecté au restaurant
-        nourritures: [], // Initialise les nourritures vides
-        boissons: [], // Initialise les boissons vides
-        notes: [], // Initialise les notes vides
-        commentaires: [], // Initialise les commentaires vides
+        id: Date.now(),
+        idRestau: `R${Math.floor(Math.random() * 1000)}`,
+        type: "restaurants",
+        comptes: [state.userSession.id],
+        nourritures: [],
+        boissons: [],
+        notes: [],
+        commentaires: [],
       };
-      // Ajout au store (mutation)
       commit("ADD_RESTAURANT", newRestaurant);
-      // Enregistrement dans le fichier local
       this.dispatch("saveRestaurantToLocalFile", newRestaurant);
       console.log("Restaurant créé :", newRestaurant);
     },
@@ -558,17 +541,17 @@ export default {
         return;
       }
       const newRestaurant = {
-        id: Date.now(), // Génère un ID unique pour le stand
-        idRestau: `R-${Date.now()}`, // Génère un ID unique pour le restaurant
+        id: Date.now(),
+        idRestau: `R-${Date.now()}`,
         nom: this.newRestaurantName,
         type: "restaurants",
         image: this.newRestaurantImage,
-        idPoint: this.selectedPoint.idPoint, // Numéro du point sélectionné sur la carte
-        comptes: [this.$store.state.userSession.id], // ID du prestataire connecté
-        nourritures: [], // Liste vide à l'initialisation
-        boissons: [], // Liste vide à l'initialisation
-        notes: [], // Liste vide à l'initialisation
-        commentaires: [], // Liste vide à l'initialisation
+        idPoint: this.selectedPoint.idPoint,
+        comptes: [this.$store.state.userSession.id],
+        nourritures: [],
+        boissons: [],
+        notes: [],
+        commentaires: [],
       };
       this.$store.dispatch("addRestaurant", newRestaurant);
       this.newRestaurantName = "";
@@ -618,9 +601,9 @@ export default {
     },
     createTournoi() {
       if (!this.newTournoi.nom || !this.newTournoi.lieu || !this.newTournoi.prix) {
-  alert("Veuillez remplir tous les champs obligatoires.");
-  return;
-}
+        alert("Veuillez remplir tous les champs obligatoires.");
+        return;
+      }
       if (!this.newTournoi.dates.length) {
         alert("Veuillez ajouter au moins une date.");
         return;
@@ -634,11 +617,9 @@ export default {
       const tournoi = {
         ...this.newTournoi,
         _id: Date.now().toString(),
-        prestataireId: this.$store.state.userSession.id, // Lien avec le prestataire
+        prestataireId: this.$store.state.userSession.id,
       };
-      // Ajouter le tournoi dans le store
       this.$store.commit('ADD_TOURNOI', tournoi);
-      // Réinitialiser le formulaire et fermer le modal
       this.closeTournoiModal();
     },
     formatDate(date) {
@@ -805,17 +786,14 @@ export default {
 
 .article-restaurant {
   background-color: #e6ffe6;
-  /* Vert clair */
 }
 
 .article-other {
   background-color: #f0f0f0;
-  /* Gris clair */
 }
 
 .add-button {
   background-color: #4caf50;
-  /* Vert */
   color: white;
   padding: 5px 10px;
   border: none;
@@ -830,7 +808,6 @@ export default {
 
 .remove-button {
   background-color: #f44336;
-  /* Rouge */
   color: white;
   padding: 5px 10px;
   border: none;

@@ -110,15 +110,10 @@
             au stand <strong>{{ selectedJeu.nomsDesStands }}</strong> ?
           </p>
 
-          <!-- Sélection de la date prédéfinie -->
           <div class="form-group">
             <label for="predefinedDate" class="inline-label">Sélectionnez une date :</label>
             <select id="predefinedDate" v-model="selectedDate" class="form-select">
-              <option
-                  v-for="date in predefinedDates"
-                  :key="`${date.jour}-${date.mois}-${date.annee}`"
-                  :value="date"
-              >
+              <option v-for="date in predefinedDates" :key="`${date.jour}-${date.mois}-${date.annee}`" :value="date">
                 {{ formatDateJeux(date) }}
               </option>
             </select>
@@ -126,16 +121,9 @@
 
           <div class="form-group">
             <label for="reservationTime" class="inline-label">Saisissez une heure :</label>
-            <input
-                id="reservationTime"
-                type="time"
-                v-model="selectedTime"
-                required
-                class="form-input"
-            />
+            <input id="reservationTime" type="time" v-model="selectedTime" required class="form-input" />
           </div>
 
-          <!-- Boutons -->
           <div class="form-buttons">
             <button type="submit" class="confirm-button" @click="confirmReservationJeux">Confirmer</button>
             <button type="button" @click="closeConfirmationJeux" class="cancel-button">Annuler</button>
@@ -248,26 +236,24 @@ export default {
       searchEditeur: '',
       searchStand: '',
       selectedTypes: [],
-      predefinedDates: this.generatePredefinedDates(), // Liste des dates prédéfinies
-      selectedDate: null, // Date sélectionnée
-      selectedTime: '', // Heure saisie par l'utilisateur
+      predefinedDates: this.generatePredefinedDates(),
+      selectedDate: null,
+      selectedTime: '',
       jeuTypes: [...new Set(jeux.map(jeu => jeu.type))],
     };
   },
   created() {
-    // Ajouter le champ nomStand dans chaque jeu
     this.jeux = jeux.map(jeu => {
-      // Vérifiez si `nom_stand` est défini et est un tableau
       const nomsDesStands = Array.isArray(jeu.nom_stand)
-          ? jeu.nom_stand.map(idStand => {
-            const stand = stands.find(s => s.idStand === idStand);
-            return stand ? stand.nom : "Stand inconnu"; // Retourne "Stand inconnu" si aucun stand n'est trouvé
-          })
-          : [];
+        ? jeu.nom_stand.map(idStand => {
+          const stand = stands.find(s => s.idStand === idStand);
+          return stand ? stand.nom : "Stand inconnu";
+        })
+        : [];
 
       return {
         ...jeu,
-        nomsDesStands: nomsDesStands.join(", "), // Combine les noms en une chaîne
+        nomsDesStands: nomsDesStands.join(", "),
       };
     });
   },
@@ -332,21 +318,19 @@ export default {
       }
       return '';
     },
-    // Formatage de l'heure (appelé par formatDate)
     formatTime(date) {
       const hour = date.heures ? date.heures.toString().padStart(2, '0') : '00';
       const minute = date.min ? date.min.toString().padStart(2, '0') : '00';
       return `${hour}:${minute}`;
     },
 
-    // Formate une date pour les options de réservation
     formatReservationDate(date) {
       if (!date || !date.jour || !date.mois || !date.annee) {
         return 'Date invalide';
       }
 
-      const jour = date.jour.toString().padStart(2, '0'); // Ajout du zéro si nécessaire
-      const mois = date.mois.toString().padStart(2, '0'); // Ajout du zéro si nécessaire
+      const jour = date.jour.toString().padStart(2, '0');
+      const mois = date.mois.toString().padStart(2, '0');
       const heures = date.heures ? date.heures.toString().padStart(2, '0') : '00';
       const minutes = date.min ? date.min.toString().padStart(2, '0') : '00';
 
@@ -355,7 +339,7 @@ export default {
     openReservationConfirmation() {
       const currentUser = this.$store.state.userSession;
       if (currentUser) {
-        this.reservationDate = null; // Réinitialise la sélection
+        this.reservationDate = null;
         this.showConfirmation = true;
       } else {
         this.showLoginModal = true;
@@ -383,13 +367,11 @@ export default {
         return;
       }
 
-      // Vérifie si le nom d'équipe existe déjà
       if (this.isTeamNameTaken(this.teamName)) {
         this.reservationMessage = `Le nom d'équipe "${this.teamName}" est déjà pris. Veuillez en choisir un autre.`;
         return;
       }
 
-      // Trouver la date spécifique dans le tournoi sélectionné
       const selectedDate = this.selectedTournoi.dates.find(
         (date) =>
           date.jour === this.reservationDate.jour &&
@@ -404,10 +386,8 @@ export default {
         return;
       }
 
-      // Réduire le nombre de places restantes pour cette date
       selectedDate.placesRestantes -= 1;
 
-      // Ajouter la réservation
       const currentUser = this.$store.state.userSession;
       this.reservations.push({
         tournoiId: this.selectedTournoi._id,
@@ -419,14 +399,13 @@ export default {
       });
 
       this.reservationMessage = "Paiement effectué. Votre réservation a été confirmée !";
-      this.teamName = ''; // Réinitialiser le champ du nom d'équipe
-      this.closeConfirmation(); // Fermer le modal
+      this.teamName = '';
+      this.closeConfirmation();
       this.openPaymentModal();
       this.closeModal();
     },
     generatePredefinedDates() {
-      // Génère les dates entre le 9 juillet 2025 et le 20 juillet 2025
-      const startDate = new Date(2025, 6, 9); // 6 = juillet (index 0)
+      const startDate = new Date(2025, 6, 9);
       const endDate = new Date(2025, 6, 20);
       const dates = [];
 
@@ -441,7 +420,6 @@ export default {
       return dates;
     },
     formatDateJeux({ jour, mois, annee }) {
-      // Ajoute des zéros initiaux au jour et au mois
       const formattedDay = jour.toString().padStart(2, '0');
       const formattedMonth = mois.toString().padStart(2, '0');
       return `${formattedDay}/${formattedMonth}/${annee}`;
@@ -454,12 +432,10 @@ export default {
         return;
       }
 
-      // Extraire les heures et minutes à partir du champ "time"
       const [hours, minutes] = this.selectedTime.split(':').map(Number);
 
-      // Construire la structure de date demandée
       const reservationDate = {
-        ...this.selectedDate, // Date prédéfinie
+        ...this.selectedDate,
         heures: hours,
         min: minutes,
       };
@@ -525,20 +501,17 @@ export default {
       const tournoi = this.tournois.find((t) => t._id === tournoiId);
       if (!tournoi) return 0;
 
-      // Calculer la somme des places restantes pour toutes les dates
       return tournoi.dates.reduce((total, date) => total + (date.placesRestantes || 0), 0);
     },
 
   },
   mounted() {
-    // Vérifie si un paramètre `tab` est présent dans l'URL au moment du chargement de la page
     const selectedTab = this.$route.query.tab;
     if (selectedTab) {
       this.selectTab(selectedTab);
     }
   },
   watch: {
-    // Surveille les changements de l'URL pour mettre à jour l'onglet si nécessaire
     '$route.query.tab'(newTab) {
       if (newTab) {
         this.selectTab(newTab);
@@ -843,13 +816,13 @@ form button {
   margin-right: 15px;
   font-weight: bold;
   color: #333;
-  white-space: nowrap; /* Empêche le retour à la ligne du label */
+  white-space: nowrap;
 }
 
 .form-select,
 .form-input {
-  flex: 1; /* Permet aux champs de prendre une largeur adaptée */
-  max-width: 300px; /* Définit une largeur maximale pour éviter des champs trop larges */
+  flex: 1;
+  max-width: 300px;
   padding: 8px;
   font-size: 1rem;
   border: 1px solid #ccc;

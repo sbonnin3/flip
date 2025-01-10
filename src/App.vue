@@ -39,7 +39,6 @@ export default {
       ];
 
       if (this.userSession) {
-        // Exclure l'onglet "Produits" pour les organisateurs
         if (["vendeur", "restaurateur", "createur", "organisateur"].includes(this.userSession.role)) {
           this.navTitles = this.navTitles.filter(title => title.text !== "Produits");
         }
@@ -61,7 +60,6 @@ export default {
         if (this.userSession.role === "createur") {
           this.navTitles.push({ text: "Mes réservations" });
         }
-        // Ajouter "Statistiques" pour tous les utilisateurs connectés
         this.navTitles.push({ text: "Statistiques" });
 
         this.navTitles.push({ text: "Mon Compte" });
