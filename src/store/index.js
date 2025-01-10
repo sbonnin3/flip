@@ -82,9 +82,9 @@ export default new Vuex.Store({
       }
     },
     ADD_TOURNOI(state, tournoi) {
-      console.log("Tournoi ajouté au store :", tournoi);
+      console.log("Ajout du tournoi :", tournoi); // Log pour vérification
       state.tournois.push(tournoi);
-    },
+    },    
     ADD_RESERVATION(state, reservation) {
       state.reservations.push(reservation);
     },
@@ -144,6 +144,15 @@ export default new Vuex.Store({
     initializeStore({ commit }) {
       const { stands } = require("@/datasource/stands.js");
       commit("SET_RESTAURANTS", stands);
+    },
+    initializeRestaurants({ commit }) {
+      try {
+        // Charger les restaurants depuis la source de données ou un fichier
+        const restaurants = require('@/datasource/stands.js').stands; // Exemple : remplacez par votre source réelle
+        commit('SET_RESTAURANTS', restaurants); // Met à jour les restaurants dans le state
+      } catch (error) {
+        console.error("Erreur lors de l'initialisation des restaurants :", error);
+      }
     },    
     async fetchTournoisByPrestataire({ commit, state }) {
       if (!state.userSession) return;

@@ -615,6 +615,10 @@ export default {
       };
     },
     createTournoi() {
+      if (!this.newTournoi.nom || !this.newTournoi.lieu || !this.newTournoi.prix) {
+  alert("Veuillez remplir tous les champs obligatoires.");
+  return;
+}
       if (!this.newTournoi.dates.length) {
         alert("Veuillez ajouter au moins une date.");
         return;
