@@ -1,0 +1,8 @@
+Code administrateur :
+identifiant : administrateur
+mod de passe : administrateur
+
+Code de création de compte prestataire :
+1234
+
+(code donné par l'administrateur du site)
