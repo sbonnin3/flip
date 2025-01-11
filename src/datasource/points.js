@@ -1,3 +1,6 @@
+
+// JSON contenant les points sur la cartes, les emplacements disponibles ou non
+
 export const points = [
     {
         idPoint: 100001,

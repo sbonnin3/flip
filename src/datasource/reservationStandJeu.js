@@ -1,3 +1,6 @@
+
+// JSON contenant les réservations des stands de jeux (tables) par les différents utilisateurs
+
 export const reservationStandJeu = [
     {
         reservationJeuStandId: 1,

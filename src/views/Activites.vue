@@ -7,8 +7,14 @@
         <button @click="selectTab('Jeux')" :class="{ active: selectedTab === 'Jeux' }">Jeux</button>
         <button @click="selectTab('Tournois')" :class="{ active: selectedTab === 'Tournois' }">Tournois</button>
       </div>
+
+      <!-- Appel du composant de connexion -->
+
       <ConnexionModal v-if="showLoginModal" :visible="showLoginModal" @close="closeLoginModal"
         @login-success="handleLoginSuccess" />
+
+      <!-- Onglet des jeux -->
+
       <div v-show="selectedTab === 'Jeux'">
         <div class="search-container">
           <div class="search-row">
@@ -68,6 +74,8 @@
         <p v-else>Aucun jeu disponible.</p>
       </div>
 
+      <!-- Onglet des tournois -->
+
       <div id="Tournois" v-show="selectedTab === 'Tournois'">
         <div class="cards-container" v-if="tournois.length">
           <div v-for="tournoi in tournois" :key="tournoi._id" class="card" @click="openModal(tournoi)">
@@ -85,6 +93,8 @@
         </div>
         <p v-else>Aucun tournoi disponible.</p>
       </div>
+
+      <!-- Fenêtre modale des jeux lorsque l'on sélectionne le jeu -->
 
       <div v-if="selectedJeu" class="modal">
         <div class="modal-content">
@@ -130,6 +140,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Fenêtre modale lorsque l'on sélectionne un tournoi -->
 
       <div v-if="selectedTournoi" class="modal">
         <div class="modal-content">
@@ -195,6 +207,8 @@
           <button @click="closeReservationMessage">OK</button>
         </div>
       </div>
+
+      <!-- Appel du composant de paiement -->
 
       <PaymentModal v-if="showPaymentModal" :visible="showPaymentModal" :showPickupTime="false"
         @close="closePaymentModal" @payment-success="handlePaymentSuccess" />

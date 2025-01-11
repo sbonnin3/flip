@@ -1,3 +1,6 @@
+
+//JSON contenant les comptes déjà enregistrés pour les tests et accéder aux différents onglets du site selon le compte
+
 export const comptes = [
     {
         id: 12341,

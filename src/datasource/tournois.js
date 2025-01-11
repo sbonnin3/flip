@@ -1,3 +1,6 @@
+
+// JSON contenant les données des tournois
+
 export const tournois = [
     {
         _id: "000001",

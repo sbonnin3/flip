@@ -19,14 +19,14 @@ export default new Vuex.Store({
     tournois: tournois,
     jeux: jeux,
     comptes: comptes,
-    restaurants: [], // Charge les restaurants au démarrage
-    userSession: null,
+    restaurants: [], // Charger les restaurants qu'un "restaurateur" créera
+    userSession: null, // L'utilisateur n'est pas connecté en venant sur le site
     souvenirs: souvenirs,
     reservations: reservations,
     reservationsJeux: reservationsJeux,
     reservationStand: reservationStandJeu,
-    userOrders: commandes,
-    currentOrder: [],
+    userOrders: commandes, // Charger les commandes de l'utilisateur
+    currentOrder: [], // Une "sauvegarde" de la commande en cours de l'utilisateur
     stands: stands,
   },
   mutations: {
@@ -61,7 +61,7 @@ export default new Vuex.Store({
       }
     },
     SET_TOURNOIS(state, tournois) {
-      console.log("Tournois enregistrés dans le store :", tournois); // Vérifiez ici
+      console.log("Tournois enregistrés dans le store :", tournois);
       state.tournois = tournois;
     },
     SET_JEUX(state, jeux) {

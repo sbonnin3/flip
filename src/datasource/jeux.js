@@ -1,3 +1,6 @@
+
+// JSON contenant les données des jeux
+
 export const jeux = [
     {
         _id: '01',

@@ -1,3 +1,6 @@
+
+// JSON comtenant les données des statistiques
+
 export const statistiques = {
   dailyViews: [],
 

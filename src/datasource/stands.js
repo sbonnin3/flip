@@ -1,3 +1,9 @@
+
+// JSON contenant les différents stands du FLIP et leur informations, il y a deux types :
+// Les restaurants avec leur articles et leur placement
+// et les stands de jeux avec leur noms et leur placement
+// Chaque stands est associés à un compte
+
 export const stands = [
     {
         id: 1235,

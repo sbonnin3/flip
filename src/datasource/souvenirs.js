@@ -1,3 +1,6 @@
+
+// JSON contenant les données des souvenirs dans la boutique
+
 export const souvenirs = [
     {
         _id: '001',

@@ -1,3 +1,5 @@
+// Données JSON contenant les commandes des restaurants
+
 export const commandes = [
     {
         commandeId: 1,

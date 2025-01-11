@@ -1,3 +1,6 @@
+
+// JSON contenant les réservations de jeux dans la boutique par les différents utilisateurs
+
 export const reservationsJeux = [
     {
         reservationJeuId: 1,
