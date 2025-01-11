@@ -128,6 +128,7 @@ export default {
         return;
       }
 
+      // Code d'inscription lorsque l'on créer un autre rôle que l'utilisateur -> 1234
       if (this.role !== "utilisateur" && this.codeInscription !== "1234") {
         this.errorMessage = "Code d'inscription incorrect.";
         return;
