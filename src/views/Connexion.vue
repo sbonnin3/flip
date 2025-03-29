@@ -84,7 +84,7 @@
 
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   name: "PageInscription",
@@ -101,18 +101,23 @@ export default {
       errorMessage: "",
     };
   },
+  computed: {
+    ...mapGetters('user', ['userSession', 'comptes']),
+  },
   methods: {
-    ...mapActions(['setUserSession', 'addCompte']),
-
+    ...mapActions('user', ['setUserSession', 'addCompte']),
     toggleForm(formType) {
       this.isLogin = formType === 'login';
       this.errorMessage = "";
     },
 
     login() {
-      const user = this.$store.getters.comptes.find(
+      console.log("Comptes récupérés :", this.comptes);
+      const comptes = this.comptes || []; // Fallback pour éviter undefined
+      const user = comptes.find(
         (compte) => compte.identifiant === this.identifiant && compte.motDePasse === this.motDePasse
       );
+
       if (user) {
         this.setUserSession(user);
         this.$router.push("/MonCompte");
@@ -120,8 +125,8 @@ export default {
         this.errorMessage = "Identifiant ou mot de passe incorrect.";
       }
     },
-
     register() {
+      console.log("Comptes avant ajout :", this.comptes);
       if (!this.email.includes("@")) {
         this.errorMessage = "Veuillez fournir une adresse email valide.";
         return;
@@ -132,7 +137,8 @@ export default {
         return;
       }
 
-      const existingUser = this.$store.getters.comptes.find(
+      const comptes = this.comptes || [];
+      const existingUser = comptes.find(
         (compte) => compte.identifiant === this.identifiant
       );
 
@@ -159,7 +165,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 * {

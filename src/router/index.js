@@ -129,18 +129,15 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   const user = store.getters.userSession;
+  console.log("User session avant redirection :", user);
 
   if (to.meta.requiresAuth && !user) {
     return next('/Connexion');
   }
 
-  if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
-    return next('/Accueil');
-  }
-
-  if (to.path === '/Carte' && user && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
+  if (to.path === '/Carte' && user && user.role && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
     return next('/PrestatairesCarte');
-  }
+  }  
 
   if (to.meta.requiresAdmin && (!user || user.role !== 'administrateur')) {
     return next('/');
@@ -150,9 +147,10 @@ router.beforeEach((to, from, next) => {
     return next('/Accueil');
   }
 
-  if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
+  if (to.meta.requiresPrestataire && (!user || !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role))) {
     return next('/Accueil');
   }
+  
   next();
 });
 
