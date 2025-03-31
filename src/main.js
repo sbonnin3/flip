@@ -10,3 +10,10 @@ new Vue({
   store,
   render: h => h(App),
 }).$mount('#app')
+store.dispatch('user/initComptes').then(() => {
+  new Vue({
+    router,
+    store,
+    render: h => h(App)
+  }).$mount('#app');
+});

@@ -4,7 +4,7 @@
       <div class="form-value">
         <div v-if="isLogin">
           <h2>Se connecter</h2>
-          <form @submit.prevent="login">
+          <form @submit.prevent="login()">
             <div class="inputbox">
               <ion-icon name="mail-outline"></ion-icon>
               <input v-model="identifiant" type="text" required />
@@ -90,79 +90,47 @@ export default {
   name: "PageInscription",
   data() {
     return {
-      codeInscription: "",
       isLogin: true,
-      nom: "",
-      prenom: "",
-      email: "",
       identifiant: "",
       motDePasse: "",
-      role: "utilisateur",
       errorMessage: "",
     };
   },
   computed: {
-    ...mapGetters('user', ['userSession', 'comptes']),
+    ...mapGetters('user', ['userSession']),
   },
   methods: {
-    ...mapActions('user', ['setUserSession', 'addCompte']),
+    ...mapActions('user', ['login']),
+    
     toggleForm(formType) {
       this.isLogin = formType === 'login';
       this.errorMessage = "";
     },
 
-    login() {
-      console.log("Comptes récupérés :", this.comptes);
-      const comptes = this.comptes || []; // Fallback pour éviter undefined
-      const user = comptes.find(
-        (compte) => compte.identifiant === this.identifiant && compte.motDePasse === this.motDePasse
-      );
+    async login() {
+  console.log("Identifiant:", this.identifiant);
+  console.log("Mot de passe:", this.motDePasse);
+      this.errorMessage = "";
+      console.log("Tentative de connexion...");
 
-      if (user) {
-        this.setUserSession(user);
-        this.$router.push("/MonCompte");
-      } else {
-        this.errorMessage = "Identifiant ou mot de passe incorrect.";
-      }
-    },
-    register() {
-      console.log("Comptes avant ajout :", this.comptes);
-      if (!this.email.includes("@")) {
-        this.errorMessage = "Veuillez fournir une adresse email valide.";
-        return;
-      }
-
-      if (this.role !== "utilisateur" && this.codeInscription !== "1234") {
-        this.errorMessage = "Code d'inscription incorrect.";
-        return;
-      }
-
-      const comptes = this.comptes || [];
-      const existingUser = comptes.find(
-        (compte) => compte.identifiant === this.identifiant
-      );
-
-      if (existingUser) {
-        this.errorMessage = "Cet identifiant est déjà utilisé.";
-      } else {
-        const newAccount = {
-          id: Date.now(),
-          nom: this.nom,
-          prenom: this.prenom,
-          email: this.email,
+      try {
+        const success = await this.$store.dispatch('user/login', {
           identifiant: this.identifiant,
-          motDePasse: this.motDePasse,
-          role: this.role,
-          telephone: "0102030405",
-          photoProfil: "https://via.placeholder.com/150",
-        };
+          motDePasse: this.motDePasse
+        });
 
-        this.addCompte(newAccount);
-        this.setUserSession(newAccount);
-        this.$router.push("/MonCompte");
+        if (success) {
+          console.log("Connexion réussie, redirection...");
+          this.$router.push("/MonCompte");
+        } else {
+          this.errorMessage = "Identifiant ou mot de passe incorrect.";
+        }
+      } catch (error) {
+        console.error("Erreur lors de la connexion:", error);
+        this.errorMessage = "Une erreur est survenue lors de la connexion";
       }
-    },
-  },
+    }
+  }
 };
 </script>
 

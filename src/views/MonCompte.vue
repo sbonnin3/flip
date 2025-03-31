@@ -2,37 +2,47 @@
   <div class="pagecompte">
     <div class="mon-compte-page form-box">
       <h2>Mon Compte</h2>
-      <div v-if="userSession" class="user-details">
-        <p><strong>Nom :</strong> {{ userSession.nom }}</p>
-        <p><strong>Prénom :</strong> {{ userSession.prenom }}</p>
-        <p><strong>Email :</strong> {{ userSession.email }}</p>
-        <p><strong>Téléphone :</strong> {{ userSession.telephone }}</p>
-        <p><strong>Rôle :</strong> {{ userSession.role }}</p>
+      <div v-if="user" class="user-details">  <!-- Changé userSession en user -->
+        <p><strong>Nom :</strong> {{ user.nom }}</p>
+        <p><strong>Prénom :</strong> {{ user.prenom }}</p>
+        <p><strong>Email :</strong> {{ user.email }}</p>
+        <p><strong>Téléphone :</strong> {{ user.telephone || 'Non renseigné' }}</p>
+        <p><strong>Rôle :</strong> {{ user.role }}</p>
         <button @click="handleLogout">Se déconnecter</button>
       </div>
       <div v-else>
-        <p>Aucun utilisateur connecté.</p>
+        <p>Chargement des données utilisateur...</p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: "PageMonCompte",
   computed: {
-    ...mapState(['userSession']),
+    ...mapGetters('user', ['userSession']),
+    user() {  // Alias pour faciliter le template
+      return this.userSession;
+    }
   },
   methods: {
-    ...mapMutations(['CLEAR_USER_SESSION']),
-    handleLogout() {
-      this.CLEAR_USER_SESSION();
-      alert('Vous êtes déconnecté.');
-      this.$router.push('/Accueil');
-    },
+    ...mapActions('user', ['logout']),  // Utilisez une action plutôt qu'une mutation directe
+    
+    async handleLogout() {
+      try {
+        await this.logout();
+        this.$router.push('/Accueil');
+      } catch (error) {
+        console.error("Erreur lors de la déconnexion:", error);
+      }
+    }
   },
+  mounted() {
+    console.log("Données utilisateur:", this.userSession);  // Pour débogage
+  }
 };
 </script>
 

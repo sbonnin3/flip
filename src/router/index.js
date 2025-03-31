@@ -39,17 +39,8 @@ const routes = [
     name: "Produits",
     component: Produits,
   },
-  {
-    path: "/Connexion",
-    name: "Connexion",
-    component: Connexion,
-  },
-  {
-    path: "/MonCompte",
-    name: "MonCompte",
-    component: MonCompte,
-    meta: { requiresAuth: true },
-  },
+  { path: '/Connexion', component: Connexion },
+  { path: '/MonCompte', component: MonCompte, meta: { requiresAuth: true } },
   {
     path: "/MesCommandes",
     name: "MesCommandes",
@@ -127,30 +118,55 @@ const router = new VueRouter({
   },
 });
 
-router.beforeEach((to, from, next) => {
-  const user = store.getters.userSession;
-  console.log("User session avant redirection :", user);
-
-  if (to.meta.requiresAuth && !user) {
-    return next('/Connexion');
+router.beforeEach(async (to, from, next) => {
+  // Initialise le store user si nécessaire
+  if (!store.getters['user/userSession'] && (!store.state.user.comptes || store.state.user.comptes.length === 0)) {
+    await store.dispatch('user/initComptes');
   }
 
-  if (to.path === '/Carte' && user && user.role && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
-    return next('/PrestatairesCarte');
-  }  
-
-  if (to.meta.requiresAdmin && (!user || user.role !== 'administrateur')) {
-    return next('/');
-  }
-
-  if (to.matched.some(record => record.meta.requiresOrganizer) && user.role !== 'organisateur') {
-    return next('/Accueil');
-  }
-
-  if (to.meta.requiresPrestataire && (!user || !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role))) {
-    return next('/Accueil');
-  }
+  const user = store.getters['user/userSession'];
+  console.log('Navigation guard - User:', user); // Debug
   
+  // Vérifie l'authentification
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!user) {
+      console.log('Redirection vers Connexion (non authentifié)');
+      return next({
+        path: '/Connexion',
+        query: { redirect: to.fullPath }
+      });
+    }
+  }
+
+  // Vérifie les rôles spécifiques
+  if (to.matched.some(record => record.meta.requiresAdmin)) {
+    if (!user || user.role !== 'administrateur') {
+      console.log('Accès refusé - Admin required');
+      return next('/Accueil');
+    }
+  }
+
+  if (to.matched.some(record => record.meta.requiresOrganizer)) {
+    if (!user || user.role !== 'organisateur') {
+      console.log('Accès refusé - Organisateur required');
+      return next('/Accueil');
+    }
+  }
+
+  if (to.matched.some(record => record.meta.requiresPrestataire)) {
+    const prestataireRoles = ['restaurateur', 'vendeur', 'createur', 'organisateur'];
+    if (!user || !prestataireRoles.includes(user.role)) {
+      console.log('Accès refusé - Prestataire required');
+      return next('/Accueil');
+    }
+  }
+
+  // Gestion spéciale de la route /Carte pour les prestataires
+  if (to.path === '/Carte' && user && ['restaurateur', 'vendeur', 'createur', 'organisateur'].includes(user.role)) {
+    console.log('Redirection prestataire vers PrestatairesCarte');
+    return next('/PrestatairesCarte');
+  }
+
   next();
 });
 
