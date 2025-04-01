@@ -1,5 +1,12 @@
-import { tournois } from '../datasource/data.js'; 
+import { API_URL } from "@/config";
 
-export function getAllTournois() {
-  return { error: 0, data: tournois };
+export async function getAllTournois() {
+    try {
+        const response = await fetch(`${API_URL}/tournois`);
+        if (!response.ok) throw new Error("Erreur récupération tournois");
+        return await response.json();
+    } catch (error) {
+        console.error("Erreur API Tournois:", error);
+        return [];
+    }
 }

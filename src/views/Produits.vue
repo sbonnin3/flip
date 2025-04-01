@@ -241,9 +241,9 @@ export default {
   mounted() {
     const storedRestaurants = JSON.parse(localStorage.getItem("restaurants"));
     if (storedRestaurants) {
-      this.$store.commit("SET_RESTAURANTS", storedRestaurants);
+      this.$store.commit("restaurants/SET_RESTAURANTS", storedRestaurants);
     }
-    this.$store.dispatch("initializeStore");
+    this.$store.dispatch("restaurants/initializeRestaurants"); // Ajoute le namespace 'restaurants'
     const selectedTab = this.$route.query.tab;
     if (selectedTab) {
       this.selectTab(selectedTab);
@@ -262,16 +262,12 @@ export default {
       }
     }
   },
-  created() {
-  this.$store.dispatch('restaurants/initializeRestaurants');
-},
   computed: {
-    ...mapGetters(['userOrders', 'comptes', 'restaurants']),
-    restaurants() {
-    return this.$store.getters['restaurants/restaurants'];
-  },
-  stands() {
-      return this.restaurants || [];
+    ...mapGetters('restaurants', ['restaurants']), // Ajoute 'restaurants' comme namespace
+    ...mapGetters(['userOrders', 'comptes']),
+    },
+    stands() {
+     return this.restaurants || []; // ✅ Correct
     },
     hasPurchased() {
       return (productId) => {
@@ -285,7 +281,6 @@ export default {
         return user ? user.identifiant : 'Unknown';
       };
     },
-  },
   methods: {
     ...mapActions(['addArticleOrder', 'setCurrentOrder']),
     selectTab(tab) {
