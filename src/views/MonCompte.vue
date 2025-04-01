@@ -31,7 +31,7 @@ export default {
     
     handleLogout() {
       this.CLEAR_USER_SESSION();
-      alert('Vous êtes déconnecté.');
+      alert('Vous êtes déconnecté');
       this.$router.push('/Accueil');
     },
     
