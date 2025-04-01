@@ -1,5 +1,5 @@
 <template>
-  <div v-if="visible" class="modal-overlay">
+  <div v-if="shouldShowModal" class="modal-overlay">
     <div class="modal-container form-box">
       <button class="close-button" @click="closeModal">✖</button>
       <div class="auth-container">
@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 
 export default {
   name: "ConnexionModal",
@@ -81,6 +81,13 @@ export default {
       type: Boolean,
       required: true,
     },
+  },
+  computed: {
+    shouldShowModal() {
+      return this.visible && !this.isAuthenticated;
+    },
+    ...mapGetters("user", ["isAuthenticated"]),
+    ...mapState("user", ["comptes"]),
   },
   data() {
     return {
@@ -96,7 +103,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["setUserSession", "addCompte"]),
+    ...mapActions("user", ["setUserSession", "addCompte", "login", "register"]),
 
     toggleForm(formType) {
       this.isLogin = formType === "login";
@@ -107,42 +114,39 @@ export default {
       this.$emit("close");
     },
 
-    login() {
-      const user = this.$store.getters.comptes.find(
-        (compte) =>
-          compte.identifiant === this.identifiant &&
-          compte.motDePasse === this.motDePasse
-      );
-      if (user) {
-        this.setUserSession(user);
-        this.$emit("login-success");
-        this.closeModal();
-      } else {
-        this.errorMessage = "Identifiant ou mot de passe incorrect.";
+    async login() {
+      try {
+        const success = await this.$store.dispatch("user/login", {
+          identifiant: this.identifiant,
+          motDePasse: this.motDePasse
+        });
+
+        if (success) {
+          this.setUserSession();
+          this.$emit("login-success");
+          this.closeModal();
+        } else {
+          this.errorMessage = "Identifiant ou mot de passe incorrect.";
+        }
+      } catch (error) {
+        this.errorMessage = "Une erreur est survenue lors de la connexion.";
+        console.error(error);
       }
     },
 
-    register() {
+    async register() {
       if (!this.email.includes("@")) {
         this.errorMessage = "Veuillez fournir une adresse email valide.";
         return;
       }
 
-      // Code d'inscription lorsque l'on créer un autre rôle que l'utilisateur -> 1234
       if (this.role !== "utilisateur" && this.codeInscription !== "1234") {
         this.errorMessage = "Code d'inscription incorrect.";
         return;
       }
 
-      const existingUser = this.$store.getters.comptes.find(
-        (compte) => compte.identifiant === this.identifiant
-      );
-
-      if (existingUser) {
-        this.errorMessage = "Cet identifiant est déjà utilisé.";
-      } else {
-        const newAccount = {
-          id: Date.now(),
+      try {
+        const success = await this.$store.dispatch("user/register", {
           nom: this.nom,
           prenom: this.prenom,
           email: this.email,
@@ -151,12 +155,16 @@ export default {
           role: this.role,
           telephone: "0102030405",
           photoProfil: "https://via.placeholder.com/150",
-        };
+        });
 
-        this.addCompte(newAccount);
-        this.setUserSession(newAccount);
-        this.$emit("register-success");
-        this.closeModal();
+        if (success) {
+          this.setUserSession();
+          this.$emit("register-success");
+          this.closeModal();
+        }
+      } catch (error) {
+        this.errorMessage = "Une erreur est survenue lors de l'inscription.";
+        console.error(error);
       }
     },
   },
