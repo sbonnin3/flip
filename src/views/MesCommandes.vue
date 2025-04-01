@@ -99,49 +99,66 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['userReservations', 'userReservationsJeux', 'userReservationsStandJeu', 'userOrders']),
+    ...mapGetters("reservations", ['userReservations', 'userReservationsJeux', 'userReservationStandJeu']),
+    ...mapGetters("commandes", ['userOrders']),
     commandes() {
-      const commandes = this.userReservations.map(reservation => {
-        const tournoi = this.$store.state.tournois.find(t => t._id === reservation.tournoiId);
+      if (!this.userReservations) return [];
+      return this.userReservations.map(reservation => {
+        // Notez qu'on utilise tournoiId et non _id
+        const tournoi = (this.$store.state.tournois.tournois || [])
+            .find(t => t.id === reservation.tournoiId);
+
         return {
           ...reservation,
           tournoiNom: tournoi ? tournoi.nom : 'Tournoi inconnu',
-          status: 'Confirmée',
+          status: 'Confirmée'
         };
       });
-      console.log('Commandes:', commandes);
-      return commandes;
     },
     commandesJeu() {
-      return this.userReservationsJeux.map(reservationJeu => {
-        const jeu = this.$store.state.jeux.find(j => j._id === reservationJeu.jeuID);
+      if (!this.userReservationsJeux) return [];
+      return this.userReservationsJeux.map(reservation => {
+        const jeu = (this.$store.state.jeux.jeux || [])
+            .find(j => j.id === reservation.jeuID);
         return {
-          ...reservationJeu,
-          jeuNom: jeu ? jeu.name : 'Jeu inconnu',
-          status: 'Confirmée',
+          ...reservation,
+          jeuNom: jeu ? jeu.nom : 'Jeu inconnu',
+          status: 'Confirmée'
         };
       });
     },
     articleCommandes() {
-      return this.userOrders.map(commandes => {
-        const restaurant = this.$store.state.stands.find(s => s.nom === commandes.restaurantNom);
-        console.log('Restaurant trouvé:', restaurant);
+      if (!this.userOrders) return []; // Protection ajoutée
+
+      return this.userOrders.map(commande => {
+        const stands = this.$store.state.stands?.stands || [];
+        const restaurant = stands.find(s => s.nom === commande.restaurantNom);
+
         return {
-          ...commandes,
-          restaurantNom: restaurant ? restaurant.nom : 'Restaurant inconnu',
-          status: 'Payée. A chercher au stand.',
+          ...commande,
+          restaurantNom: restaurant?.nom || 'Restaurant inconnu',
+          status: commande.pickupTime
+              ? `À récupérer à ${commande.pickupTime}`
+              : 'Payée. A chercher au stand.',
+          total: commande.articles.reduce((sum, art) => sum + (art.prix * art.quantite), 0)
         };
       });
     },
     commandesStandJeu() {
-      return this.userReservationsStandJeu.map(reservationStandJeu => {
-        const jeu = this.$store.state.jeux.find(j => j._id === reservationStandJeu.jeuID);
-        const stand = this.$store.state.stands.find(s => s.idStand === reservationStandJeu.standID);
+      if (!this.userReservationsStandJeu) return [];
+
+      return this.userReservationsStandJeu.map(reservation => {
+        const jeux = this.$store.state.jeux?.jeux || [];
+        const stands = this.$store.state.stands?.stands || [];
+
+        const jeu = jeux.find(j => j._id === reservation.jeuID || j.id === reservation.jeuID);
+        const stand = stands.find(s => s._id === reservation.standID || s.idStand === reservation.standID);
+
         return {
-          ...reservationStandJeu,
-          jeuNom: jeu ? jeu.name : 'Jeu inconnu',
+          ...reservation,
+          jeuNom: jeu ? jeu.nom || jeu.name : 'Jeu inconnu',
           standName: stand ? stand.nom : 'Stand inexistant',
-          status: 'Confirmée',
+          status: 'Confirmée'
         };
       });
     }
@@ -167,9 +184,9 @@ export default {
     },
   },
   mounted() {
-    this.$store.dispatch('getAllTournois');
-    this.$store.dispatch('getAllJeux');
-    this.$store.dispatch('getAllStands');
+    this.$store.dispatch('tournois/getAllTournois');
+    this.$store.dispatch('jeux/getAllJeux');
+    this.$store.dispatch('stands/getAllStands');
   },
 };
 </script>

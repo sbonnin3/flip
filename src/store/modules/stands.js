@@ -1,5 +1,3 @@
-import { getAllStands } from "@/services/standsService";
-
 export default {
   namespaced: true,
   state: {
@@ -13,10 +11,8 @@ export default {
   actions: {
     async getAllStands({ commit }) {
       try {
-        const response = await getAllStands();
-        if (response.error === 0) {
-          commit('SET_STANDS', response.data);
-        }
+        const stands = require("@/datasource/data").stands;
+        commit('SET_STANDS', stands);
       } catch (error) {
         console.error("Erreur lors de la récupération des stands :", error);
       }
