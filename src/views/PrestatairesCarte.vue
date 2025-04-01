@@ -47,8 +47,10 @@
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { points, stands } from "@/datasource/data.js";
+import { points } from "@/datasource/data.js"; // Supprime l'import de `stands` (ils viennent du store)
+import { mapGetters, mapActions } from "vuex"; // Import des helpers Vuex
 
+// Import des icônes
 import toiletIcon from "@/assets/icons/toilet-icon.png";
 import parkingIcon from "@/assets/icons/parking-icon.png";
 import tournamentIcon from "@/assets/icons/tournament-icon.png";
@@ -75,10 +77,10 @@ export default {
       center: [46.648, -0.2494],
       bounds: [[46.620, -0.270], [46.680, -0.230]],
       selectedLayer: "osm",
-      points,
-      stands,
+      points, // Points statiques (depuis data.js)
       selectedCategories: initialCategories,
       emplacementStatus: ["available", "occupied"],
+      loading: true, // Nouvel état pour gérer le chargement
       layers: {
         osm: {
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -136,15 +138,14 @@ export default {
     };
   },
   computed: {
+    ...mapGetters("stands", ["stands"]), // Récupère les stands depuis le store
     filteredPoints() {
       return this.points.filter(point => {
         const categoryMatch = this.selectedCategories.includes(point.category);
-
         const isEmplacementAvailable =
           point.category === 'Emplacement' &&
           ((this.emplacementStatus.includes('available') && point.disponible) ||
             (this.emplacementStatus.includes('occupied') && !point.disponible));
-
         return categoryMatch && (point.category !== 'Emplacement' || isEmplacementAvailable);
       });
     },
@@ -153,63 +154,52 @@ export default {
     },
   },
   methods: {
+    ...mapActions("stands", ["getAllStands"]), // Map de l'action pour charger les stands
     getPopupText(point) {
-      const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
+      const standAssocie = this.stands?.find(stand => stand.idPoint === point.idPoint); // Optional chaining pour éviter les erreurs
       return standAssocie ? standAssocie.nom : point.name;
     },
     getTooltipText(point) {
       if (point.category === 'Emplacement') {
-        const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
+        const standAssocie = this.stands?.find(stand => stand.idPoint === point.idPoint);
         return point.disponible ? "Disponible" : (standAssocie ? standAssocie.nom : "Occupé");
       }
       return "";
     },
     getIconForPoint(point) {
-      console.log("Traitement du point :", point);
-
+      if (!this.stands || !Array.isArray(this.stands)) {
+        return this.icons.Emplacement; // Fallback si les stands ne sont pas chargés
+      }
+      const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
+      
       if (point.category !== "Emplacement") {
-        const icon = this.icons[point.category] || this.icons.Emplacement; // Icône par défaut si non trouvée
-        console.log("Icône pour la catégorie :", point.category, "=>", icon);
-        return icon;
+        return this.icons[point.category] || this.icons.Emplacement;
       }
 
-      const standAssocie = this.$store.state.stands.find(
-        (stand) => stand.idPoint === point.idPoint
-      );
-
       if (standAssocie) {
-        console.log("Stand associé :", standAssocie);
-
-        const compteId = standAssocie.comptes[0];
-        const compte = this.$store.state.comptes.find((compte) => compte.id === compteId);
-
+        const compteId = standAssocie.comptes?.[0]; // Optional chaining
+        const compte = this.$store.state.comptes?.find((compte) => compte.id === compteId);
+        
         if (compte) {
-          console.log("Compte associé au stand :", compte);
-
           const roleToIconMap = {
             organisateur: "Tournois",
             createur: "Stand",
             restaurateur: "Restauration",
             vendeur: "Boutique",
           };
-
           const iconKey = roleToIconMap[compte.role] || "Emplacement";
-          console.log("Icône pour le rôle :", compte.role, "=>", this.icons[iconKey]);
           return this.icons[iconKey];
         }
-
-        console.log("Aucun compte trouvé pour ce stand.");
       }
-
-      console.log("Aucun stand trouvé pour ce point d'emplacement.");
       return this.icons.Emplacement;
     },
     changeLayer() {
+      // Méthode vide (à implémenter si besoin)
     },
     syncCategoryCheckbox() {
       if (!this.emplacementStatus.includes('available') && !this.emplacementStatus.includes('occupied')) {
         this.selectedCategories = this.selectedCategories.filter(cat => cat !== 'Emplacement');
-      } else if (this.selectedCategories.includes('Emplacement') === false) {
+      } else if (!this.selectedCategories.includes('Emplacement')) {
         this.selectedCategories.push('Emplacement');
       }
     },
@@ -222,6 +212,10 @@ export default {
         }
       }
     },
+  },
+  async mounted() {
+    await this.getAllStands(); // Charge les stands dès le montage
+    this.loading = false;
   },
 };
 </script>
