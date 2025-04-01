@@ -11,8 +11,13 @@
     </div>
 
     <div v-show="selectedTab === 'Tournois'">
-      <p v-if="!this.$store.state.tournois.tournois.length">Chargement des tournois...</p>
-      <div v-if="commandes && commandes.length">
+      <p v-if="$store.state.reservations.userReservations === null">
+        Chargement en cours...
+      </p>
+      <p v-if="commandes.length === 0">
+        Aucun tournoi réservé
+      </p>
+      <div v-else>
         <h2 class="section-title">Commandes de tournois</h2>
         <div v-for="(commande, index) in commandes" :key="index" class="card">
           <div class="card-content">
@@ -32,7 +37,13 @@
     </div>
 
     <div v-show="selectedTab === 'Articles'">
-      <div class="cards-container" v-if="articleCommandes && articleCommandes.length">
+      <p v-if="!userOrders">
+        Chargement en cours...
+      </p>
+      <p v-else-if="articleCommandes.length === 0">
+        Aucune commande d'articles
+      </p>
+      <div class="cards-container" v-else >
         <h2 class="section-title">Commandes d'Articles</h2>
         <div v-for="(commande, index) in articleCommandes" :key="'commande-' + index" class="card">
           <div class="card-content">
@@ -49,9 +60,13 @@
     </div>
 
     <div v-show="selectedTab === 'Jeux'">
-      <p v-if="!this.$store.state.jeux.length">Chargement des jeux...</p>
-
-      <div class="cards-container" v-else-if="commandesJeu && commandesJeu.length">
+      <p v-if="$store.state.reservations.userReservationsJeux === null">
+        Chargement en cours...
+      </p>
+      <p v-if="commandesJeu.length === 0">
+        Aucun jeux réservé
+      </p>
+      <div v-else>
         <h2 class="section-title">Commandes de jeux</h2>
         <div v-for="(commande, index) in commandesJeu" :key="index" class="card">
           <div class="card-content">
@@ -65,10 +80,16 @@
         </div>
       </div>
     </div>
-    <div v-show="selectedTab === 'JeuxReserve'">
-      <p v-if="!this.$store.state.jeux.length">Chargement des jeux...</p>
 
-      <div class="cards-container" v-else-if="commandesStandJeu && commandesStandJeu.length">
+    <div v-show="selectedTab === 'JeuxReserve'">
+      <p v-if="$store.state.reservations.userReservationStandJeu === null">
+        Chargement en cours...
+      </p>
+      <p v-if="commandesStandJeu.length === 0">
+        Aucun stand de jeu réservé
+      </p>
+
+      <div class="cards-container" v-else>
         <h2 class="section-title">Commandes de jeux</h2>
         <div v-for="(commande, index) in commandesStandJeu" :key="index" class="card">
           <div class="card-content">
@@ -98,19 +119,26 @@ export default {
       selectedTab: "Tournois",
     }
   },
+  async created() {
+    await this.loadUserData();
+  },
+
   computed: {
     ...mapGetters("reservations", ['userReservations', 'userReservationsJeux', 'userReservationStandJeu']),
     ...mapGetters("commandes", ['userOrders']),
     commandes() {
-      if (!this.userReservations) return [];
-      return this.userReservations.map(reservation => {
-        // Notez qu'on utilise tournoiId et non _id
-        const tournoi = (this.$store.state.tournois.tournois || [])
-            .find(t => t.id === reservation.tournoiId);
+      const tournois = this.$store.state.tournois.tournois || [];
+      const reservations = this.userReservations || [];
+
+      return reservations.map(reservation => {
+        const tournoi = tournois.find(t =>
+            t.id === reservation.tournoiId ||
+            t._id === reservation.tournoiId
+        );
 
         return {
           ...reservation,
-          tournoiNom: tournoi ? tournoi.nom : 'Tournoi inconnu',
+          tournoiNom: tournoi?.nom || `Tournoi ${reservation.tournoiId}`,
           status: 'Confirmée'
         };
       });
@@ -119,7 +147,9 @@ export default {
       if (!this.userReservationsJeux) return [];
       return this.userReservationsJeux.map(reservation => {
         const jeu = (this.$store.state.jeux.jeux || [])
-            .find(j => j.id === reservation.jeuID);
+            .find(j =>
+                j.id === reservation.jeuID ||
+                j._id === reservation.jeuID);
         return {
           ...reservation,
           jeuNom: jeu ? jeu.nom : 'Jeu inconnu',
@@ -164,12 +194,27 @@ export default {
     }
   },
   methods: {
+    async loadUserData() {
+      try {
+        // Charge toutes les données utilisateur
+        await this.$store.dispatch('reservations/fetchUserData');
+
+        // Charge les autres données nécessaires
+        await Promise.all([
+          this.$store.dispatch('tournois/getAllTournois'),
+          this.$store.dispatch('jeux/getAllJeux'),
+          this.$store.dispatch('stands/getAllStands')
+        ]);
+      } catch (error) {
+        console.error("Erreur chargement données:", error);
+      }
+    },
     selectTab(tab) {
       this.selectedTab = tab;
     },
     formatReservationDate(date) {
       if (!date) return 'Date invalide';
-      const { jour, mois, annee, heures, min } = date;
+      const {jour, mois, annee, heures, min} = date;
 
       if (jour !== undefined && mois !== undefined && annee !== undefined) {
         const formattedJour = jour.toString().padStart(2, '0');
@@ -182,13 +227,7 @@ export default {
 
       return 'Date invalide';
     },
-  },
-  mounted() {
-    this.$store.dispatch('tournois/getAllTournois');
-    this.$store.dispatch('jeux/getAllJeux');
-    this.$store.dispatch('stands/getAllStands');
-
-  },
+  }
 };
 </script>
 
