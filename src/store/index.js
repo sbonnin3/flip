@@ -8,6 +8,7 @@ import jeux from './modules/jeux';
 import stands from './modules/stands';
 import reservations from './modules/reservations';
 import souvenirs from './modules/souvenirs';
+import points from './modules/points'
 
 Vue.use(Vuex);
 
@@ -20,6 +21,7 @@ export default new Vuex.Store({
     jeux,
     stands,
     reservations,
+    points,
     souvenirs
   }
 });

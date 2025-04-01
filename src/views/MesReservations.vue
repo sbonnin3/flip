@@ -1,6 +1,6 @@
 <template>
   <div class="mesReservations-page">
-    <h1>{{this.standAttribue.nom}} - Réservations de mes jeux</h1>
+    <h1>{{ standAttribue?.nom || 'Mon Stand' }} - Réservations de mes jeux</h1>
     <div v-if="reservationStandJeu.length === 0">
       <p>Aucune réservation pour vos jeux.</p>
     </div>
@@ -23,42 +23,38 @@
       </table>
     </div>
   </div>
-
 </template>
 
 <script>
-import {mapGetters} from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: "PagesMesReservations",
   computed: {
-    ...mapGetters(['allReservationsStand']),
+    ...mapGetters('reservations', ['allReservationsStand']),
+    ...mapGetters('stands', ['getStandByUserId']),
+    ...mapGetters('jeux', ['allJeux']),
 
     currentUser() {
       return this.$store.state.userSession;
     },
     standAttribue() {
-      if (!this.currentUser) {
-        return null;
-      }
-      return this.$store.state.stands.find(stand => stand.comptes.includes(this.currentUser.id));
-
+      if (!this.currentUser) return null;
+      return this.getStandByUserId(this.currentUser.id);
     },
     reservationStandJeu() {
-      if (!this.standAttribue) {
-        console.warn("Aucun stand attribué à l'utilisateur connecté.");
-        return [];
-      }
-      return this.allReservationsStand
-          .filter(reservationStandJeu => reservationStandJeu.standID === this.standAttribue.idStand)
-          .map(reservationStandJeu => {
-            const jeu = this.$store.state.jeux.find(j => j._id === reservationStandJeu.jeuID)
-            return {
-              ...reservationStandJeu,
-              jeuNom: jeu ? jeu.name : 'Jeu inconnu',
-              status: reservationStandJeu.status || 'Préparer la table.',
-            };
-          });
+      if (!this.standAttribue?.idStand) return [];
+      
+      return (this.allReservationsStand || [])
+        .filter(reservation => reservation.standID === this.standAttribue.idStand)
+        .map(reservation => {
+          const jeu = this.allJeux.find(j => j._id === reservation.jeuID);
+          return {
+            ...reservation,
+            jeuNom: jeu?.name || 'Jeu inconnu',
+            status: reservation.status || 'Préparer la table',
+          };
+        });
     },
   },
   methods: {
@@ -84,10 +80,12 @@ export default {
       return "Date invalide";
     },
   },
-  mounted() {
-    this.$store.dispatch('getAllJeux');
-    this.$store.dispatch('getAllStands');
-    this.$store.dispatch('fetchAllReservationsStand');
+  async mounted() {
+    await Promise.all([
+      this.$store.dispatch('jeux/getAllJeux'),
+      this.$store.dispatch('stands/getAllStands'),
+      this.$store.dispatch('reservations/fetchAllReservationsStand'),
+    ]);
   },
 }
 </script>

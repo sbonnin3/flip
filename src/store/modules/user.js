@@ -86,8 +86,21 @@ export default {
   },
   
   getters: {
-    comptes: state => state.comptes || [],
-    userSession: state => state.userSession,
+    // Version originale nécessaire pour la connexion
+    rawUserSession: state => state.userSession, 
+    
+    // Version sécurisée pour les templates
+    userSession: (state) => {
+      if (!state.userSession) return null; // Important pour isAuthenticated
+      
+      return {
+        id: state.userSession.id || null,
+        role: state.userSession.role || '',
+        identifiant: state.userSession.identifiant || '',
+        ...state.userSession
+      };
+    },
+    
     isAuthenticated: state => !!state.userSession
   }
 };

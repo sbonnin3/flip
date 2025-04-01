@@ -17,5 +17,13 @@ export default {
         console.error("Erreur lors de la récupération des stands :", error);
       }
     }
+  },
+  // AJOUT CRITIQUE
+  getters: {
+    getStandByUserId: (state) => (userId) => {
+      return state.stands.find(stand => 
+        stand.comptes?.includes(userId)
+      ) || null; // Fallback explicite
+    }
   }
 };

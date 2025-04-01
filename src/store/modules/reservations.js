@@ -1,11 +1,15 @@
 export default {
     namespaced: true,
     state: {
-        userReservations: [],    // Renommez pour correspondre à vos besoins
+        allReservationsStand: [],  // Ajouté pour la gestion globale
+        userReservations: [],
         userReservationsJeux: [],
-        userReservationStandJeu: []  // Notez le 's' à Reservations
+        userReservationStandJeu: []
     },
     mutations: {
+        SET_ALL_RESERVATIONS_STAND(state, reservations) {
+            state.allReservationsStand = reservations;
+        },
         SET_USER_RESERVATIONS(state, reservations) {
             state.userReservations = reservations;
         },
@@ -13,10 +17,19 @@ export default {
             state.userReservationsJeux = reservations;
         },
         SET_USER_RESERVATIONS_STAND(state, reservations) {
-            state.userReservationsStandJeu = reservations;
+            state.userReservationStandJeu = reservations;
         }
     },
     actions: {
+        async fetchAllReservationsStand({ commit }) {
+            try {
+                const { reservationStandJeu } = require("@/datasource/data");
+                commit('SET_ALL_RESERVATIONS_STAND', reservationStandJeu);
+            } catch (error) {
+                console.error("Erreur chargement réservations stand:", error);
+                commit('SET_ALL_RESERVATIONS_STAND', []);
+            }
+        },
         async fetchUserData({ commit, rootState }) {
             try {
                 const userId = rootState.user.userSession?.id;
@@ -24,13 +37,9 @@ export default {
 
                 const data = require("@/datasource/data");
 
-                // Filtrez les réservations
                 commit('SET_USER_RESERVATIONS',
                     data.reservations.filter(r => r.userId === userId)
                 );
-
-                // Pour les autres données, ajoutez des filtres similaires
-                // quand vous aurez les données correspondantes
                 commit('SET_USER_RESERVATIONS_JEUX',
                     data.reservationsJeux.filter(r => r.userId === userId));
                 commit('SET_USER_RESERVATIONS_STAND',
@@ -42,6 +51,7 @@ export default {
         }
     },
     getters: {
+        allReservationsStand: state => state.allReservationsStand || [],
         userReservations: state => state.userReservations || [],
         userReservationsJeux: state => state.userReservationsJeux || [],
         userReservationStandJeu: state => state.userReservationStandJeu || []

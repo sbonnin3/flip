@@ -1,6 +1,6 @@
 <template>
   <div class="commandes-page">
-    <h1>{{ this.standAttribue.nom }} - Commandes en cours</h1>
+    <h1>{{ standAttribue?.nom || 'Stand inconnu' }} - Commandes en cours</h1>
 
     <div v-if="articleCommandes.length === 0">
       <p>Aucune commande pour le moment.</p>
@@ -25,45 +25,47 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "PageCommandes",
+  data() {
+    return {
+      loading: true,
+    };
+  },
   computed: {
-    ...mapGetters(['allOrders']),
-
+  ...mapGetters("commandes", ["allOrders"]),
+  ...mapGetters("stands", ["getStandByUserId"]), // Utilise le nouveau getter
+  
+  standAttribue() {
+    if (!this.currentUser) return null;
+    return this.getStandByUserId(this.currentUser.id); // Appel propre via getter
+  },
     currentUser() {
       return this.$store.state.userSession;
     },
-    standAttribue() {
-      if (!this.currentUser) {
-        return null;
-      }
-      return this.$store.state.stands.find(stand => stand.comptes.includes(this.currentUser.id));
-
-    },
-
     articleCommandes() {
-      if (!this.standAttribue) {
-        console.warn("Aucun stand attribué à l'utilisateur connecté.");
-        return [];
-      }
-
-      return this.allOrders
+      if (!this.standAttribue?.nom) return [];
+      return (this.allOrders || [])
         .filter(commande => commande.restaurantNom === this.standAttribue.nom)
-        .map(commande => {
-          return {
-            ...commande,
-            status: commande.status || 'À préparer.',
-          };
-        });
+        .map(commande => ({
+          ...commande,
+          status: commande.status || "À préparer",
+          pickupTime: commande.pickupTime || "Non définie",
+        }));
     },
-
-
   },
-  mounted() {
-    this.$store.dispatch('getAllStands');
-    this.$store.dispatch('fetchAllOrders');
+  methods: {
+  ...mapActions("stands", ["getAllStands"]),
+  ...mapActions("commandes", ["fetchAllOrders"]), // Utilise l'action namespacée
+},
+  async mounted() {
+    await Promise.all([
+      this.getAllStands(),
+      this.fetchAllOrders(),
+    ]);
+    this.loading = false;
   },
 };
 </script>

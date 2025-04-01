@@ -71,7 +71,7 @@
       </div>
     </div>
     <div v-show="selectedTab === 'Catalogue'">
-      <div class="cards-container" v-if="jeux.length">
+      <div class="cards-container" v-if="safeJeux.length">
         <div v-for="jeu in jeux" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
           <img :src="jeu.image" alt="Image du jeu" class="card-image" />
           <div class="card-content">
@@ -99,7 +99,7 @@
       </div>
     </div>
     <div v-show="selectedTab === 'Jeux'">
-      <div class="cards-container" v-if="jeuxCreation.length">
+      <div class="cards-container" v-if="safeJeuxCreation.length">
         <div v-for="jeu in jeuxCreation" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
           <img :src="jeu.image" alt="Image du jeu" class="card-image" />
           <div class="card-content">
@@ -263,14 +263,23 @@
     </div>
   </div>
 </template>
+
 <script>
 import { mapGetters, mapActions } from "vuex";
-import { points, stands, jeux, jeuxCreation } from "@/datasource/data.js";
 import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import emplacementIcon from "@/assets/icons/emplacement-icon.png";
 import selectedIcon from "@/assets/icons/selected-icon.png";
+
+// Fix pour les icônes Leaflet manquantes
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png')
+});
+
 export default {
   name: "PageMaPrestation",
   components: {
@@ -281,7 +290,7 @@ export default {
   },
   data() {
     return {
-      stands,
+      jeuxCreation: [],
       showEditRestaurantModal: false,
       editRestaurantDetails: {
         nom: '',
@@ -321,8 +330,6 @@ export default {
         nom_stand: '',
         prix: '',
       },
-      jeux,
-      jeuxCreation,
       isNewStand: true,
       selectedPoint: null,
       originalPointId: null,
@@ -332,9 +339,7 @@ export default {
       center: [46.648, -0.2494],
       bounds: [[46.620, -0.270], [46.680, -0.230]],
       selectedLayer: "osm",
-      mapOptions: {
-        attributionControl: false
-      },
+      map: null, // Ajout de la référence à la map
       layers: {
         osm: {
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -348,92 +353,162 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userSession", "restaurantByUser"]),
+  ...mapGetters('user', ['userSession']),
+  ...mapGetters('restaurants', ['restaurantByUser', 'allStands']),
+  ...mapGetters('tournois', ['tournoisByUser']),
+  ...mapGetters('points', ['availablePoints']),
+  ...mapGetters('jeux', ['allJeux', 'jeuxCreation']), // Ajoutez jeuxCreation ici
+  
+  safeJeux() {
+    return this.allJeux || [];
+  },
+  safeJeuxCreation() { // Ajoutez cette computed property
+    return this.jeuxCreation || [];
+  },
+  safePoints() {
+    return this.availablePoints || [];
+  },
+    jeux() {
+      return this.allJeux || [];
+    },
     userRole() {
-      return this.$store.state.userSession.role;
+      return this.userSession?.role || '';
+    },
+    restaurant() {
+      return this.restaurantByUser(this.userSession?.id);
     },
     uniqueArticles() {
       const allArticles = [];
-      this.stands.forEach((stand) => {
+      this.allStands.forEach((stand) => {
         if (stand.nourritures) {
           allArticles.push(
-            ...stand.nourritures.map((item) => ({ ...item, type: "Nourriture" }))
-          );
+            ...stand.nourritures.map((item) => ({ ...item, type: "Nourriture" })))
         }
         if (stand.boissons) {
           allArticles.push(
-            ...stand.boissons.map((item) => ({ ...item, type: "Boisson" }))
-          );
+            ...stand.boissons.map((item) => ({ ...item, type: "Boisson" })))
         }
       });
-      const uniqueMap = new Map();
-      allArticles.forEach((article) => {
-        if (!uniqueMap.has(article.nom)) {
-          uniqueMap.set(article.nom, article);
-        }
-      });
-      return Array.from(uniqueMap.values());
+      return [...new Map(allArticles.map(item => [item.nom, item])).values()];
     },
     restaurantArticles() {
-      const restaurant = this.stands.find((stand) =>
-        stand.comptes.includes(this.$store.state.userSession.id)
-      );
-      if (restaurant) {
-        const nourritures = restaurant.nourritures || [];
-        const boissons = restaurant.boissons || [];
-        return [...nourritures, ...boissons].map((item) => item.nom);
-      }
-      return [];
+      if (!this.restaurant) return [];
+      return [
+        ...(this.restaurant.nourritures || []),
+        ...(this.restaurant.boissons || [])
+      ].map(item => item.nom);
     },
     allArticles() {
-      const restaurants = this.$store.state.restaurants;
       const articles = [];
-      restaurants.forEach((restaurant) => {
-        if (restaurant.nourritures) {
-          restaurant.nourritures.forEach((nourriture) => {
-            articles.push({
-              ...nourriture,
-              type: 'Nourriture',
-            });
-          });
+      this.allStands.forEach(stand => {
+        if (stand.nourritures) {
+          articles.push(...stand.nourritures.map(item => ({ ...item, type: 'Nourriture' })));
         }
-        if (restaurant.boissons) {
-          restaurant.boissons.forEach((boisson) => {
-            articles.push({
-              ...boisson,
-              type: 'Boisson',
-            });
-          });
+        if (stand.boissons) {
+          articles.push(...stand.boissons.map(item => ({ ...item, type: 'Boisson' })));
         }
       });
       return articles;
     },
-    restaurant() {
-      if (!this.userSession) return null;
-      return this.$store.state.restaurants.find((restaurant) =>
-        restaurant.comptes.includes(this.userSession.id)
-      );
-    },
-    availablePoints() {
-      return points.filter(point =>
-        point.category === "Emplacement" &&
-        (point.disponible || point.idPoint === this.originalPointId)
-      );
-    },
     mesTournois() {
-      return this.$store.state.tournois.filter(
-        (tournoi) => tournoi.prestataireId === this.$store.state.userSession.id
-      );
-    },
+      return this.tournoisByUser(this.userSession?.id) || [];
+    }
   },
-  created() {
-    const tabsOrder = ["Catalogue", "Jeux", "Emplacement", "MesTournois", "MonRestaurant"];
-    this.selectedTab = tabsOrder.find((tab) => this.isTabVisible(tab)) || "";
-    this.$store.dispatch("initializeRestaurants");
+  async created() {
+    try {
+      await this.initializeData();
+      await this.loadJeuxCreation();
+      
+      if (this.userSession && this.userSession.id) {
+        this.initializeStand();
+        this.initializeTabs();
+      }
+    } catch (error) {
+      console.error("Initialization error:", error);
+    }
   },
   methods: {
+    ...mapActions("restaurants", [
+      "initializeRestaurants",
+      "updateRestaurant",
+      "addRestaurant",
+      "saveStand"
+    ]),
+    ...mapActions("tournois", ["addTournoi", "fetchTournois"]),
+    ...mapActions("points", ["updatePointAvailability", "initializePoints"]),
+    ...mapActions("jeux", ["fetchJeuxCreation"]),
+
+    // Méthodes manquantes référencées dans le template
+    openCreationConfirmation() {
+      this.showConfirmation = true;
+    },
+    
+    closeConfirmation() {
+      this.showConfirmation = false;
+    },
+    
+    confirmCreation() {
+      // Logique de création de jeu
+      this.closeConfirmation();
+    },
+    
+    openTournoiModal() {
+      this.showTournoiModal = true;
+    },
+    
+    closeTournoiModal() {
+      this.showTournoiModal = false;
+    },
+    
+    changeLayer() {
+      // Changer la couche de la carte
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    },
+    
+    mapReady(map) {
+      this.map = map;
+      this.map.invalidateSize();
+    },
+    
+    selectPoint(point) {
+      this.selectedPoint = point;
+    },
+    
+    async loadJeuxCreation() {
+  try {
+    this.jeuxCreation = await this.$store.dispatch("jeux/fetchJeuxCreation");
+  } catch (error) {
+    console.error("Error loading jeuxCreation:", error);
+    this.jeuxCreation = [];
+  }
+},
+
+async loadJeux() {
+  try {
+    await this.$store.dispatch("jeux/getAllJeux"); // Assurez-vous que cette action existe
+    // Force le re-rendu si nécessaire
+    this.$forceUpdate(); 
+  } catch (error) {
+    console.error("Erreur chargement jeux:", error);
+  }
+},
+
+    async initializeData() {
+      await Promise.all([
+        this.initializeRestaurants(),
+        this.fetchTournois(),
+        this.initializePoints()
+      ]);
+    },
+
+    initializeTabs() {
+      const tabsOrder = ["Catalogue", "Jeux", "Emplacement", "MesTournois", "MonRestaurant"];
+      this.selectedTab = tabsOrder.find(tab => this.isTabVisible(tab)) || "";
+    },
+
     isTabVisible(tab) {
-      const role = this.userSession.role;
       const tabPermissions = {
         Catalogue: ["vendeur", "createur"],
         Jeux: ["vendeur", "createur"],
@@ -441,8 +516,27 @@ export default {
         MesTournois: ["organisateur"],
         MonRestaurant: ["restaurateur"],
       };
-      return tabPermissions[tab]?.includes(role);
+      return tabPermissions[tab]?.includes(this.userRole);
     },
+
+    initializeStand() {
+      if (!this.userSession?.id) return;
+
+      const roleToTypeMap = {
+        createur: "stand",
+        restaurateur: "restaurant",
+        vendeur: "boutique",
+        organisateur: "tournois"
+      };
+
+      this.stand = {
+        ...this.stand,
+        type: roleToTypeMap[this.userSession.role] || "autre",
+        comptes: [this.userSession.id]
+      };
+    },
+
+    // Restaurant methods
     toggleArticleInRestaurant(article) {
       if (!this.restaurant) {
         alert("Veuillez créer un restaurant avant d'ajouter ou supprimer des articles.");
@@ -450,329 +544,221 @@ export default {
       }
 
       const listKey = article.type === "Nourriture" ? "nourritures" : "boissons";
-      const articleIndex = this.restaurant[listKey].findIndex(
-        (item) => item.nom === article.nom
-      );
+      const updatedList = [...this.restaurant[listKey]];
+      const articleIndex = updatedList.findIndex(item => item.nom === article.nom);
 
       if (articleIndex !== -1) {
-        this.restaurant[listKey].splice(articleIndex, 1);
+        updatedList.splice(articleIndex, 1);
         alert(`L'article "${article.nom}" a été supprimé de votre restaurant.`);
       } else {
-        this.restaurant[listKey].push(article);
+        updatedList.push(article);
         alert(`L'article "${article.nom}" a été ajouté à votre restaurant.`);
       }
-      this.$set(this.restaurant, listKey, [...this.restaurant[listKey]]);
-      this.$store.commit("UPDATE_RESTAURANT", this.restaurant);
-      this.saveRestaurantToLocalStorage();
+
+      this.updateRestaurant({
+        ...this.restaurant,
+        [listKey]: updatedList
+      });
     },
+
     isRestaurantArticle(article) {
       const listKey = article.type === "Nourriture" ? "nourritures" : "boissons";
-      return this.restaurant[listKey]?.some((item) => item.nom === article.nom) || false;
+      return this.restaurant?.[listKey]?.some(item => item.nom === article.nom) || false;
     },
-    openEditRestaurantModal() {
-      this.showEditRestaurantModal = true;
-      this.editRestaurantDetails.nom = this.restaurant.nom;
-      this.editRestaurantDetails.image = this.restaurant.image;
-    },
-    closeEditRestaurantModal() {
-      this.showEditRestaurantModal = false;
-    },
-    saveEditedRestaurant() {
-      if (!this.editRestaurantDetails.nom || !this.editRestaurantDetails.image) {
-        alert('Veuillez remplir tous les champs.');
-        return;
-      }
-      const updatedRestaurant = {
-        ...this.restaurant,
-        nom: this.editRestaurantDetails.nom,
-        image: this.editRestaurantDetails.image,
-      };
-      this.$store.dispatch("updateRestaurant", updatedRestaurant);
-      this.closeEditRestaurantModal();
-      alert('Restaurant modifié avec succès !');
-    },
-    handleEditRestaurantImage(event) {
+
+    handleImageUpload(event, target) {
       const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (target === 'restaurant') {
           this.editRestaurantDetails.image = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    },
-    testCreation() {
-      console.log("Création de restaurant déclenchée");
-    },
-    ...mapActions(['createRestaurant']),
-    createRestaurant({ commit, state }, restaurantData) {
-      console.log("Création d'un restaurant dans le store avec : ", restaurantData);
-      const newRestaurant = {
-        ...restaurantData,
-        id: Date.now(),
-        idRestau: `R${Math.floor(Math.random() * 1000)}`,
-        type: "restaurants",
-        comptes: [state.userSession.id],
-        nourritures: [],
-        boissons: [],
-        notes: [],
-        commentaires: [],
-      };
-      commit("ADD_RESTAURANT", newRestaurant);
-      this.dispatch("saveRestaurantToLocalFile", newRestaurant);
-      console.log("Restaurant créé :", newRestaurant);
-    },
-    updateRestaurant() {
-      this.$store.dispatch('updateRestaurant', this.restaurant);
-    },
-    handleNewRestaurantImage(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.newRestaurantImage = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    },
-    handleCreateRestaurant() {
-      if (!this.newRestaurantName || !this.newRestaurantImage || !this.selectedPoint) {
-        alert("Veuillez remplir tous les champs et sélectionner un point sur la carte.");
-        return;
-      }
-      const newRestaurant = {
-        id: Date.now(),
-        idRestau: `R-${Date.now()}`,
-        nom: this.newRestaurantName,
-        type: "restaurants",
-        image: this.newRestaurantImage,
-        idPoint: this.selectedPoint.idPoint,
-        comptes: [this.$store.state.userSession.id],
-        nourritures: [],
-        boissons: [],
-        notes: [],
-        commentaires: [],
-      };
-      this.$store.dispatch("addRestaurant", newRestaurant);
-      this.newRestaurantName = "";
-      this.newRestaurantImage = "";
-      this.selectedPoint = null;
-      alert("Restaurant créé avec succès !");
-    },
-    openTournoiModal() {
-      this.showTournoiModal = true;
-    },
-    closeTournoiModal() {
-      this.showTournoiModal = false;
-      this.resetNewTournoi();
-    },
-    handleTournoiImageUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.newTournoi.image = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    },
-    addDate() {
-      this.newTournoi.dates.push({
-        jour: null,
-        mois: null,
-        annee: null,
-        heures: null,
-        min: null,
-        placesRestantes: null,
-      });
-    },
-    removeDate(index) {
-      this.newTournoi.dates.splice(index, 1);
-    },
-    resetNewTournoi() {
-      this.newTournoi = {
-        nom: '',
-        lieu: '',
-        prix: 0,
-        image: null,
-        description: '',
-        dates: [],
-      };
-    },
-    createTournoi() {
-      if (!this.newTournoi.nom || !this.newTournoi.lieu || !this.newTournoi.prix) {
-        alert("Veuillez remplir tous les champs obligatoires.");
-        return;
-      }
-      if (!this.newTournoi.dates.length) {
-        alert("Veuillez ajouter au moins une date.");
-        return;
-      }
-      for (const date of this.newTournoi.dates) {
-        if (!date.placesRestantes || date.placesRestantes < 1) {
-          alert("Veuillez entrer un nombre de places valide pour chaque date.");
-          return;
-        }
-      }
-      const tournoi = {
-        ...this.newTournoi,
-        _id: Date.now().toString(),
-        prestataireId: this.$store.state.userSession.id,
-      };
-      this.$store.commit('ADD_TOURNOI', tournoi);
-      this.closeTournoiModal();
-    },
-    formatDate(date) {
-      return `${date.jour}/${date.mois}/${date.annee} ${date.heures}h${date.min}`;
-    },
-    selectTab(tab) {
-      this.selectedTab = tab;
-    },
-    openJeuModal(jeu) {
-      this.selectedJeu = jeu;
-    },
-    closeJeuModal() {
-      this.selectedJeu = null;
-    },
-    openCreationConfirmation() {
-      this.showConfirmation = true;
-    },
-    closeConfirmation() {
-      this.showConfirmation = false;
-    },
-    confirmCreation() {
-    },
-    restorePointsState() {
-      const pointsState = JSON.parse(localStorage.getItem('pointsState') || '{}');
-      Object.entries(pointsState).forEach(([pointId, isAvailable]) => {
-        const point = points.find(p => p.idPoint === parseInt(pointId));
-        if (point) {
-          point.disponible = isAvailable;
-        }
-      });
-    },
-    initializeStand() {
-      const savedStand = JSON.parse(localStorage.getItem(`stand_${this.userSession.id}`));
-      if (savedStand) {
-        this.stand = { ...savedStand };
-        this.isNewStand = false;
-        this.originalPointId = this.stand.idPoint;
-        this.selectedPoint = points.find(p => p.idPoint === this.stand.idPoint);
-        this.updatePointAvailability(this.stand.idPoint, false);
-        return;
-      }
-      const roleToTypeMap = {
-        createur: "stand",
-        restaurateur: "restaurant",
-        vendeur: "boutique",
-        organisateur: "tournois"
-      };
-      this.stand.type = roleToTypeMap[this.userSession.role] || "autre";
-      const existingStand = stands.find(stand => stand.comptes.includes(this.userSession.id));
-      if (existingStand) {
-        this.stand = { ...existingStand };
-        this.isNewStand = false;
-        this.originalPointId = this.stand.idPoint;
-        this.selectedPoint = points.find(p => p.idPoint === this.stand.idPoint);
-        this.updatePointAvailability(this.stand.idPoint, false);
-      } else {
-        this.stand.comptes = [this.userSession.id];
-      }
-    },
-    getIconForPoint(point) {
-      const iconConfig = point.idPoint === this.selectedPoint?.idPoint ?
-        {
-          iconUrl: selectedIcon,
-          iconSize: [40, 40],
-          iconAnchor: [20, 40],
-          popupAnchor: [0, -40],
-        } : {
-          iconUrl: emplacementIcon,
-          iconSize: [30, 30],
-          iconAnchor: [15, 30],
-          popupAnchor: [0, -30],
-        };
-      return L.icon(iconConfig);
-    },
-    selectPoint(point) {
-      this.selectedPoint = point;
-      this.stand.idPoint = point.idPoint;
-      alert(`Point sélectionné : ${point.idPoint}`);
-      this.$forceUpdate();
-    },
-    handleImageUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
+        } else if (target === 'stand') {
           this.stand.image = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
+        } else if (target === 'tournoi') {
+          this.newTournoi.image = e.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
     },
-    saveStandToLocalStorage() {
-      localStorage.setItem(`stand_${this.userSession.id}`, JSON.stringify(this.stand));
+
+    // Stand methods
+    getIconForPoint(point) {
+      return L.icon({
+        iconUrl: point.idPoint === this.selectedPoint?.idPoint ? selectedIcon : emplacementIcon,
+        iconSize: point.idPoint === this.selectedPoint?.idPoint ? [40, 40] : [30, 30],
+        iconAnchor: point.idPoint === this.selectedPoint?.idPoint ? [20, 40] : [15, 30],
+        popupAnchor: [0, point.idPoint === this.selectedPoint?.idPoint ? -40 : -30]
+      });
     },
-    changeLayer() {
-    },
-    mapReady(mapInstance) {
-      this.map = mapInstance;
-      if (this.selectedPoint) {
-        this.center = this.selectedPoint.coordinates;
-      }
-    },
-    saveStand() {
+
+    async saveStand() {
       if (!this.stand.idPoint) {
         alert("Veuillez sélectionner un point sur la carte.");
         return;
       }
-      if (this.originalPointId && this.originalPointId !== this.stand.idPoint) {
-        this.updatePointAvailability(this.originalPointId, true);
-      }
-      this.updatePointAvailability(this.stand.idPoint, false);
-      if (this.isNewStand) {
-        this.stand.id = stands.length + 1;
-        stands.push({ ...this.stand });
-        alert("Stand créé avec succès !");
-      } else {
-        const index = stands.findIndex(stand => stand.id === this.stand.id);
-        if (index !== -1) {
-          stands[index] = { ...this.stand };
-          alert("Modifications enregistrées avec succès !");
+
+      try {
+        await this.saveStand({
+          ...this.stand,
+          id: this.isNewStand ? Date.now() : this.stand.id
+        });
+
+        if (this.originalPointId) {
+          this.updatePointAvailability({
+            pointId: this.originalPointId,
+            isAvailable: true
+          });
         }
+
+        this.updatePointAvailability({
+          pointId: this.stand.idPoint,
+          isAvailable: false
+        });
+
+        this.isNewStand = false;
+        this.originalPointId = this.stand.idPoint;
+        alert(this.isNewStand ? "Stand créé avec succès !" : "Modifications enregistrées !");
+      } catch (error) {
+        console.error("Erreur sauvegarde stand:", error);
+        alert("Une erreur est survenue lors de la sauvegarde");
       }
-      this.saveStandToLocalStorage();
-      this.isNewStand = false;
-      this.originalPointId = this.stand.idPoint;
     },
-    updatePointAvailability(pointId, isAvailable) {
-      const point = points.find(p => p.idPoint === pointId);
-      if (point) {
-        point.disponible = isAvailable;
-        const pointsState = JSON.parse(localStorage.getItem('pointsState') || '{}');
-        pointsState[pointId] = isAvailable;
-        localStorage.setItem('pointsState', JSON.stringify(pointsState));
+
+    // Tournoi methods
+    async createTournoi() {
+      if (!this.validateTournoi()) return;
+
+      try {
+        await this.addTournoi({
+          ...this.newTournoi,
+          prestataireId: this.userSession.id
+        });
+        this.closeTournoiModal();
+        alert("Tournoi créé avec succès !");
+      } catch (error) {
+        console.error("Erreur création tournoi:", error);
+        alert("Erreur lors de la création du tournoi");
+      }
+    },
+
+    validateTournoi() {
+      // Validation logic here
+      return true;
+    },
+
+    // Common methods
+    async selectTab(tab) {
+  this.selectedTab = tab;
+  
+  // Recharger les données quand on va sur l'onglet Catalogue
+  if (tab === 'Catalogue') {
+    await this.loadJeux();
+  }
+  
+  // Redimensionner la carte si on va sur l'onglet Emplacement
+  if (tab === 'Emplacement' && this.map) {
+    this.$nextTick(() => this.map.invalidateSize());
+  }
+},
+
+    formatDate(date) {
+      if (!date) return "Date invalide";
+      if (typeof date === 'object') {
+        return `${date.jour}/${date.mois}/${date.annee} ${date.heures}h${date.min}`;
+      }
+      return new Date(date).toLocaleDateString("fr-FR");
+    },
+    
+    // Méthodes pour la gestion des dates des tournois
+    addDate() {
+      this.newTournoi.dates.push({
+        jour: '',
+        mois: '',
+        annee: '',
+        heures: '',
+        min: '',
+        placesRestantes: 0
+      });
+    },
+    
+    removeDate(index) {
+      this.newTournoi.dates.splice(index, 1);
+    },
+    
+    // Méthodes pour la gestion du restaurant
+    openEditRestaurantModal() {
+      this.editRestaurantDetails = {
+        nom: this.restaurant.nom,
+        image: this.restaurant.image
+      };
+      this.showEditRestaurantModal = true;
+    },
+    
+    closeEditRestaurantModal() {
+      this.showEditRestaurantModal = false;
+    },
+    
+    saveEditedRestaurant() {
+      this.updateRestaurant({
+        ...this.restaurant,
+        ...this.editRestaurantDetails
+      });
+      this.closeEditRestaurantModal();
+    },
+    
+    handleNewRestaurantImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.newRestaurantImage = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    
+    handleEditRestaurantImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.editRestaurantDetails.image = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    
+    async handleCreateRestaurant() {
+      if (!this.newRestaurantName) {
+        alert("Veuillez entrer un nom pour le restaurant");
+        return;
+      }
+
+      try {
+        await this.addRestaurant({
+          nom: this.newRestaurantName,
+          image: this.newRestaurantImage,
+          idPoint: this.selectedPoint.idPoint,
+          comptes: [this.userSession.id]
+        });
+        this.newRestaurantName = '';
+        this.newRestaurantImage = '';
+      } catch (error) {
+        console.error("Erreur création restaurant:", error);
       }
     }
   },
   watch: {
     selectedTab(newVal) {
-      if (newVal === "Emplacement") {
-        this.$nextTick(() => {
-          if (this.map) this.map.invalidateSize();
-        });
+      if (newVal === "Emplacement" && this.map) {
+        this.$nextTick(() => this.map.invalidateSize());
       }
     },
-  },
-  beforeDestroy() {
-    if (this.isNewStand && this.stand.idPoint && !localStorage.getItem(`stand_${this.userSession.id}`)) {
-      this.updatePointAvailability(this.stand.idPoint, true);
-    }
   }
 };
 </script>
-
-
 
 <style scoped>
 .article-card {
