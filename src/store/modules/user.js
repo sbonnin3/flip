@@ -4,7 +4,8 @@ export default {
   namespaced: true,
   state: {
     comptes: [...comptes],
-    userSession: null
+    userSession: null,
+    redirectPath: null
   },
   
   mutations: {
@@ -19,6 +20,12 @@ export default {
     },
     ADD_COMPTE(state, newCompte) {
       state.comptes.push(newCompte);
+    },
+    SET_REDIRECT_PATH(state, path) {
+      state.redirectPath = path;
+    },
+    CLEAR_REDIRECT_PATH(state) {
+      state.redirectPath = null;
     }
   },
   
@@ -31,9 +38,17 @@ export default {
       }
     },
     
-    async login({ commit, state }, credentials) {
+    setRedirectPath({ commit }, path) {
+      commit('SET_REDIRECT_PATH', path);
+    },
+    clearRedirectPath({ commit }) {
+      commit('CLEAR_REDIRECT_PATH');
+    },
+    
+    // Modifiez votre action login
+    async login({ commit, dispatch, state }, credentials) {
       if (!state.comptes || state.comptes.length === 0) {
-        await this.dispatch('user/initComptes');
+        await dispatch('initComptes');
       }
       
       const user = state.comptes.find(

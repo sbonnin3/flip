@@ -114,6 +114,8 @@ const routes = [
   },
 ];
 
+// ... (les imports restent les mêmes)
+
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
@@ -128,32 +130,48 @@ const router = new VueRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  setTimeout(() => {
-    const user = store.getters.userSession;
-  console.log("User session avant redirection :", user, "Route demandée :", to.path);
-
-  if (to.meta.requiresAuth && !user) {
-    return next('/Connexion');
-  }
-
-  if (to.path === '/Carte' && user && user.role && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
-    return next('/PrestatairesCarte');
-  }  
-
-  if (to.meta.requiresAdmin && (!user || user.role !== 'administrateur')) {
-    return next('/');
-  }
-
-  if (to.matched.some(record => record.meta.requiresOrganizer) && user.role !== 'organisateur') {
-    return next('/Accueil');
-  }
-
-  if (to.meta.requiresPrestataire && (!user || !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role))) {
-    return next('/Accueil');
-  }
+  const user = store.getters['user/userSession']; // Accès correct au module namespaced
   
+  // 1. Gestion spécifique de la route /Connexion
+  if (to.path === '/Connexion') {
+    // Si déjà connecté, rediriger vers MonCompte
+    if (user) {
+      return next('/MonCompte');
+    }
+    return next(); // Laisser passer si non connecté
+  }
+
+  // 2. Vérification des routes protégées
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!user) {
+      // Stocker la route demandée seulement si on ne vient pas déjà de la connexion
+      if (from.path !== '/Connexion') {
+        store.dispatch('user/setRedirectPath', to.fullPath); // Utilisation du fullPath
+      }
+      return next('/Connexion');
+    }
+    
+    // Vérifications des rôles spécifiques
+    if (to.meta.requiresAdmin && user.role !== 'administrateur') {
+      return next('/Accueil');
+    }
+    
+    if (to.matched.some(record => record.meta.requiresOrganizer) && user.role !== 'organisateur') {
+      return next('/Accueil');
+    }
+    
+    if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
+      return next('/Accueil');
+    }
+  }
+
+  // 3. Redirection spéciale pour la carte des prestataires
+  if (to.path === '/Carte' && user?.role && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
+    return next('/PrestatairesCarte');
+  }
+
+  // 4. Cas par défaut - laisser passer
   next();
-}, 50);
 });
 
 export default router;

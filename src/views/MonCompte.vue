@@ -6,12 +6,13 @@
         <p><strong>Nom :</strong> {{ userSession.nom }}</p>
         <p><strong>Prénom :</strong> {{ userSession.prenom }}</p>
         <p><strong>Email :</strong> {{ userSession.email }}</p>
-        <p><strong>Téléphone :</strong> {{ userSession.telephone }}</p>
-        <p><strong>Rôle :</strong> {{ userSession.role }}</p>
-        <button @click="handleLogout">Se déconnecter</button>
+        <p><strong>Téléphone :</strong> {{ userSession.telephone || 'Non renseigné' }}</p>
+        <p><strong>Rôle :</strong> {{ formatRole(userSession.role) }}</p>
+        <button @click="handleLogout" class="logout-btn">Se déconnecter</button>
       </div>
-      <div v-else>
+      <div v-else class="not-connected">
         <p>Aucun utilisateur connecté.</p>
+        <router-link to="/Connexion" class="login-link">Se connecter</router-link>
       </div>
     </div>
   </div>
@@ -23,16 +24,32 @@ import { mapState, mapMutations } from 'vuex';
 export default {
   name: "PageMonCompte",
   computed: {
-    ...mapState(['userSession']),
+    ...mapState('user', ['userSession']), // Correction: ajout du namespace
   },
   methods: {
-    ...mapMutations(['CLEAR_USER_SESSION']),
+    ...mapMutations('user', ['CLEAR_USER_SESSION']), // Correction: ajout du namespace
+    
     handleLogout() {
       this.CLEAR_USER_SESSION();
       alert('Vous êtes déconnecté.');
       this.$router.push('/Accueil');
     },
+    
+    formatRole(role) {
+      const roles = {
+        'utilisateur': 'Utilisateur',
+        'restaurateur': 'Restaurateur',
+        'organisateur': 'Organisateur',
+        'vendeur': 'Vendeur',
+        'createur': 'Créateur',
+        'administrateur': 'Administrateur'
+      };
+      return roles[role] || role;
+    }
   },
+  mounted() {
+    console.log('User session:', this.userSession); // Pour le débogage
+  }
 };
 </script>
 

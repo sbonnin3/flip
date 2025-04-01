@@ -80,7 +80,6 @@
 
 <script>
 import { mapActions } from "vuex";
-import { nextTick } from 'vue';
 
 export default {
   name: "PageInscription",
@@ -106,18 +105,22 @@ export default {
     },
 
     async handleLogin() {
-  const success = await this.login({
-    identifiant: this.identifiant,
-    motDePasse: this.motDePasse
-  });
+    const success = await this.login({
+      identifiant: this.identifiant,
+      motDePasse: this.motDePasse
+    });
 
-  if (success) {
-    await nextTick(); // 🚀 Attendre la mise à jour du store avant de rediriger
-    this.$router.push("/MonCompte");
-  } else {
-    this.errorMessage = "Identifiant ou mot de passe incorrect.";
-  }
-},
+    if (success) {
+      // Récupérer la route de redirection ou utiliser '/MonCompte' par défaut
+      const redirectPath = this.$store.state.user.redirectPath || '/MonCompte';
+      // Nettoyer la route de redirection
+      await this.$store.dispatch('user/clearRedirectPath');
+      // Rediriger
+      this.$router.push(redirectPath);
+    } else {
+      this.errorMessage = "Identifiant ou mot de passe incorrect.";
+    }
+  },
 
     async handleRegister() {
       if (!this.email.includes("@")) {
@@ -141,10 +144,11 @@ export default {
         });
 
         if (success) {
-          this.$router.push("/MonCompte");
-        } else {
-          this.errorMessage = "Cet identifiant est déjà utilisé.";
-        }
+      // Après inscription, même logique que la connexion
+      const redirectPath = this.$store.state.user.redirectPath || '/MonCompte';
+      await this.$store.dispatch('user/clearRedirectPath');
+      this.$router.push(redirectPath);
+    }
       } catch (error) {
         this.errorMessage = "Une erreur est survenue lors de l'inscription.";
         console.error(error);
