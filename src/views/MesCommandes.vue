@@ -11,7 +11,7 @@
     </div>
 
     <div v-show="selectedTab === 'Tournois'">
-      <p v-if="!this.$store.state.tournois.length">Chargement des tournois...</p>
+      <p v-if="!this.$store.state.tournois.tournois.length">Chargement des tournois...</p>
       <div v-if="commandes && commandes.length">
         <h2 class="section-title">Commandes de tournois</h2>
         <div v-for="(commande, index) in commandes" :key="index" class="card">
@@ -187,6 +187,7 @@ export default {
     this.$store.dispatch('tournois/getAllTournois');
     this.$store.dispatch('jeux/getAllJeux');
     this.$store.dispatch('stands/getAllStands');
+
   },
 };
 </script>
