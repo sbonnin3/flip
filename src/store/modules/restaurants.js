@@ -1,38 +1,53 @@
-import Vue from "vue"; // Ajout de l'import
-import { stands } from "@/datasource/stands.js";
+import { stands } from "@/datasource/stands";
+
+const state = {
+  restaurants: []
+};
+
+const mutations = {
+  INIT_RESTAURANTS(state) {
+    state.restaurants = stands;
+  },
+  UPDATE_RESTAURANT(state, updatedRestaurant) {
+    const index = state.restaurants.findIndex(r => r.id === updatedRestaurant.id);
+    if (index !== -1) {
+      state.restaurants[index] = { ...updatedRestaurant };
+    }
+  },
+  ADD_RESTAURANT(state, restaurant) {
+    state.restaurants.push(restaurant);
+  },
+  SET_RESTAURANTS(state, restaurants) {
+    state.restaurants = restaurants;
+  }
+};
+
+const actions = {
+  initializeRestaurants({ commit }) {
+    commit('INIT_RESTAURANTS');
+  },
+  addRestaurant({ commit }, restaurant) {
+    commit("ADD_RESTAURANT", restaurant);
+  },
+  updateRestaurant({ commit }, updatedRestaurant) {
+    commit("UPDATE_RESTAURANT", updatedRestaurant);
+  },
+  loadRestaurants({ commit }) {
+    commit('SET_RESTAURANTS', stands);
+  }
+};
+
+const getters = {
+  restaurants: state => state.restaurants || [],
+  restaurantByUser: (state) => (userId) => {
+    return state.restaurants.find(r => r.comptes && r.comptes.includes(userId));
+  }
+};
 
 export default {
-  namespaced: true,
-  state: {
-    restaurants: [],
-  },
-  mutations: {
-    SET_RESTAURANTS(state, restaurants) {
-      state.restaurants = restaurants;
-    },
-    ADD_RESTAURANT(state, restaurant) {
-      state.restaurants.push(restaurant);
-    },
-    UPDATE_RESTAURANT(state, updatedRestaurant) {
-      const index = state.restaurants.findIndex(r => r.id === updatedRestaurant.id);
-      if (index !== -1) {
-        Vue.set(state.restaurants, index, updatedRestaurant); // Vue.set pour la réactivité
-      }
-    },
-  },
-  actions: {
-    initializeRestaurants({ commit }) {
-      console.log("Initialisation des restaurants...");
-      commit("SET_RESTAURANTS", stands);
-    },
-    addRestaurant({ commit }, restaurant) {
-      commit("ADD_RESTAURANT", restaurant);
-    },
-    updateRestaurant({ commit }, restaurant) {
-      commit("UPDATE_RESTAURANT", restaurant);
-    },
-  },
-  getters: {
-    restaurants: (state) => state.restaurants,
-  },
-};
+    namespaced: true,
+    state,
+    mutations,
+    actions,
+    getters
+  };

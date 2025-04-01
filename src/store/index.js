@@ -1,25 +1,27 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import user from './modules/user';
-import restaurants from './modules/restaurants';
+import auth from './modules/auth';
 import commandes from './modules/commandes';
-import tournois from './modules/tournois';
+import comptes from './modules/comptes';
 import jeux from './modules/jeux';
-import stands from './modules/stands';
+import panier from './modules/panier';
 import reservations from './modules/reservations';
+import restaurants from './modules/restaurants';
 import souvenirs from './modules/souvenirs';
+import tournois from './modules/tournois';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   modules: {
-    user,
-    restaurants,
+    auth,
     commandes,
-    tournois,
+    comptes,
     jeux,
-    stands,
+    panier,
     reservations,
-    souvenirs
+    restaurants,
+    souvenirs,
+    tournois
   }
 });

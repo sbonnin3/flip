@@ -22,6 +22,9 @@ export default {
   computed: {
     ...mapGetters(["userSession"]),
   },
+  created() {
+  this.$store.dispatch('comptes/loadComptes');
+},
   watch: {
     userSession: {
       handler() {

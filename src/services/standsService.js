@@ -1,12 +1,5 @@
-import { API_URL } from "@/config";
+import { stands } from '../datasource/data.js';
 
-export async function getAllStands() {
-    try {
-        const response = await fetch(`${API_URL}/stands`);
-        if (!response.ok) throw new Error("Erreur récupération stands");
-        return await response.json();
-    } catch (error) {
-        console.error("Erreur API Stands:", error);
-        return [];
-    }
+export function getAllStands() {
+    return { error: 0, data: stands };
 }

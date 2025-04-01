@@ -4,7 +4,7 @@
       <div class="form-value">
         <div v-if="isLogin">
           <h2>Se connecter</h2>
-          <form @submit.prevent="login()">
+          <form @submit.prevent="login">
             <div class="inputbox">
               <ion-icon name="mail-outline"></ion-icon>
               <input v-model="identifiant" type="text" required />
@@ -16,10 +16,8 @@
               <label for="motDePasse">Mot de passe</label>
             </div>
             <div class="forget">
-              <label>
-              </label>
-              <label>
-              </label>
+              <label></label>
+              <label></label>
             </div>
             <button type="submit">Se connecter</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -72,67 +70,108 @@
           </form>
         </div>
         <div v-if="isLogin" class="register">
-          <p>Pas de compte ? <a href="#" @click="toggleForm('signup')">S'inscrire</a></p>
+          <p>Pas de compte ? <a href="#" @click.prevent="toggleForm('signup')">S'inscrire</a></p>
         </div>
         <div v-else class="register">
-          <p>Déja un compte ? <a href="#" @click="toggleForm('login')">Se connecter</a></p>
+          <p>Déja un compte ? <a href="#" @click.prevent="toggleForm('login')">Se connecter</a></p>
         </div>
       </div>
     </div>
   </section>
 </template>
 
-
 <script>
-import { mapActions, mapGetters } from "vuex";
-
 export default {
   name: "PageInscription",
   data() {
     return {
+      codeInscription: "",
       isLogin: true,
+      nom: "",
+      prenom: "",
+      email: "",
       identifiant: "",
       motDePasse: "",
+      role: "utilisateur",
       errorMessage: "",
     };
   },
-  computed: {
-    ...mapGetters('user', ['userSession']),
-  },
   methods: {
-    ...mapActions('user', ['login']),
-    
-    toggleForm(formType) {
-      this.isLogin = formType === 'login';
-      this.errorMessage = "";
-    },
-
     async login() {
-  console.log("Identifiant:", this.identifiant);
-  console.log("Mot de passe:", this.motDePasse);
-      this.errorMessage = "";
-      console.log("Tentative de connexion...");
-
       try {
-        const success = await this.$store.dispatch('user/login', {
+        const success = await this.$store.dispatch('auth/login', {
           identifiant: this.identifiant,
           motDePasse: this.motDePasse
         });
-
+        
         if (success) {
-          console.log("Connexion réussie, redirection...");
           this.$router.push("/MonCompte");
         } else {
-          this.errorMessage = "Identifiant ou mot de passe incorrect.";
+          this.errorMessage = "Identifiant ou mot de passe incorrect";
         }
       } catch (error) {
-        console.error("Erreur lors de la connexion:", error);
+        console.error("Erreur de connexion:", error);
         this.errorMessage = "Une erreur est survenue lors de la connexion";
       }
-    }
-  }
+    },
+
+    async register() {
+      try {
+        if (!this.email.includes("@")) {
+          this.errorMessage = "Veuillez fournir une adresse email valide.";
+          return;
+        }
+
+        if (this.role !== "utilisateur" && this.codeInscription !== "1234") {
+          this.errorMessage = "Code d'inscription incorrect.";
+          return;
+        }
+
+        const newAccount = {
+          id: Date.now(),
+          nom: this.nom,
+          prenom: this.prenom,
+          email: this.email,
+          identifiant: this.identifiant,
+          motDePasse: this.motDePasse,
+          role: this.role,
+          telephone: "0102030405",
+          photoProfil: "https://via.placeholder.com/150",
+        };
+
+        await this.$store.dispatch('comptes/addCompte', newAccount);
+        await this.$store.dispatch('auth/login', {
+          identifiant: this.identifiant,
+          motDePasse: this.motDePasse
+        });
+        
+        this.$router.push("/MonCompte");
+      } catch (error) {
+        console.error("Erreur d'inscription:", error);
+        if (error.message.includes("déjà utilisé")) {
+          this.errorMessage = "Cet identifiant est déjà utilisé.";
+        } else {
+          this.errorMessage = "Une erreur est survenue lors de l'inscription";
+        }
+      }
+    },
+
+    toggleForm(formType) {
+      this.isLogin = formType === 'login';
+      this.errorMessage = "";
+      // Réinitialisation des champs
+      if (formType === 'login') {
+        this.nom = "";
+        this.prenom = "";
+        this.email = "";
+        this.role = "utilisateur";
+        this.codeInscription = "";
+      }
+    },
+  },
 };
 </script>
+
 
 <style scoped>
 * {
