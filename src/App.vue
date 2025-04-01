@@ -20,7 +20,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userSession"]),
+    ...mapGetters("user", ["userSession"]),
   },
   watch: {
     userSession: {
