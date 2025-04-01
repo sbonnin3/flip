@@ -55,8 +55,8 @@
                 </div>
                 <div class="order_total">
                   <div class="order_total_content text-md-right">
-                    <div class="order_total_title">Prix total: {{ cart.reduce((total, item) => total + item.prix *
-                      item.quantite, 0) }}€ </div>
+                    <div class="order_total_title">Prix total: {{cart.reduce((total, item) => total + item.prix *
+                      item.quantite, 0)}}€ </div>
                   </div>
                 </div>
                 <div class="cart_buttons">
@@ -239,22 +239,16 @@ export default {
     };
   },
   mounted() {
-    const storedRestaurants = JSON.parse(localStorage.getItem("restaurants"));
-    if (storedRestaurants) {
-      this.$store.commit("restaurants/SET_RESTAURANTS", storedRestaurants);
-    }
-    this.$store.dispatch("restaurants/initializeRestaurants"); // Ajoute le namespace 'restaurants'
-    const selectedTab = this.$route.query.tab;
-    if (selectedTab) {
-      this.selectTab(selectedTab);
-    }
-  },
+  this.$store.dispatch("restaurants/initializeRestaurants").then(() => {
+    this.$forceUpdate();  // Force le composant à se mettre à jour
+  });
+},
   watch: {
     restaurants: {
       handler(newRestaurants) {
         this.stands = newRestaurants;
       },
-      immediate: true,
+      immediate: true
     },
     '$route.query.tab'(newTab) {
       if (newTab) {
@@ -263,24 +257,25 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('restaurants', ['restaurants']), // Ajoute 'restaurants' comme namespace
+    ...mapGetters('restaurants', ['restaurants']),
     ...mapGetters(['userOrders', 'comptes']),
-    },
+  },
     stands() {
-     return this.restaurants || []; // ✅ Correct
+      // Toujours retourner les restaurants du store
+      return this.restaurants || [];
     },
-    hasPurchased() {
-      return (productId) => {
-        return this.userOrders.some(order => order.articles.some(article => article.id === productId));
-      };
-    },
-    getUserName() {
-      return (userId) => {
-        const user = this.comptes.find(user => user.id === userId);
-        console.log(user);
-        return user ? user.identifiant : 'Unknown';
-      };
-    },
+  hasPurchased() {
+    return (productId) => {
+      return this.userOrders.some(order => order.articles.some(article => article.id === productId));
+    };
+  },
+  getUserName() {
+    return (userId) => {
+      const user = this.comptes.find(user => user.id === userId);
+      console.log(user);
+      return user ? user.identifiant : 'Unknown';
+    };
+  },
   methods: {
     ...mapActions(['addArticleOrder', 'setCurrentOrder']),
     selectTab(tab) {
@@ -471,21 +466,20 @@ export default {
       }
     },
     submitRating() {
-      if (this.newRating >= 0 && this.newRating <= 5) {
-        const rating = {
-          id: Date.now(),
-          rating: this.newRating,
-          userId: this.$store.state.userSession.id,
-        };
-        const existingRatingIndex = this.selectedModalRestau.notes.findIndex(r => r.userId === this.$store.state.userSession.id);
-        if (existingRatingIndex !== -1) {
-          this.$set(this.selectedModalRestau.notes, existingRatingIndex, rating);
-        } else {
-          this.selectedModalRestau.notes.push(rating);
-        }
-        this.newRating = 0;
-      }
-    },
+  if (this.newRating >= 0 && this.newRating <= 5) {
+    const rating = {
+      userId: this.$store.state.userSession.id,
+      valeur: this.newRating,
+    };
+    if (!this.selectedModalRestau.notes) {
+      this.selectedModalRestau.notes = [];
+    }
+    this.selectedModalRestau.notes.push(rating);
+    this.newRating = 0;
+  } else {
+    alert("La note doit être entre 0 et 5.");
+  }
+},
     editComment(comment) {
       this.newComment = comment.texte;
       this.editingComment = comment;
