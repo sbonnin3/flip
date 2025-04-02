@@ -5,8 +5,8 @@ export default {
         userReservations: [],
         userReservationsJeux: [],
         userReservationStandJeu: [],
-        reservations: [], // Ajouté pour les réservations de tournois
-        reservationStandJeu: [] // Ajouté pour les réservations de stands
+        reservations: [],
+        reservationStandJeu: []
     },
     mutations: {
         SET_ALL_RESERVATIONS_STAND(state, reservations) {
@@ -22,10 +22,16 @@ export default {
             state.userReservationStandJeu = reservations;
         },
         ADD_RESERVATION(state, reservation) {
-            state.reservations.push(reservation);
+            state.reservations.push({
+                ...reservation,
+                id: Date.now().toString() // Ajout d'un ID unique
+            });
         },
         ADD_STAND_RESERVATION(state, reservation) {
-            state.reservationStandJeu.push(reservation);
+            state.reservationStandJeu.push({
+                ...reservation,
+                id: Date.now().toString() // Ajout d'un ID unique
+            });
         },
         SET_RESERVATIONS(state, reservations) {
             state.reservations = reservations;
@@ -74,13 +80,22 @@ export default {
                 console.error("Erreur chargement données:", error);
             }
         },
-        async addReservation({ commit }, reservation) {
+        async addReservation({ commit, rootState }, reservation) {
+            if (!rootState.user.userSession?.id) {
+                throw new Error("Utilisateur non connecté");
+            }
             commit('ADD_RESERVATION', reservation);
-            // Ici vous pourriez ajouter un appel API pour persister la réservation
+            return reservation;
         },
-        async addStandReservation({ commit }, reservation) {
+        async addStandReservation({ commit, rootState }, reservation) {
+            if (!rootState.user.userSession?.id) {
+                throw new Error("Utilisateur non connecté");
+            }
+            if (!reservation.standID) {
+                throw new Error("Stand non valide");
+            }
             commit('ADD_STAND_RESERVATION', reservation);
-            // Ici vous pourriez ajouter un appel API pour persister la réservation
+            return reservation;
         }
     },
     getters: {

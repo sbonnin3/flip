@@ -12,8 +12,8 @@ export default {
     SET_COMPTES(state, comptes) {
       state.comptes = comptes;
     },
-    SET_USER_SESSION(state, session) {
-      state.userSession = session;
+    SET_USER_SESSION(state, user) {
+      state.userSession = user;
     },
     CLEAR_USER_SESSION(state) {
       state.userSession = null;
