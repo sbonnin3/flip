@@ -255,9 +255,15 @@
             <p v-else class="no-selection-info">
               Veuillez sélectionner un point sur la carte
             </p>
+            <transition name="fade">
+              <div v-if="showSuccessMessage" class="success-message">
+                Votre stand a été enregistré avec succès !
+              </div>
+            </transition>
           </div>
-          <button type="submit" class="save-button">{{ isNewStand ? 'Créer le stand' : 'Enregistrer les modifications'
-            }}</button>
+          <button type="submit" class="save-button" :disabled="loading">
+            {{ loading ? 'Enregistrement...' : (isNewStand ? 'Créer le stand' : 'Enregistrer les modifications') }}
+          </button>
         </form>
       </div>
     </div>
@@ -350,6 +356,8 @@ export default {
           attribution: '&copy; Esri'
         }
       },
+      showSuccessMessage: false,
+      loading: false
     };
   },
   computed: {
@@ -416,12 +424,28 @@ export default {
   },
   async created() {
     try {
-      await this.initializeData(); // Cette ligne devrait déjà initialiser les points
+      await this.initializeData();
       await this.loadJeuxCreation();
 
-      console.log('Points disponibles:', this.availablePoints); // Vérification
-
       if (this.userSession && this.userSession.id) {
+        // Charger le stand existant de l'utilisateur
+        const userStand = this.$store.getters['restaurants/standByUser'](this.userSession.id);
+        if (userStand) {
+          this.stand = {
+            ...userStand,
+            id: userStand.id,
+            nom: userStand.nom,
+            description: userStand.description || "",
+            image: userStand.image || "",
+            idPoint: userStand.idPoint
+          };
+          this.isNewStand = false;
+
+          // Trouver le point sélectionné
+          this.selectedPoint = this.availablePoints.find(p => p.idPoint === userStand.idPoint);
+          this.originalPointId = userStand.idPoint;
+        }
+
         this.initializeStand();
         this.initializeTabs();
       }
@@ -445,6 +469,16 @@ export default {
       this.showConfirmation = true;
     },
 
+    getStandType() {
+      const roleMap = {
+        createur: "stand de jeux",
+        restaurateur: "restaurant",
+        vendeur: "boutique",
+        organisateur: "tournois"
+      };
+      return roleMap[this.userSession.role] || "autre";
+    },
+
     closeConfirmation() {
       this.showConfirmation = false;
     },
@@ -459,11 +493,11 @@ export default {
     },
 
     closeTournoiModal() {
-    this.showTournoiModal = false;
-    this.isEditing = false;
-    this.editingTournoiId = null;
-    this.resetTournoiForm();
-  },
+      this.showTournoiModal = false;
+      this.isEditing = false;
+      this.editingTournoiId = null;
+      this.resetTournoiForm();
+    },
 
     changeLayer() {
       // Changer la couche de la carte
@@ -478,9 +512,8 @@ export default {
     },
 
     selectPoint(point) {
-      // Vérifiez que le point est disponible
       if (!point.disponible && point.disponible !== undefined) {
-        this.$toast.warning("Cet emplacement n'est pas disponible");
+        this.$toast.warning("Cet emplacement est déjà occupé");
         return;
       }
 
@@ -494,41 +527,41 @@ export default {
     },
 
     openEditTournoiModal(tournoi) {
-    this.editingTournoiId = tournoi._id;
-    this.isEditing = true;
-    this.newTournoi = {
-      nom: tournoi.nom,
-      lieu: tournoi.lieu,
-      prix: tournoi.prix,
-      image: tournoi.image, // Conserve l'URL existante
-      description: tournoi.description,
-      dates: [...tournoi.dates]
-    };
-    this.showTournoiModal = true;
-  },
+      this.editingTournoiId = tournoi._id;
+      this.isEditing = true;
+      this.newTournoi = {
+        nom: tournoi.nom,
+        lieu: tournoi.lieu,
+        prix: tournoi.prix,
+        image: tournoi.image, // Conserve l'URL existante
+        description: tournoi.description,
+        dates: [...tournoi.dates]
+      };
+      this.showTournoiModal = true;
+    },
 
     async submitTournoi() {
-    try {
-      const tournoiData = {
-        ...this.newTournoi,
-        _id: this.isEditing ? this.editingTournoiId : Date.now().toString(),
-        prestataireId: this.userSession.id
-      };
+      try {
+        const tournoiData = {
+          ...this.newTournoi,
+          _id: this.isEditing ? this.editingTournoiId : Date.now().toString(),
+          prestataireId: this.userSession.id
+        };
 
-      if (this.isEditing) {
-        await this.$store.dispatch('tournois/updateTournoi', tournoiData);
-        this.$toast.success("Tournoi modifié avec succès !");
-      } else {
-        await this.$store.dispatch('tournois/addTournoi', tournoiData);
-        this.$toast.success("Tournoi créé avec succès !");
+        if (this.isEditing) {
+          await this.$store.dispatch('tournois/updateTournoi', tournoiData);
+          this.$toast.success("Tournoi modifié avec succès !");
+        } else {
+          await this.$store.dispatch('tournois/addTournoi', tournoiData);
+          this.$toast.success("Tournoi créé avec succès !");
+        }
+
+        this.closeTournoiModal();
+        await this.$store.dispatch('tournois/fetchTournois');
+      } catch (error) {
+        this.$toast.error(`Erreur: ${error.message}`);
       }
-
-      this.closeTournoiModal();
-      await this.$store.dispatch('tournois/fetchTournois');
-    } catch (error) {
-      this.$toast.error(`Erreur: ${error.message}`);
-    }
-  },
+    },
 
     async updateTournoi() {
       if (!this.validateTournoi()) return;
@@ -648,22 +681,55 @@ export default {
       return this.restaurant?.[listKey]?.some(item => item.nom === article.nom) || false;
     },
 
-    handleImageUpload(event, target) {
+    handleImageUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
+      // Vérifier la taille du fichier (max 2MB par exemple)
+      if (file.size > 2 * 1024 * 1024) {
+        this.$toast.warning("L'image ne doit pas dépasser 2MB");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (target === 'restaurant') {
-          this.editRestaurantDetails.image = e.target.result;
-        } else if (target === 'stand') {
-          this.stand.image = e.target.result;
-        } else if (target === 'tournoi') {
-          this.newTournoi.image = e.target.result;
-        }
+        this.stand.image = e.target.result;
+      };
+      reader.onerror = () => {
+        this.$toast.error("Erreur lors de la lecture du fichier");
       };
       reader.readAsDataURL(file);
     },
+
+    // Dans les méthodes de PagePrestataires.vue
+handlePaymentSuccessJeu() {
+  const currentUser = this.$store.state.user.userSession;
+  const maxOrderNumber = Math.max(
+    ...this.$store.state.commandes.userOrders.map(order => order.orderNumber || 0),
+    0
+  );
+  
+  const newOrder = {
+    userId: currentUser.id,
+    orderNumber: maxOrderNumber + 1,
+    articles: [{
+      id: this.selectedModalJeu._id,
+      nom: this.selectedModalJeu.name,
+      prix: this.selectedModalJeu.prix,
+      image: this.selectedModalJeu.image,
+      quantite: 1
+    }],
+    type: 'boutique',
+    status: 'Confirmée'
+  };
+
+  this.$store.dispatch('commandes/addArticleOrder', newOrder);
+  this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
+  
+  this.closeModalJeu();
+  this.closeConfirmationBoutique();
+  this.closePaymentModalBoutique();
+},
 
     getIconForPoint(point) {
       // Vérifiez que les icônes sont bien chargées
@@ -683,49 +749,64 @@ export default {
     },
 
     async saveStand() {
-      if (!this.stand.idPoint) {
-        alert("Veuillez sélectionner un point sur la carte.");
-        return;
-      }
+  this.loading = true;
+  this.showSuccessMessage = false; // Réinitialiser
 
-      try {
-        // Créez un objet complet à sauvegarder
-        const standToSave = {
-          ...this.stand,
-          id: this.isNewStand ? Date.now().toString() : this.stand.id,
-          idPoint: this.selectedPoint.idPoint
-        };
+  try {
+    // Validation
+    if (!this.stand.nom || !this.stand.description) {
+      throw new Error("Veuillez remplir tous les champs obligatoires");
+    }
 
-        // Dispatch l'action Vuex
-        await this.$store.dispatch('restaurants/saveStand', standToSave);
+    if (!this.selectedPoint) {
+      throw new Error("Veuillez sélectionner un emplacement sur la carte");
+    }
 
-        // Mise à jour de la disponibilité du point
-        if (this.originalPointId) {
-          await this.$store.dispatch('points/updatePointAvailability', {
-            pointId: this.originalPointId,
-            isAvailable: true
-          });
-        }
+    const standToSave = {
+      ...this.stand,
+      id: this.isNewStand ? `stand-${Date.now()}` : this.stand.id,
+      idPoint: this.selectedPoint.idPoint,
+      comptes: [this.userSession.id],
+      type: this.getStandType()
+    };
 
-        await this.$store.dispatch('points/updatePointAvailability', {
-          pointId: this.stand.idPoint,
-          isAvailable: false
-        });
+    console.log("Envoi au store:", standToSave); // Debug
 
-        this.isNewStand = false;
-        this.originalPointId = this.stand.idPoint;
+    // Appel au store
+    await this.$store.dispatch('restaurants/saveStand', standToSave);
 
-        this.$toast.success("Stand enregistré avec succès !");
+    // Mise à jour des points
+    if (this.originalPointId) {
+      await this.$store.dispatch('points/updatePointAvailability', {
+        pointId: this.originalPointId,
+        isAvailable: true
+      });
+    }
 
-        // Rechargez les données
-        await this.initializeData();
+    await this.$store.dispatch('points/updatePointAvailability', {
+      pointId: this.stand.idPoint,
+      isAvailable: false
+    });
 
-      } catch (error) {
-        console.error("Erreur sauvegarde stand:", error);
-        this.$toast.error("Échec de l'enregistrement");
-        throw error; // Important pour que le try/catch parent puisse détecter l'erreur
-      }
-    },
+    // Feedback utilisateur
+    this.isNewStand = false;
+    this.originalPointId = this.stand.idPoint;
+    this.showSuccessMessage = true;
+    this.$toast.success("Stand enregistré avec succès !");
+
+    // Recharger les données après un délai
+    setTimeout(async () => {
+      await this.initializeData();
+      this.showSuccessMessage = false;
+    }, 2000);
+
+  } catch (error) {
+    console.error("Erreur:", error); // Debug
+    this.$toast.error(error.message || "Erreur lors de l'enregistrement");
+  } finally {
+    this.loading = false;
+  }
+},
 
     async createTournoi() {
       if (!this.validateTournoi()) return;
@@ -1015,6 +1096,28 @@ export default {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 5px;
+}
+
+.success-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #4CAF50;
+  color: white;
+  padding: 15px;
+  border-radius: 5px;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .stand-image {

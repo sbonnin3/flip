@@ -134,12 +134,10 @@ export default {
   },
   
   getters: {
-    // Version originale nécessaire pour la connexion
     rawUserSession: state => state.userSession, 
     
-    // Version sécurisée pour les templates
     userSession: (state) => {
-      if (!state.userSession) return null; // Important pour isAuthenticated
+      if (!state.userSession) return null;
       
       return {
         id: state.userSession.id || null,
