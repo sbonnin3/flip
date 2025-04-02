@@ -3,123 +3,116 @@
     <div class="introduction-container">
       <img class="staticlogo" src="../assets/images/logov2.png" width="800" height="230">
       <div class="text-container" :class="{ 'fade-in-text': fadeText, 'fade-out-text': !fadeText }">
-        <h1>{{ currentSlide.title }}</h1>
-        <h3>{{ currentSlide.subtitle }}</h3>
+        <h1>{{ $t(currentSlide.titleKey) }}</h1>
+        <h3>{{ $t(currentSlide.subtitleKey) }}</h3>
       </div>
     </div>
-    <h1 class="midh1">Pourquoi venir au FLIP ?</h1>
+    <h1 class="midh1">{{ $t('whyAttend') }}</h1>
     <div class="up-container">
       <div class="leftuptextcontainer" :class="{ 'fade-in': fadeText }">
-        <h1>{{ currentCarouselSlide.title }}</h1>
-        <h3>{{ currentCarouselSlide.subtitle }}</h3>
-        <h5>{{ currentCarouselSlide.description }}</h5>
-        <a href="https://www.jeux-festival.com/"><button type="submit" class="more-button">En savoir plus</button></a>
+        <h1>{{ $t(currentCarouselSlide.titleKey) }}</h1>
+        <h3>{{ $t(currentCarouselSlide.subtitleKey) }}</h3>
+        <h5>{{ $t(currentCarouselSlide.descriptionKey) }}</h5>
+        <a href="https://www.jeux-festival.com/"><button type="submit" class="more-button">{{ $t('learnMore') }}</button></a>
       </div>
       <img class="festivalimages" :class="{ 'slide-in': fadeImage }" :src="currentCarouselSlide.image"
-        alt="imagefestival">
+           alt="imagefestival">
     </div>
 
     <div class="carousel-indicators">
       <span v-for="(slide, index) in carouselSlides" :key="index" :class="{ active: currentCarouselIndex === index }"
-        class="indicator"></span>
+            class="indicator"></span>
     </div>
 
-    <h1 class="down-container-title">Interessé ? plus d'informations qui vous donneront encore plus envie !</h1>
+    <h1 class="down-container-title">{{ $t('moreInfo') }}</h1>
     <div class="content-container">
       <div class="section-one">
-        <h2 class="section-title">De multiples jeux et activités</h2>
+        <h2 class="section-title">{{ $t('activitiesTitle') }}</h2>
         <div class="section-content">
-          <p class="section-text">Jeux de <strong>société</strong>, jeux de <strong>cartes</strong>, jeux
-            <strong>vidéo</strong>, jeux <strong>traditionnels</strong>, jeux en <strong>bois</strong>, jeux de
-            <strong>rôles</strong>, (zones dédiées aux <strong>nouvelles technologies</strong> de jeu)...</p>
+          <p class="section-text">{{ $t('activitiesText') }}</p>
         </div>
-        <img src="../assets/images/flipgamepicture.jpg" alt="Description de l'image" class="section-image">
+        <img src="../assets/images/flipgamepicture.jpg" :alt="$t('gamesImageAlt')" class="section-image">
       </div>
       <div class="section-two">
-        <h2 class="section-title">Boutique et souvenirs</h2>
+        <h2 class="section-title">{{ $t('shopTitle') }}</h2>
         <div class="section-content">
-          <p class="section-text">Le FLIP propose des souvenirs tels que des jeux <strong>exclusifs</strong>, des
-            <strong>tee-shirts</strong>, des <strong>affiches</strong>, et des <strong>goodies</strong>. Des
-            <strong>boutiques</strong> sont également disponibles</p>
+          <p class="section-text">{{ $t('shopText') }}</p>
         </div>
-        <img src="../assets/images/flipshoppicture.jpg" alt="Description de l'image" class="section-image">
+        <img src="../assets/images/flipshoppicture.jpg" :alt="$t('shopImageAlt')" class="section-image">
       </div>
       <div class="section-three">
-        <h2 class="section-title">Engagement écologique</h2>
+        <h2 class="section-title">{{ $t('ecoTitle') }}</h2>
         <div class="section-content">
-          <p class="section-text">L’événement met en place des actions pour <strong>réduire</strong> son <strong>impact
-              environnemental</strong> (réduction des <strong>déchets</strong>, <strong>sensibilisation au tri</strong>,
-            utilisation de <strong>matériaux recyclables</strong>)</p>
+          <p class="section-text">{{ $t('ecoText') }}</p>
         </div>
-        <img src="../assets/images/flipenvironnementpicture.jpg" alt="Description de l'image" class="section-image">
+        <img src="../assets/images/flipenvironnementpicture.jpg" :alt="$t('ecoImageAlt')" class="section-image">
       </div>
     </div>
     <div class="down-container-up-part">
     </div>
-    <h1 class="down-container-mid-part-title">Les services</h1>
+    <h1 class="down-container-mid-part-title">{{ $t('servicesTitle') }}</h1>
     <div class="down-container-mid-part">
       <router-link to="/Produits">
         <figure>
-          <img src="../assets/images/burger.jpg" alt="Restauration" width="280" height="300">
-          <figcaption>Restauration</figcaption>
+          <img src="../assets/images/burger.jpg" :alt="$t('foodService')" width="280" height="300">
+          <figcaption>{{ $t('foodService') }}</figcaption>
         </figure>
       </router-link>
 
       <a href @click="goToBoutique" class="figure-link">
         <figure>
-          <img src="../assets/images/boutique.jpg" alt="Boutique" width="280" height="300">
-          <figcaption>Boutique</figcaption>
+          <img src="../assets/images/boutique.jpg" :alt="$t('shopService')" width="280" height="300">
+          <figcaption>{{ $t('shopService') }}</figcaption>
         </figure>
       </a>
 
       <router-link to="/Activites">
         <figure style>
-          <img src="../assets/images/flipgamepicture.jpg" alt="Jeu" width="280" height="300">
-          <figcaption>Jeux</figcaption>
+          <img src="../assets/images/flipgamepicture.jpg" :alt="$t('gamesService')" width="280" height="300">
+          <figcaption>{{ $t('gamesService') }}</figcaption>
         </figure>
       </router-link>
 
       <a href @click="goToTournois" class="figure-link">
         <figure>
-          <img src="../assets/images/tournois_basketball.png" alt="Tournoi" width="280" height="300">
-          <figcaption>Tournois</figcaption>
+          <img src="../assets/images/tournois_basketball.png" :alt="$t('tournamentsService')" width="280" height="300">
+          <figcaption>{{ $t('tournamentsService') }}</figcaption>
         </figure>
       </a>
     </div>
     <router-link to="Carte">
       <div class="voircarte">
-        Voir la carte
+        {{ $t('viewMap') }}
       </div>
     </router-link>
-    <h2 class="h2-down-container">Nos prestataires</h2>
+    <h2 class="h2-down-container">{{ $t('providersTitle') }}</h2>
     <div class="down-container-down-part">
       <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
       <form class="label-input-wrapper">
-        <label for="prestataire">Rechercher un prestataire</label>
-        <input id="prestataire" class="prestatairefiltreinput" type="text" placeholder="Rechercher... (nom)">
+        <label for="prestataire">{{ $t('searchProvider') }}</label>
+        <input id="prestataire" class="prestatairefiltreinput" type="text" :placeholder="$t('searchPlaceholder')">
       </form>
       <br>
       <div class="checkbox-container">
         <div class="checkbox-wrapper-2">
-          <label for="restaurationCheckbox">Restaurateur</label>
+          <label for="restaurationCheckbox">{{ $t('restaurateur') }}</label>
           <input type="checkbox" name="restaurationCheckbox" class="sc-gJwTLC ikxBAC">
         </div>
         <div class="checkbox-wrapper-2">
-          <label for="vendeurCheckbox">Vendeur</label>
+          <label for="vendeurCheckbox">{{ $t('seller') }}</label>
           <input type="checkbox" name="vendeurCheckbox" class="sc-gJwTLC ikxBAC">
         </div>
         <div class="checkbox-wrapper-2">
-          <label for="organisateurCheckbox">Organisateur</label>
+          <label for="organisateurCheckbox">{{ $t('organizer') }}</label>
           <input type="checkbox" name="organisateurCheckbox" class="sc-gJwTLC ikxBAC">
         </div>
         <div class="checkbox-wrapper-2">
-          <label for="createurCheckbox">Créateur</label>
+          <label for="createurCheckbox">{{ $t('creator') }}</label>
           <input type="checkbox" name="createurCheckbox" class="sc-gJwTLC ikxBAC">
         </div>
       </div>
     </div>
     <br><br><br><br><br><br><br><br><br>
-
 
     <footer class="footer">
       <div class="footer-container">
@@ -127,21 +120,21 @@
           <div class="cta-item">
             <i class="fas fa-map-marker-alt"></i>
             <div class="cta-text">
-              <h4>Nous trouver</h4>
+              <h4>{{ $t('findUs') }}</h4>
               <p>2 Rue de la Citadelle, 79200 Parthenay</p>
             </div>
           </div>
           <div class="cta-item">
             <i class="fas fa-phone"></i>
             <div class="cta-text">
-              <h4>Nous appeller</h4>
+              <h4>{{ $t('callUs') }}</h4>
               <p>01 02 03 04 05</p>
             </div>
           </div>
           <div class="cta-item">
             <i class="far fa-envelope-open"></i>
             <div class="cta-text">
-              <h4>Nous envoyer un mail</h4>
+              <h4>{{ $t('emailUs') }}</h4>
               <p>mail@info.com</p>
             </div>
           </div>
@@ -155,52 +148,51 @@
               </a>
             </div>
             <p class="footer-description">
-              Join us at the festival of free games, where fun knows no bounds!
+              {{ $t('footerDescription') }}
             </p>
             <div class="footer-social">
-              <span>Suivez nous</span>
+              <span>{{ $t('followUs') }}</span>
               <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
               <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
               <a href="#" class="social-icon"><i class="fab fa-google-plus-g"></i></a>
             </div>
           </div>
           <div class="footer-column">
-            <h3>Liens utiles</h3>
+            <h3>{{ $t('usefulLinks') }}</h3>
             <ul class="footer-links">
-              <li><a href="#">Accueil</a></li>
-              <li><a href="#">A propos</a></li>
-              <li><a href="#">Activités</a></li>
-              <li><a href="#">Produits</a></li>
-              <li><a href="#">Contact</a></li>
+              <li><a href="#">{{ $t('Accueil') }}</a></li>
+              <li><a href="#">{{ $t('about') }}</a></li>
+              <li><a href="#">{{ $t('Activités') }}</a></li>
+              <li><a href="#">{{ $t('Produits') }}</a></li>
+              <li><a href="#">{{ $t('contact') }}</a></li>
             </ul>
           </div>
           <div class="footer-column">
-            <h3>Se connecter</h3>
+            <h3>{{ $t('Connexion') }}</h3>
             <p></p>
             <form action="#" class="subscribe-form">
-              <input type="text" placeholder="Nom d'utilisateur" required>
-              <input type="password" placeholder="Mot de passe" required>
-              <button type="submit"><i class="fab fa-telegram-plane"></i>Se connecter</button>
+              <input type="text" :placeholder="$t('username')" required>
+              <input type="password" :placeholder="$t('password')" required>
+              <button type="submit"><i class="fab fa-telegram-plane"></i>{{ $t('Connexion') }}</button>
             </form>
           </div>
         </div>
 
         <div class="footer-bottom">
           <div class="footer-bottom-left">
-            <p>&copy; 2024, All Rights Reserved. <a href="https://www.jeux-festival.com/">FLIP</a></p>
+            <p>&copy; 2024, {{ $t('allRights') }} <a href="https://www.jeux-festival.com/">FLIP</a></p>
           </div>
           <div class="footer-bottom-right">
             <ul class="footer-bottom-links">
-              <li><a href="#">Accueil</a></li>
-              <li><a href="#">Termes et conditions</a></li>
-              <li><a href="#">Politique de confidentialité</a></li>
-              <li><a href="#">Contact</a></li>
+              <li><a href="#">{{ $t('Accueil') }}</a></li>
+              <li><a href="#">{{ $t('terms') }}</a></li>
+              <li><a href="#">{{ $t('privacy') }}</a></li>
+              <li><a href="#">{{ $t('contact') }}</a></li>
             </ul>
           </div>
         </div>
       </div>
     </footer>
-
   </div>
 </template>
 
@@ -215,39 +207,39 @@ export default {
       fadeImage: true,
       slides: [
         {
-          title: "Festival International de Parthenay",
-          subtitle: "Le plus grand festival de jeux en plein air",
+          titleKey: "accueil.slide1.title",
+          subtitleKey: "accueil.slide1.subtitle",
         },
         {
-          title: "Plus de 30 ans d'existence",
-          subtitle: "Un événement culturel et ludique unique",
+          titleKey: "accueil.slide2.title",
+          subtitleKey: "accueil.slide2.subtitle",
         },
         {
-          title: "Jeux pour tous les âges",
-          subtitle: "Du 9 au 20 juillet 2025 à Parthenay",
+          titleKey: "accueil.slide3.title",
+          subtitleKey: "accueil.slide3.subtitle",
         },
         {
-          title: "35 000 m² d'animation en ville",
-          subtitle: "Avec des animateurs passionnés pour guider",
+          titleKey: "accueil.slide4.title",
+          subtitleKey: "accueil.slide4.subtitle",
         },
       ],
       carouselSlides: [
         {
-          title: "Festival des Jeux de Parthenay - FLIP",
-          subtitle: "Le plus grand festival de jeux gratuit",
-          description: "Présent depuis 1986",
+          titleKey: "accueil.carousel1.title",
+          subtitleKey: "accueil.carousel1.subtitle",
+          descriptionKey: "accueil.carousel1.description",
           image: require("../assets/images/imagefestival_1.png"),
         },
         {
-          title: "Plus de 350 animateurs jeux",
-          subtitle: "4 000 jeux et jouets",
-          description: "4 000 places assises",
+          titleKey: "accueil.carousel2.title",
+          subtitleKey: "accueil.carousel2.subtitle",
+          descriptionKey: "accueil.carousel2.description",
           image: require("../assets/images/imagefestival_2.png"),
         },
         {
-          title: "Un rendez-vous annuel incontournable",
-          subtitle: "Du 9 au 20 juillet 2025",
-          description: "Le tout gratuit",
+          titleKey: "accueil.carousel3.title",
+          subtitleKey: "accueil.carousel3.subtitle",
+          descriptionKey: "accueil.carousel3.description",
           image: require("../assets/images/imagefestival_3.png"),
         },
       ],
@@ -294,8 +286,6 @@ export default {
     },
   },
 };
-
-
 </script>
 
 <style scoped>
