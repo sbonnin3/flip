@@ -1,8 +1,8 @@
 export default {
-    namespaced: true,
-    state: {
-      tournois: []
-    },
+  namespaced: true,
+  state: {
+    tournois: require("@/datasource/data").tournois, // Charge les données initiales
+  },
     mutations: {
       SET_TOURNOIS(state, tournois) {
         state.tournois = tournois;

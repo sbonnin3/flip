@@ -1,7 +1,7 @@
 export default {
   namespaced: true,
   state: {
-    jeux: [],
+    jeux: require("@/datasource/data").jeux,
     jeuxCreation: []
   },
   mutations: {
