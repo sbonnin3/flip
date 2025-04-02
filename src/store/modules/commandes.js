@@ -182,13 +182,7 @@ export default {
         allOrders: state => state.allOrders || [],
         reservationsJeux: state => state.reservationsJeux || [],
         prestataireBoutiqueOrders: state => state.prestataireOrders || [],
-        boutiqueOrders: state => {
-            // Combine les commandes boutique et les réservations de jeux
-            return [
-                ...(state.prestataireOrders || []),
-                ...(state.reservationsJeux || [])
-            ];
-        },
+        boutiqueOrders: state => state.reservationsJeux || [],
         restaurationOrders: state => state.allOrders.filter(order => order.type === 'restauration')
     }
 };

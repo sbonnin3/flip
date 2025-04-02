@@ -22,7 +22,8 @@
       </div>
 
       <div v-else class="commandes-grid">
-        <div v-for="commande in commandesJeu" :key="commande.orderNumber || commande.reservationJeuId" class="commande-card">
+        <div v-for="commande in commandesJeu" :key="commande.orderNumber || commande.reservationJeuId"
+          class="commande-card">
           <div class="card-header">
             <div class="commande-info">
               <h3>Commande #{{ commande.orderNumber || commande.reservationJeuId }}</h3>
@@ -35,26 +36,27 @@
           </div>
 
           <div class="articles-list">
-      <div v-for="(article, index) in commande.articles" :key="index" class="article-item">
-        <div class="article-image-container">
-          <img v-if="article.jeuData?.image" :src="article.jeuData.image" :alt="article.nom" class="article-image">
-          <div v-else class="article-image-placeholder">
-            <i class="fas fa-gamepad"></i>
+            <div v-for="(article, index) in commande.articles" :key="index" class="article-item">
+              <div class="article-image-container">
+                <img v-if="article.jeuData?.image" :src="article.jeuData.image" :alt="article.nom"
+                  class="article-image">
+                <div v-else class="article-image-placeholder">
+                  <i class="fas fa-gamepad"></i>
+                </div>
+              </div>
+              <div class="article-details">
+                <h4 class="article-name">{{ article.jeuData?.name || article.nom }}</h4>
+                <div class="article-meta">
+                  <span class="article-type">{{ article.jeuData?.type }}</span>
+                  <span class="article-editeur">{{ article.jeuData?.editeur }}</span>
+                </div>
+                <div class="article-quantity-price">
+                  <span class="article-quantity">x{{ article.quantite || 1 }}</span>
+                  <span class="article-price">{{ article.prix }}€</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="article-details">
-          <h4 class="article-name">{{ article.jeuData?.name || article.nom }}</h4>
-          <div class="article-meta">
-            <span class="article-type">{{ article.jeuData?.type }}</span>
-            <span class="article-editeur">{{ article.jeuData?.editeur }}</span>
-          </div>
-          <div class="article-quantity-price">
-            <span class="article-quantity">x{{ article.quantite || 1 }}</span>
-            <span class="article-price">{{ article.prix }}€</span>
-          </div>
-        </div>
-      </div>
-    </div>
 
           <div class="commande-footer">
             <div class="total-amount">
@@ -82,10 +84,17 @@ export default {
     ...mapGetters('commandes', ['boutiqueOrders']),
     ...mapGetters('user', ['comptes']),
     ...mapGetters('jeux', ['allJeux']),
-    
+
     commandesJeu() {
-      // Assure que chaque commande a bien les données des jeux
-      return (this.boutiqueOrders || []).map(commande => {
+      // Filtre supplémentaire pour ne garder que les commandes avec des articles de jeux
+      return (this.boutiqueOrders || []).filter(commande => {
+        // Vérifie si au moins un article est un jeu (a un jeuID ou id correspondant à un jeu)
+        if (!commande.articles) return false;
+        return commande.articles.some(article => {
+          return this.allJeux.some(jeu => jeu._id === article.id);
+        });
+      }).map(commande => {
+        // Mappage des données des jeux
         if (commande.articles) {
           const articlesWithJeuData = commande.articles.map(article => {
             const jeu = this.allJeux.find(j => j._id === article.id);
@@ -137,7 +146,7 @@ export default {
     async refreshData() {
       this.isLoading = true;
       try {
-        await this.$store.dispatch('commandes/fetchBoutiqueOrders');
+        await this.$store.dispatch('jeux/getAllJeux');
         await this.$store.dispatch('commandes/initReservationsJeux');
       } catch (error) {
         console.error("Erreur lors du rafraîchissement:", error);
@@ -154,11 +163,10 @@ export default {
     try {
       // Charge d'abord les jeux
       await this.$store.dispatch('jeux/getAllJeux');
-      
-      // Puis charge les commandes
-      await this.$store.dispatch('commandes/fetchBoutiqueOrders');
+
+      // Charge seulement les réservations de jeux
       await this.$store.dispatch('commandes/initReservationsJeux');
-      
+
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error);
     } finally {
@@ -267,8 +275,13 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -474,7 +487,7 @@ export default {
   .commandes-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;

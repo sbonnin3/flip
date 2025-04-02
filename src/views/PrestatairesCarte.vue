@@ -47,7 +47,7 @@
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { points } from "@/datasource/data.js"; // Supprime l'import de `stands` (ils viennent du store)
+import { points } from "@/datasource/data.js";
 import { mapGetters, mapActions } from "vuex"; // Import des helpers Vuex
 
 // Import des icônes
