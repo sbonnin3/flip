@@ -152,7 +152,7 @@ export default {
                 j._id === reservation.jeuID);
         return {
           ...reservation,
-          jeuNom: jeu ? jeu.nom : 'Jeu inconnu',
+          jeuNom: jeu ? jeu.name : 'Jeu inconnu',
           status: 'Confirmée'
         };
       });
@@ -175,9 +175,9 @@ export default {
       });
     },
     commandesStandJeu() {
-      if (!this.userReservationsStandJeu) return [];
+      if (!this.userReservationStandJeu) return [];
 
-      return this.userReservationsStandJeu.map(reservation => {
+      return this.userReservationStandJeu.map(reservation => {
         const jeux = this.$store.state.jeux?.jeux || [];
         const stands = this.$store.state.stands?.stands || [];
 
