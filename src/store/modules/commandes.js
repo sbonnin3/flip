@@ -147,7 +147,6 @@ export default {
                 return;
             }
             commit('SET_CURRENT_ORDER', orders);
-            orders.forEach(order => this.dispatch('commandes/addArticleOrder', order));
         },
 
         resetCurrentOrder({ commit }) {
