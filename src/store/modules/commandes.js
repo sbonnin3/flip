@@ -42,11 +42,20 @@ export default {
 
         async loadUserOrders({ commit, rootState, state }) {
             const userId = rootState.user.userSession?.id;
+            console.log("ID utilisateur actuel:", userId); // Debug
+
             if (userId) {
-                const userOrders = state.allOrders.filter(order => order.userId === userId);
+                // Conversion explicite en Number si nécessaire
+                const userOrders = state.allOrders.filter(order =>
+                    Number(order.userId) === Number(userId)
+                );
+
+                console.log("Commandes trouvées:", userOrders); // Debug
                 commit('SET_USER_ORDERS', userOrders);
+            } else {
+                console.warn("Aucun userId - impossible de charger les commandes");
             }
-        },
+        }
     },
     getters: {
         userOrders: state => state.userOrders || [],

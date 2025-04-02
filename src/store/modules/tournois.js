@@ -12,7 +12,7 @@ export default {
       }
     },
     actions: {
-      async fetchTournois({ commit }) {
+      async getAllTournois({ commit }) {
         try {
           const { tournois } = await import("@/datasource/tournois");
           commit("SET_TOURNOIS", tournois);
@@ -28,6 +28,7 @@ export default {
       }
     },
     getters: {
+        allTournoi: (state) => state.tournois || [],
       tournoisByUser: (state) => (userId) => {
         return state.tournois.filter(t => t.prestataireId === userId);
       }

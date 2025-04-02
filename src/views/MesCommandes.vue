@@ -132,27 +132,30 @@ export default {
 
       return reservations.map(reservation => {
         const tournoi = tournois.find(t =>
-            t.id === reservation.tournoiId ||
-            t._id === reservation.tournoiId
+            String(t.id) === String(reservation.tournoiId) ||
+            String(t._id) === String(reservation.tournoiId)
         );
 
         return {
           ...reservation,
-          tournoiNom: tournoi?.nom || `Tournoi ${reservation.tournoiId}`,
+          tournoiNom: tournoi?.nom || `[ID ${reservation.tournoiId}]`,
           status: 'Confirmée'
         };
       });
     },
     commandesJeu() {
-      if (!this.userReservationsJeux) return [];
-      return this.userReservationsJeux.map(reservation => {
-        const jeu = (this.$store.state.jeux.jeux || [])
-            .find(j =>
-                j.id === reservation.jeuID ||
-                j._id === reservation.jeuID);
+      const jeux = this.$store.state.jeux.jeux || [];
+      const reservations = this.userReservationsJeux || [];
+
+      return reservations.map(reservation => {
+        const jeu = jeux.find(j =>
+            j.id === reservation.jeuID ||
+            j._id === reservation.jeuID
+        );
+
         return {
           ...reservation,
-          jeuNom: jeu ? jeu.name : 'Jeu inconnu',
+          jeuNom: jeu?.name || `Jeu ${reservation.jeuID}`,
           status: 'Confirmée'
         };
       });
@@ -198,6 +201,11 @@ export default {
       try {
         // Charge toutes les données utilisateur
         await this.$store.dispatch('reservations/fetchUserData');
+
+
+
+        // Ensuite filtrer pour l'utilisateur
+        await this.$store.dispatch('commandes/loadUserOrders');
 
         // Charge les autres données nécessaires
         await Promise.all([
