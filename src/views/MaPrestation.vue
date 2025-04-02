@@ -257,7 +257,7 @@
             </p>
           </div>
           <button type="submit" class="save-button">{{ isNewStand ? 'Créer le stand' : 'Enregistrer les modifications'
-            }}</button>
+          }}</button>
         </form>
       </div>
     </div>
@@ -353,21 +353,21 @@ export default {
     };
   },
   computed: {
-  ...mapGetters('user', ['userSession']),
-  ...mapGetters('restaurants', ['restaurantByUser', 'allStands']),
-  ...mapGetters('tournois', ['tournoisByUser']),
-  ...mapGetters('points', ['availablePoints']),
-  ...mapGetters('jeux', ['allJeux', 'jeuxCreation']), // Ajoutez jeuxCreation ici
-  
-  safeJeux() {
-    return this.allJeux || [];
-  },
-  safeJeuxCreation() { // Ajoutez cette computed property
-    return this.jeuxCreation || [];
-  },
-  safePoints() {
-    return this.availablePoints || [];
-  },
+    ...mapGetters('user', ['userSession']),
+    ...mapGetters('restaurants', ['restaurantByUser', 'allStands']),
+    ...mapGetters('tournois', ['tournoisByUser']),
+    ...mapGetters('points', ['availablePoints']),
+    ...mapGetters('jeux', ['allJeux', 'jeuxCreation']), // Ajoutez jeuxCreation ici
+
+    safeJeux() {
+      return this.allJeux || [];
+    },
+    safeJeuxCreation() { // Ajoutez cette computed property
+      return this.jeuxCreation || [];
+    },
+    safePoints() {
+      return this.availablePoints || [];
+    },
     jeux() {
       return this.allJeux || [];
     },
@@ -415,18 +415,20 @@ export default {
     }
   },
   async created() {
-    try {
-      await this.initializeData();
-      await this.loadJeuxCreation();
-      
-      if (this.userSession && this.userSession.id) {
-        this.initializeStand();
-        this.initializeTabs();
-      }
-    } catch (error) {
-      console.error("Initialization error:", error);
+  try {
+    await this.initializeData(); // Cette ligne devrait déjà initialiser les points
+    await this.loadJeuxCreation();
+
+    console.log('Points disponibles:', this.availablePoints); // Vérification
+    
+    if (this.userSession && this.userSession.id) {
+      this.initializeStand();
+      this.initializeTabs();
     }
-  },
+  } catch (error) {
+    console.error("Initialization error:", error);
+  }
+},
   methods: {
     ...mapActions("restaurants", [
       "initializeRestaurants",
@@ -442,58 +444,102 @@ export default {
     openCreationConfirmation() {
       this.showConfirmation = true;
     },
-    
+
     closeConfirmation() {
       this.showConfirmation = false;
     },
-    
+
     confirmCreation() {
       // Logique de création de jeu
       this.closeConfirmation();
     },
-    
+
     openTournoiModal() {
       this.showTournoiModal = true;
     },
-    
+
     closeTournoiModal() {
       this.showTournoiModal = false;
     },
-    
+
     changeLayer() {
       // Changer la couche de la carte
       if (this.map) {
         this.map.invalidateSize();
       }
     },
-    
+
     mapReady(map) {
       this.map = map;
       this.map.invalidateSize();
     },
-    
-    selectPoint(point) {
-      this.selectedPoint = point;
-    },
-    
-    async loadJeuxCreation() {
-  try {
-    this.jeuxCreation = await this.$store.dispatch("jeux/fetchJeuxCreation");
-  } catch (error) {
-    console.error("Error loading jeuxCreation:", error);
-    this.jeuxCreation = [];
-  }
-},
 
-async loadJeux() {
-  try {
-    await this.$store.dispatch("jeux/getAllJeux"); // Assurez-vous que cette action existe
-    // Force le re-rendu si nécessaire
-    this.$forceUpdate(); 
-  } catch (error) {
-    console.error("Erreur chargement jeux:", error);
-  }
-},
+    selectPoint(point) {
+      // Vérifiez que le point est disponible
+      if (!point.disponible && point.disponible !== undefined) {
+        this.$toast.warning("Cet emplacement n'est pas disponible");
+        return;
+      }
+
+      this.selectedPoint = point;
+      this.stand.idPoint = point.idPoint;
+
+      // Force le redraw des marqueurs
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    },
+
+    openEditTournoiModal(tournoi) {
+      this.editingTournoiId = tournoi._id;
+      this.newTournoi = {
+        nom: tournoi.nom,
+        lieu: tournoi.lieu,
+        prix: tournoi.prix,
+        image: tournoi.image,
+        description: tournoi.description,
+        dates: [...tournoi.dates]
+      };
+      this.showTournoiModal = true;
+    },
+
+    async updateTournoi() {
+      if (!this.validateTournoi()) return;
+
+      try {
+        const updatedTournoi = {
+          ...this.newTournoi,
+          _id: this.editingTournoiId,
+          prestataireId: this.userSession.id
+        };
+
+        await this.$store.dispatch('tournois/updateTournoi', updatedTournoi);
+        this.closeTournoiModal();
+        this.$toast.success("Tournoi mis à jour avec succès !");
+      } catch (error) {
+        console.error("Erreur mise à jour tournoi:", error);
+        this.$toast.error("Erreur lors de la mise à jour du tournoi");
+      }
+    },
+
+    async loadJeuxCreation() {
+      try {
+        this.jeuxCreation = await this.$store.dispatch("jeux/fetchJeuxCreation");
+      } catch (error) {
+        console.error("Error loading jeuxCreation:", error);
+        this.jeuxCreation = [];
+      }
+    },
+
+    async loadJeux() {
+      try {
+        await this.$store.dispatch("jeux/getAllJeux"); // Assurez-vous que cette action existe
+        // Force le re-rendu si nécessaire
+        this.$forceUpdate();
+      } catch (error) {
+        console.error("Erreur chargement jeux:", error);
+      }
+    },
 
     async initializeData() {
       await Promise.all([
@@ -501,6 +547,7 @@ async loadJeux() {
         this.fetchTournois(),
         this.initializePoints()
       ]);
+      console.log('Points disponibles:', this.availablePoints); // Debug
     },
 
     initializeTabs() {
@@ -583,15 +630,22 @@ async loadJeux() {
       reader.readAsDataURL(file);
     },
 
-    // Stand methods
     getIconForPoint(point) {
-      return L.icon({
-        iconUrl: point.idPoint === this.selectedPoint?.idPoint ? selectedIcon : emplacementIcon,
-        iconSize: point.idPoint === this.selectedPoint?.idPoint ? [40, 40] : [30, 30],
-        iconAnchor: point.idPoint === this.selectedPoint?.idPoint ? [20, 40] : [15, 30],
-        popupAnchor: [0, point.idPoint === this.selectedPoint?.idPoint ? -40 : -30]
-      });
-    },
+  // Vérifiez que les icônes sont bien chargées
+  if (!emplacementIcon || !selectedIcon) {
+    console.error('Les icônes ne sont pas chargées correctement');
+    return L.divIcon({className: 'custom-marker'});
+  }
+
+  const isSelected = this.selectedPoint && this.selectedPoint.idPoint === point.idPoint;
+  
+  return L.icon({
+    iconUrl: isSelected ? selectedIcon : emplacementIcon,
+    iconSize: isSelected ? [35, 35] : [25, 25],
+    iconAnchor: isSelected ? [17, 35] : [12, 25],
+    popupAnchor: [0, -30]
+  });
+},
 
     async saveStand() {
       if (!this.stand.idPoint) {
@@ -626,42 +680,98 @@ async loadJeux() {
       }
     },
 
-    // Tournoi methods
     async createTournoi() {
-      if (!this.validateTournoi()) return;
+      // Validation
+      if (!this.newTournoi.nom || !this.newTournoi.lieu || this.newTournoi.dates.length === 0) {
+        this.$toast.warning("Veuillez remplir tous les champs obligatoires");
+        return;
+      }
 
       try {
-        await this.addTournoi({
-          ...this.newTournoi,
-          prestataireId: this.userSession.id
-        });
+        // Créer l'objet tournoi
+        const tournoiData = {
+          _id: Date.now().toString(),
+          nom: this.newTournoi.nom,
+          lieu: this.newTournoi.lieu,
+          prix: Number(this.newTournoi.prix),
+          description: this.newTournoi.description,
+          prestataireId: this.userSession.id, // L'ID de l'utilisateur connecté
+          dates: this.newTournoi.dates.map(date => ({
+            jour: Number(date.jour),
+            mois: Number(date.mois),
+            annee: Number(date.annee),
+            heures: Number(date.heures),
+            min: Number(date.min),
+            placesRestantes: Number(date.placesRestantes)
+          })),
+          image: this.newTournoi.image || require('@/assets/images/default-tournoi.png')
+        };
+
+        // Dispatch à Vuex
+        await this.$store.dispatch('tournois/addTournoi', tournoiData);
+
+        // Réinitialisation et feedback
+        this.newTournoi = {
+          nom: '',
+          lieu: '',
+          prix: 0,
+          image: null,
+          description: '',
+          dates: [],
+        };
+
         this.closeTournoiModal();
-        alert("Tournoi créé avec succès !");
+        this.$toast.success("Tournoi créé avec succès !");
+
+        // Rafraîchir la liste
+        await this.$store.dispatch('tournois/fetchTournois');
+
       } catch (error) {
         console.error("Erreur création tournoi:", error);
-        alert("Erreur lors de la création du tournoi");
+        this.$toast.error("Erreur lors de la création du tournoi");
       }
     },
 
+    // Ajouter cette méthode pour formater correctement les dates
+    formatTournoiDates(dates) {
+      return dates.map(date => ({
+        ...date,
+        placesRestantes: Number(date.placesRestantes) || 0
+      }));
+    },
+
     validateTournoi() {
-      // Validation logic here
+      if (!this.newTournoi.nom) {
+        this.$toast.warning("Veuillez entrer un nom pour le tournoi");
+        return false;
+      }
+
+      if (this.newTournoi.dates.length === 0) {
+        this.$toast.warning("Veuillez ajouter au moins une date");
+        return false;
+      }
+
       return true;
+    },
+
+    handleTournoiImageUpload(event) {
+      this.newTournoi.image = event.target.files[0];
     },
 
     // Common methods
     async selectTab(tab) {
-  this.selectedTab = tab;
-  
-  // Recharger les données quand on va sur l'onglet Catalogue
-  if (tab === 'Catalogue') {
-    await this.loadJeux();
-  }
-  
-  // Redimensionner la carte si on va sur l'onglet Emplacement
-  if (tab === 'Emplacement' && this.map) {
-    this.$nextTick(() => this.map.invalidateSize());
-  }
-},
+      this.selectedTab = tab;
+
+      // Recharger les données quand on va sur l'onglet Catalogue
+      if (tab === 'Catalogue') {
+        await this.loadJeux();
+      }
+
+      // Redimensionner la carte si on va sur l'onglet Emplacement
+      if (tab === 'Emplacement' && this.map) {
+        this.$nextTick(() => this.map.invalidateSize());
+      }
+    },
 
     formatDate(date) {
       if (!date) return "Date invalide";
@@ -670,7 +780,7 @@ async loadJeux() {
       }
       return new Date(date).toLocaleDateString("fr-FR");
     },
-    
+
     // Méthodes pour la gestion des dates des tournois
     addDate() {
       this.newTournoi.dates.push({
@@ -682,11 +792,11 @@ async loadJeux() {
         placesRestantes: 0
       });
     },
-    
+
     removeDate(index) {
       this.newTournoi.dates.splice(index, 1);
     },
-    
+
     // Méthodes pour la gestion du restaurant
     openEditRestaurantModal() {
       this.editRestaurantDetails = {
@@ -695,11 +805,11 @@ async loadJeux() {
       };
       this.showEditRestaurantModal = true;
     },
-    
+
     closeEditRestaurantModal() {
       this.showEditRestaurantModal = false;
     },
-    
+
     saveEditedRestaurant() {
       this.updateRestaurant({
         ...this.restaurant,
@@ -707,7 +817,7 @@ async loadJeux() {
       });
       this.closeEditRestaurantModal();
     },
-    
+
     handleNewRestaurantImage(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -718,7 +828,7 @@ async loadJeux() {
       };
       reader.readAsDataURL(file);
     },
-    
+
     handleEditRestaurantImage(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -729,7 +839,7 @@ async loadJeux() {
       };
       reader.readAsDataURL(file);
     },
-    
+
     async handleCreateRestaurant() {
       if (!this.newRestaurantName) {
         alert("Veuillez entrer un nom pour le restaurant");
@@ -1041,6 +1151,15 @@ async loadJeux() {
   font-size: 14px;
 }
 
+.success-message {
+  padding: 15px;
+  background-color: #4CAF50;
+  color: white;
+  margin-top: 20px;
+  border-radius: 4px;
+  text-align: center;
+}
+
 .article {
   margin: 10px 0;
 }
@@ -1115,5 +1234,79 @@ async loadJeux() {
 
 .confirm-button:hover {
   background-color: #d83d1a;
+}
+
+/* Dans le style de PageMaPrestation.vue */
+.tournoi-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.inputBox {
+  margin-bottom: 15px;
+}
+
+.inputBox label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.inputBox input,
+.inputBox textarea,
+.inputBox select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.date-fields {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.date-fields input {
+  width: 60px;
+}
+
+.confirm-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.leaflet-container {
+  height: 500px;
+  width: 100%;
+  z-index: 0; /* Important pour que la carte soit cliquable */
+}
+
+.leaflet-marker-icon {
+  background-image: url('~leaflet/dist/images/marker-icon.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.map-container {
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
 }
 </style>

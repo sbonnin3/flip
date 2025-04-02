@@ -9,6 +9,9 @@ export default {
       },
       ADD_TOURNOI(state, tournoi) {
         state.tournois.push(tournoi);
+      },
+      UPDATE_TOURNOI(state, { index, tournoi }) {
+        state.tournois.splice(index, 1, tournoi);
       }
     },
     actions: {
@@ -20,11 +23,49 @@ export default {
           console.error("Erreur chargement tournois:", error);
         }
       },
-      async addTournoi({ commit }, tournoi) {
-        commit("ADD_TOURNOI", {
-          ...tournoi,
-          _id: Date.now().toString()
-        });
+      async updateTournoi({ commit, state }, tournoi) {
+        const index = state.tournois.findIndex(t => t._id === tournoi._id);
+        if (index !== -1) {
+          commit('UPDATE_TOURNOI', { index, tournoi });
+          return tournoi;
+        }
+        throw new Error("Tournoi non trouvé");
+      },
+      async addTournoi({ commit }, formData) {
+        try {
+          // Extraction des données depuis FormData
+          const getValue = (field) => formData.get(field)?.toString().trim();
+          
+          const tournoiData = {
+            nom: getValue('nom'),
+            lieu: getValue('lieu'),
+            prix: Number(getValue('prix')) || 0,
+            description: getValue('description') || '',
+            prestataireId: getValue('prestataireId'),
+            dates: JSON.parse(getValue('dates') || '[]'),
+            image: formData.get('image') // Garde l'objet File pour upload
+          };
+      
+          // Upload de l'image si elle existe
+          let imageUrl = require('@/assets/images/default-tournoi.png');
+          if (tournoiData.image instanceof File) {
+            imageUrl = URL.createObjectURL(tournoiData.image);
+          }
+      
+          const newTournoi = {
+            ...tournoiData,
+            _id: Date.now().toString(),
+            image: imageUrl,
+            dates: this.formatDates(tournoiData.dates)
+          };
+      
+          commit('ADD_TOURNOI', newTournoi);
+          return newTournoi;
+      
+        } catch (error) {
+          console.error("Erreur addTournoi avec FormData:", error);
+          throw error;
+        }
       }
     },
     getters: {

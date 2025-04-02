@@ -9,6 +9,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@ionic/pwa-elements": "^3.3.0",
     "@ionic/vue": "^8.5.2",
     "chart.js": "^3.9.1",
     "core-js": "^3.8.3",
