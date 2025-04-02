@@ -1,6 +1,6 @@
 <template>
   <div class="commandes-page">
-    <h1>{{ standAttribue?.nom || 'Stand inconnu' }} - Commandes en cours</h1>
+    <h1>Mon restaurant : {{ standAttribue?.nom || `Stand inconnu (ID: ${currentUser?.id})` }}</h1>
 
     <div v-if="articleCommandes.length === 0">
       <p>Aucune commande pour le moment.</p>
@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: "PageCommandes",
@@ -34,17 +34,25 @@ export default {
       loading: true,
     };
   },
+  async created() {
+    await this.loadUserData();
+  },
+
   computed: {
   ...mapGetters("commandes", ["allOrders"]),
-  ...mapGetters("stands", ["getStandByUserId"]), // Utilise le nouveau getter
+  ...mapGetters("stands", ["getStandById", "stands"]), // Utilise le nouveau getter
   
-  standAttribue() {
-    if (!this.currentUser) return null;
-    return this.getStandByUserId(this.currentUser.id); // Appel propre via getter
-  },
     currentUser() {
-      return this.$store.state.userSession;
+      return this.$store.state.user.userSession;
     },
+
+    standAttribue() {
+      if (!this.currentUser) return null;
+      return this.stands.find(stand =>
+          stand.comptes?.includes(this.currentUser.id)
+      ) || null;
+    },
+
     articleCommandes() {
       if (!this.standAttribue?.nom) return [];
       return (this.allOrders || [])
@@ -57,16 +65,22 @@ export default {
     },
   },
   methods: {
-  ...mapActions("stands", ["getAllStands"]),
-  ...mapActions("commandes", ["fetchAllOrders"]), // Utilise l'action namespacée
-},
-  async mounted() {
-    await Promise.all([
-      this.getAllStands(),
-      this.fetchAllOrders(),
-    ]);
-    this.loading = false;
-  },
+    async loadUserData() {
+      try {
+        await this.$store.dispatch('commandes/initOrders');
+        await this.$store.dispatch('stands/getAllStands');
+      } catch (error) {
+        console.error("Erreur chargement données:", error);
+      }
+    }
+  }
+  // async mounted() {
+  //   await Promise.all([
+  //     this.getAllStands(),
+  //     this.fetchAllOrders(),
+  //   ]);
+  //   this.loading = false;
+  // },
 };
 </script>
 

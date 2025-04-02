@@ -22,6 +22,7 @@ export default {
       }
   },
   getters: {
+      stands: state => state.stands || [],
       getStandById: (state) => (id) => {
           return state.stands.find(stand => stand.idStand === id);
       }

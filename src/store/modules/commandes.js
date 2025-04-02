@@ -20,11 +20,6 @@ export default {
         }
     },
     actions: {
-        // Version corrigée (sans warning ESLint)
-        async fetchAllOrders({ dispatch }) {  // On utilise dispatch au lieu de commit
-            await dispatch('commandes/initOrders'); 
-        },
-
         addArticleOrder({ commit, state }, order) {
             const updatedOrders = [...state.userOrders, order];
             commit('SET_USER_ORDERS', updatedOrders);

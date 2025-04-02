@@ -258,7 +258,7 @@ export default {
   },
   computed: {
     ...mapGetters('restaurants', ['restaurants']),
-    ...mapGetters(['userOrders', 'comptes']),
+    ...mapGetters('commandes', ['userOrders']),
   },
     stands() {
       // Toujours retourner les restaurants du store
@@ -277,7 +277,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions(['addArticleOrder', 'setCurrentOrder']),
+    ...mapActions('commandes', ['addArticleOrder', 'setCurrentOrder']),
     selectTab(tab) {
       this.selectedTab = tab;
     },
@@ -306,7 +306,7 @@ export default {
       this.showConfirmationBoutique = false;
     },
     confirmReservation() {
-      const currentUser = this.$store.state.userSession;
+      const currentUser = this.$store.state.user.userSession;
       if (!currentUser) {
         this.showLoginModal = true;
         return;
@@ -320,7 +320,7 @@ export default {
       }
     },
     confirmReservationBoutique() {
-      const currentUser = this.$store.state.userSession;
+      const currentUser = this.$store.state.user.userSession;
       if (!currentUser) {
         this.showLoginModal = true;
       } else {
@@ -335,7 +335,7 @@ export default {
       this.commandMessage = "Connexion réussie !";
     },
     handlePaymentSuccess() {
-      const currentUser = this.$store.state.userSession;
+      const currentUser = this.$store.state.user.userSession;
       if (this.cart.length > 0) {
         const maxOrderNumber = Math.max(
           ...this.cart.map((article) => article.orderNumber || 0),
@@ -379,12 +379,12 @@ export default {
       }
     },
     getExistingOrderNumbers() {
-      return this.$store.state.userOrders
-        ? this.$store.state.userOrders.map((order) => order.orderNumber || 0)
+      return this.$store.state.commandes.userOrders
+        ? this.$store.state.commandes.userOrders.map((order) => order.orderNumber || 0)
         : [];
     },
     handlePaymentSuccessJeu() {
-      const currentUser = this.$store.state.userSession;
+      const currentUser = this.$store.state.user.userSession;
       const maxOrderNumber = this.reservationsJeux.reduce((max, reservation) =>
         Math.max(max, reservation.orderNumber || 0), 0);
       this.reservationsJeux.push({
@@ -453,7 +453,7 @@ export default {
         const comment = {
           id: Date.now(),
           texte: this.newComment,
-          userId: this.$store.state.userSession.id,
+          userId: this.$store.state.user.userSession.id,
         };
         if (this.editingComment) {
           const index = this.selectedModalRestau.commentaires.findIndex(c => c.id === this.editingComment.id);
@@ -468,7 +468,7 @@ export default {
     submitRating() {
   if (this.newRating >= 0 && this.newRating <= 5) {
     const rating = {
-      userId: this.$store.state.userSession.id,
+      userId: this.$store.state.user.userSession.id,
       valeur: this.newRating,
     };
     if (!this.selectedModalRestau.notes) {
