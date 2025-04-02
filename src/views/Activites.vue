@@ -218,7 +218,6 @@
 </template>
 
 <script>
-import { reservations, tournois, jeux, stands, reservationStandJeu } from '@/datasource/data';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
 
@@ -237,11 +236,6 @@ export default {
       showPaymentModal: false,
       pickupTime: '',
       reservationMessage: '',
-      reservations,
-      reservationStandJeu,
-      tournois,
-      jeux,
-      stands,
       teamName: '',
       searchName: '',
       searchPlayers: '',
@@ -253,25 +247,27 @@ export default {
       predefinedDates: this.generatePredefinedDates(),
       selectedDate: null,
       selectedTime: '',
-      jeuTypes: [...new Set(jeux.map(jeu => jeu.type))],
     };
   },
-  created() {
-    this.jeux = jeux.map(jeu => {
-      const nomsDesStands = Array.isArray(jeu.nom_stand)
-        ? jeu.nom_stand.map(idStand => {
-          const stand = stands.find(s => s.idStand === idStand);
-          return stand ? stand.nom : "Stand inconnu";
-        })
-        : [];
-
-      return {
-        ...jeu,
-        nomsDesStands: nomsDesStands.join(", "),
-      };
-    });
-  },
   computed: {
+  reservations() {
+    return this.$store.getters['reservations/reservations'];
+  },
+  reservationStandJeu() {
+    return this.$store.getters['reservations/reservationStandJeu'];
+  },
+    jeux() {
+      return this.$store.state.jeux.jeux || [];
+    },
+    tournois() {
+      return this.$store.state.tournois.tournois || [];
+    },
+    stands() {
+      return this.$store.state.stands.stands || [];
+    },
+    jeuTypes() {
+      return [...new Set(this.jeux.map(jeu => jeu.type))];
+    },
     filteredJeux() {
       return this.jeux.filter(jeu => {
         const nameMatch = jeu.name.toLowerCase().includes(this.searchName.toLowerCase());
@@ -286,7 +282,59 @@ export default {
       });
     },
   },
+  async created() {
+  await this.$store.dispatch('reservations/fetchReservations');
+  await this.$store.dispatch('reservations/fetchAllReservationsStand');
+    await this.$store.dispatch('jeux/getAllJeux');
+    await this.$store.dispatch('tournois/fetchTournois');
+    
+    // Mettez à jour les noms des stands pour chaque jeu
+    this.$store.state.jeux.jeux = this.jeux.map(jeu => {
+      const nomsDesStands = Array.isArray(jeu.nom_stand)
+        ? jeu.nom_stand.map(idStand => {
+          const stand = this.stands.find(s => s.idStand === idStand);
+          return stand ? stand.nom : "Stand inconnu";
+        })
+        : [];
+
+      return {
+        ...jeu,
+        nomsDesStands: nomsDesStands.join(", "),
+      };
+    });
+  },
+    filteredJeux() {
+      return this.jeux.filter(jeu => {
+        const nameMatch = jeu.name.toLowerCase().includes(this.searchName.toLowerCase());
+        const typeMatch = this.selectedTypes.length ? this.selectedTypes.includes(jeu.type) : true;
+        const playersMatch = this.searchPlayers ? jeu.nombre_de_joueurs.includes(Number(this.searchPlayers)) : true;
+        const ageMatch = this.searchAge ? jeu.age_minimum <= Number(this.searchAge) : true;
+        const durationMatch = this.searchDuration ? jeu.duree <= Number(this.searchDuration) : true;
+        const editeurMatch = jeu.editeur.toLowerCase().includes(this.searchEditeur.toLowerCase());
+        const standMatch = jeu.nomsDesStands.toLowerCase().includes(this.searchStand.toLowerCase());
+
+        return nameMatch && typeMatch && playersMatch && ageMatch && durationMatch && editeurMatch && standMatch;
+      });
+    },
   methods: {
+    openReservationConfirmation() {
+      const currentUser = this.$store.state.user.userSession; // Accès à la session utilisateur
+      if (currentUser) {
+        this.reservationDate = null;
+        this.showConfirmation = true;
+      } else {
+        this.showLoginModal = true;
+      }
+    },
+
+    openReservationJeuConfirmation() {
+      const currentUser = this.$store.state.user.userSession; // Accès à la session utilisateur
+      if (currentUser) {
+        this.showConfirmationJeux = true;
+      } else {
+        this.showLoginModal = true;
+      }
+    },
     selectTab(tab) {
       this.selectedTab = tab;
     },
@@ -350,23 +398,6 @@ export default {
 
       return `${jour}/${mois}/${date.annee} à ${heures}:${minutes}`;
     },
-    openReservationConfirmation() {
-      const currentUser = this.$store.state.userSession;
-      if (currentUser) {
-        this.reservationDate = null;
-        this.showConfirmation = true;
-      } else {
-        this.showLoginModal = true;
-      }
-    },
-    openReservationJeuConfirmation() {
-      const currentUser = this.$store.state.userSession;
-      if (currentUser) {
-        this.showConfirmationJeux = true;
-      } else {
-        this.showLoginModal = true;
-      }
-    },
     isTeamNameTaken(teamName) {
       return this.reservations.some(
         (reservation) =>
@@ -375,49 +406,53 @@ export default {
       );
     },
 
-    confirmReservation() {
-      if (!this.reservationDate || !this.teamName) {
-        this.reservationMessage = 'Veuillez sélectionner une date et entrer un nom d\'équipe.';
-        return;
-      }
+    async confirmReservation() {
+  if (!this.reservationDate || !this.teamName) {
+    this.reservationMessage = 'Veuillez sélectionner une date et entrer un nom d\'équipe.';
+    return;
+  }
 
-      if (this.isTeamNameTaken(this.teamName)) {
-        this.reservationMessage = `Le nom d'équipe "${this.teamName}" est déjà pris. Veuillez en choisir un autre.`;
-        return;
-      }
+  if (this.isTeamNameTaken(this.teamName)) {
+    this.reservationMessage = `Le nom d'équipe "${this.teamName}" est déjà pris. Veuillez en choisir un autre.`;
+    return;
+  }
 
-      const selectedDate = this.selectedTournoi.dates.find(
-        (date) =>
-          date.jour === this.reservationDate.jour &&
-          date.mois === this.reservationDate.mois &&
-          date.annee === this.reservationDate.annee &&
-          date.heures === this.reservationDate.heures &&
-          date.min === this.reservationDate.min
-      );
+  const selectedDate = this.selectedTournoi.dates.find(
+    (date) =>
+      date.jour === this.reservationDate.jour &&
+      date.mois === this.reservationDate.mois &&
+      date.annee === this.reservationDate.annee &&
+      date.heures === this.reservationDate.heures &&
+      date.min === this.reservationDate.min
+  );
 
-      if (!selectedDate || selectedDate.placesRestantes === 0) {
-        this.reservationMessage = 'Désolé, il ne reste plus de places disponibles pour cette date.';
-        return;
-      }
+  if (!selectedDate || selectedDate.placesRestantes === 0) {
+    this.reservationMessage = 'Désolé, il ne reste plus de places disponibles pour cette date.';
+    return;
+  }
 
-      selectedDate.placesRestantes -= 1;
+  selectedDate.placesRestantes -= 1;
 
-      const currentUser = this.$store.state.userSession;
-      this.reservations.push({
-        tournoiId: this.selectedTournoi._id,
-        userId: currentUser.id,
-        places: 1,
-        prix: this.selectedTournoi.prix,
-        dateReservation: { ...this.reservationDate },
-        teamName: this.teamName,
-      });
+  const currentUser = this.$store.state.user.user; // Modifié pour accéder au module user
+  try {
+    await this.$store.dispatch('reservations/addReservation', {
+      tournoiId: this.selectedTournoi._id,
+      userId: currentUser.id,
+      places: 1,
+      prix: this.selectedTournoi.prix,
+      dateReservation: { ...this.reservationDate },
+      teamName: this.teamName,
+    });
 
-      this.reservationMessage = "Paiement effectué. Votre réservation a été confirmée !";
-      this.teamName = '';
-      this.closeConfirmation();
-      this.openPaymentModal();
-      this.closeModal();
-    },
+    this.reservationMessage = "Paiement effectué. Votre réservation a été confirmée !";
+    this.teamName = '';
+    this.closeConfirmation();
+    this.openPaymentModal();
+    this.closeModal();
+  } catch (error) {
+    this.reservationMessage = "Erreur lors de la réservation: " + error.message;
+  }
+},
     generatePredefinedDates() {
       const startDate = new Date(2025, 6, 9);
       const endDate = new Date(2025, 6, 20);
@@ -438,37 +473,42 @@ export default {
       const formattedMonth = mois.toString().padStart(2, '0');
       return `${formattedDay}/${formattedMonth}/${annee}`;
     },
-    confirmReservationJeux() {
-      const currentUser = this.$store.state.userSession;
+    async confirmReservationJeux() {
+  const currentUser = this.$store.state.user.user; // Modifié pour accéder au module user
 
-      if (!this.selectedDate || !this.selectedTime) {
-        alert('Veuillez sélectionner une date et saisir une heure valide.');
-        return;
-      }
+  if (!this.selectedDate || !this.selectedTime) {
+    alert('Veuillez sélectionner une date et saisir une heure valide.');
+    return;
+  }
 
-      const [hours, minutes] = this.selectedTime.split(':').map(Number);
+  const [hours, minutes] = this.selectedTime.split(':').map(Number);
 
-      const reservationDate = {
-        ...this.selectedDate,
-        heures: hours,
-        min: minutes,
-      };
+  const reservationDate = {
+    ...this.selectedDate,
+    heures: hours,
+    min: minutes,
+  };
 
-      const stand = this.$store.state.stands.find(s => s.nom === this.selectedJeu.nomsDesStands && s.type === "stand de jeux");
-      this.reservationStandJeu.push({
-        jeuID: this.selectedJeu._id,
-        standID: stand.idStand,
-        userId: currentUser.id,
-        date: reservationDate,
-      })
+  const stand = this.stands.find(s => s.nom === this.selectedJeu.nomsDesStands && s.type === "stand de jeux");
+  
+  try {
+    await this.$store.dispatch('reservations/addStandReservation', {
+      jeuID: this.selectedJeu._id,
+      standID: stand.idStand,
+      userId: currentUser.id,
+      date: reservationDate,
+    });
 
-      const formattedDate = this.formatDateJeux(reservationDate);
-      const formattedTime = this.formatTime(reservationDate);
+    const formattedDate = this.formatDateJeux(reservationDate);
+    const formattedTime = this.formatTime(reservationDate);
 
-      this.reservationMessage = `Réservation confirmée pour le ${formattedDate} à ${formattedTime} !`;
-      this.closeConfirmationJeux();
-      this.closeJeuModal();
-    },
+    this.reservationMessage = `Réservation confirmée pour le ${formattedDate} à ${formattedTime} !`;
+    this.closeConfirmationJeux();
+    this.closeJeuModal();
+  } catch (error) {
+    this.reservationMessage = "Erreur lors de la réservation: " + error.message;
+  }
+},
     resetReservationFields() {
       this.reservationDate = '';
     },
