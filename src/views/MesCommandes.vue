@@ -202,9 +202,10 @@ export default {
         // Charge toutes les données utilisateur
         await this.$store.dispatch('reservations/fetchUserData');
 
+        // Charge toutes les commandes
+        await this.$store.dispatch('commandes/initOrders');
 
-
-        // Ensuite filtrer pour l'utilisateur
+        // Ensuite filtre pour l'utilisateur
         await this.$store.dispatch('commandes/loadUserOrders');
 
         // Charge les autres données nécessaires
