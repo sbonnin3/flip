@@ -96,7 +96,7 @@ export default {
             }
             commit('ADD_STAND_RESERVATION', reservation);
             return reservation;
-        }
+        },
     },
     getters: {
         allReservationsStand: state => state.allReservationsStand || [],
@@ -104,6 +104,12 @@ export default {
         userReservationsJeux: state => state.userReservationsJeux || [],
         userReservationStandJeu: state => state.userReservationStandJeu || [],
         reservations: state => state.reservations || [],
-        reservationStandJeu: state => state.reservationStandJeu || []
+        reservationStandJeu: state => state.reservationStandJeu || [],
+        reservationsByPrestataire: (state, getters, rootState) => (prestataireId) => {
+            return state.reservations.filter(reservation => {
+                const tournoi = rootState.tournois.tournois.find(t => t._id === reservation.tournoiId);
+                return tournoi && tournoi.prestataireId === prestataireId;
+            });
+        }
     }
 };

@@ -101,6 +101,7 @@ export default {
       };
     },
     
-    isAuthenticated: state => !!state.userSession
+    isAuthenticated: state => !!state.userSession,
+    comptes: state => state.comptes || []
   }
 };

@@ -1,6 +1,3 @@
-
-// JSON contenant les données de réservations de tournoi par les utilisateurs
-
 export const reservations = [
     {
         reservationId: 1,
