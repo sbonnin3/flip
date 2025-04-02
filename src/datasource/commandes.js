@@ -41,8 +41,6 @@ export const commandes = [
         orderNumber: "1563",
         articles: [
             { nom: "Couscous", quantite: 1, prix: 12 },
-            { nom: "Kebab", quantite: 1, prix: 9 },
-            { nom: "Frites", quantite: 1, prix: 6 },
             { nom: "Fanta", quantite: 1, prix: 3.50 },
         ],
         pickupTime: "12:00",

@@ -202,7 +202,7 @@
   </div>
 </template>
 <script>
-import { jeux, souvenirs, reservationsJeux, commandes } from '@/datasource/data';
+import { jeux, souvenirs, reservationsJeux, commandes, stands } from '@/datasource/data';
 import { mapActions, mapGetters } from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
@@ -233,6 +233,7 @@ export default {
       editingRating: null,
       newRating: 0,
       jeux,
+      stands,
       souvenirs,
       reservationsJeux,
       commandes,
@@ -259,6 +260,7 @@ export default {
   computed: {
     ...mapGetters('restaurants', ['restaurants']),
     ...mapGetters('commandes', ['userOrders']),
+    ...mapGetters('user', ['comptes'])
   },
     stands() {
       // Toujours retourner les restaurants du store
@@ -277,7 +279,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions('commandes', ['addArticleOrder', 'setCurrentOrder']),
+    ...mapActions('commandes', ['addArticleOrder', 'setCurrentOrder', 'resetCurrentOrder']),
     selectTab(tab) {
       this.selectedTab = tab;
     },
@@ -367,12 +369,12 @@ export default {
           });
         });
         this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
-        const recap = this.$refs.paymentForm.generateRecap();
+        const recap = this.$refs.paymentForm.generateRecap(newOrders);
         if (recap) {
           console.log(recap);
           alert(recap);
         }
-        this.$store.dispatch('resetCurrentOrder');
+        this.$store.dispatch('commandes/resetCurrentOrder');
         this.cart = [];
         console.log("Panier vidé après paiement :", this.cart);
         this.closePaymentModal();

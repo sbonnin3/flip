@@ -95,7 +95,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['userOrders', 'currentOrder']),
+    ...mapGetters('commandes',['userOrders', 'currentOrder']),
   },
 
   methods: {
@@ -133,45 +133,27 @@ export default {
       return this.pickupTime;
     },
 
-    generateRecap() {
-      console.log('Current Order:', this.currentOrder);
-      if (!Array.isArray(this.currentOrder) || this.currentOrder.length === 0) {
-        console.warn("Aucune commande disponible pour générer le récapitulatif.");
-        return "Aucune commande à afficher.";
-      }
+    generateRecap(orders) {
+      if (!orders.length) return "Aucune commande à afficher";
 
-      const restaurantRecaps = this.currentOrder.map(order => {
-        if (!order.articles || order.articles.length === 0) {
-          console.warn("Pas d'articles pour le restaurant:", order.restaurantNom);
-          return `Restaurant : ${order.restaurantNom || "Inconnu"} - Pas d'articles disponibles.`;
+      const restaurantRecaps = orders.map(order => {
+        if (!order.articles?.length) {
+          return `Restaurant ${order.restaurantNom || 'Inconnu'} - Pas d'articles`;
         }
 
-        const articlesText = order.articles
-          .map(article => {
-            if (article.nom && article.quantite && article.prix) {
-              return `- ${article.nom}: ${article.quantite} x ${article.prix}€`;
-            } else {
-              console.error("Erreur dans un article :", article);
-              return "Erreur dans les données de l'article";
-            }
-          })
-          .join("\n");
+        const articlesText = order.articles.map(a =>
+            `- ${a.nom} (${a.quantite}x ${a.prix.toFixed(2)}€)`
+        ).join('\n');
 
-        const total = order.articles.reduce((total, article) => {
-          return total + (article.prix * article.quantite);
-        }, 0);
+        const total = order.articles.reduce((sum, a) => sum + (a.prix * a.quantite), 0);
 
-        return `Commande n° ${order.orderNumber} - Restaurant : ${order.restaurantNom || "Inconnu"}
-   Articles :
-      ${articlesText}
-
-💵 Total : ${total.toFixed(2)}€`;
+        return `🍽️ ${order.restaurantNom}
+${articlesText}
+Total: ${total.toFixed(2)}€
+⏱️ À récupérer à: ${order.pickupTime || 'non précisé'}`;
       });
 
-      return `📋 Récapitulatif de commande :
-  ${restaurantRecaps.join("\n\n")}\n
-  Moyen de paiement : ${this.selected}
-  Heure de retrait : ${this.pickupTime || "Non précisée"}`;
+      return `📋 VOS COMMANDES\n${restaurantRecaps.join('\n\n')}`;
     },
 
     closePaymentModal() {

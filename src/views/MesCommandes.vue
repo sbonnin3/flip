@@ -161,19 +161,27 @@ export default {
       });
     },
     articleCommandes() {
-      if (!this.userOrders) return []; // Protection ajoutée
+      const orders = this.userOrders || [];
+      const stands = this.$store.state.stands?.stands || [];
 
-      return this.userOrders.map(commande => {
-        const stands = this.$store.state.stands?.stands || [];
-        const restaurant = stands.find(s => s.nom === commande.restaurantNom);
+      return orders.map(commande => {
+        // Debug des données problématiques
+        if (!commande.restaurantNom) {
+          console.warn("Commande sans nom de restaurant:", commande);
+        }
+
+        const restaurant = stands.find(s =>
+            s.nom.toLowerCase() === commande.restaurantNom?.toLowerCase()
+        );
 
         return {
           ...commande,
-          restaurantNom: restaurant?.nom || 'Restaurant inconnu',
-          status: commande.pickupTime
-              ? `À récupérer à ${commande.pickupTime}`
-              : 'Payée. A chercher au stand.',
-          total: commande.articles.reduce((sum, art) => sum + (art.prix * art.quantite), 0)
+          restaurantNom: restaurant?.nom || commande.restaurantNom || 'Restaurant inconnu',
+          status: commande.status ||
+              (commande.pickupTime
+                  ? `À récupérer à ${commande.pickupTime}`
+                  : 'Payée. A chercher au stand.'),
+          total: commande.articles?.reduce((sum, art) => sum + (art.prix * art.quantite), 0) || 0
         };
       });
     },

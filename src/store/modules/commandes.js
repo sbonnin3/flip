@@ -21,8 +21,45 @@ export default {
     },
     actions: {
         addArticleOrder({ commit, state }, order) {
-            const updatedOrders = [...state.userOrders, order];
-            commit('SET_USER_ORDERS', updatedOrders);
+            // 1. Vérification de la commande
+            if (!order.orderNumber || !order.userId) {
+                console.error("Commande invalide:", order);
+                return;
+            }
+
+            // 2. Mise à jour de userOrders (sans doublons)
+            const userOrders = [
+                ...state.userOrders.filter(o => o.orderNumber !== order.orderNumber),
+                order
+            ];
+
+            // 3. Mise à jour de allOrders (sans doublons)
+            const allOrders = [
+                ...state.allOrders.filter(o => o.orderNumber !== order.orderNumber),
+                order
+            ];
+
+            commit('SET_USER_ORDERS', userOrders);
+            commit('SET_ALL_ORDERS', allOrders);
+
+            console.log("Commande ajoutée:", { order, userOrders, allOrders });
+        },
+
+        setCurrentOrder({ commit }, orders) {
+            if (!Array.isArray(orders)) {
+                console.error("setCurrentOrder attend un tableau");
+                return;
+            }
+
+            // Pour le panier en cours (currentOrder)
+            commit('SET_CURRENT_ORDER', orders);
+
+            // Optionnel : ajouter aussi à userOrders ?
+            orders.forEach(order => this.dispatch('addArticleOrder', order));
+        },
+
+        resetCurrentOrder({ commit }) {
+            commit('RESET_CURRENT_ORDER');
         },
 
         async initOrders({ commit }) {
@@ -36,20 +73,22 @@ export default {
         },
 
         async loadUserOrders({ commit, rootState, state }) {
+            // Utilise le getter sécurisé plutôt que d'accéder directement à state
             const userId = rootState.user.userSession?.id;
-            console.log("ID utilisateur actuel:", userId); // Debug
 
-            if (userId) {
-                // Conversion explicite en Number si nécessaire
-                const userOrders = state.allOrders.filter(order =>
-                    Number(order.userId) === Number(userId)
-                );
-
-                console.log("Commandes trouvées:", userOrders); // Debug
-                commit('SET_USER_ORDERS', userOrders);
-            } else {
+            if (!userId) {
                 console.warn("Aucun userId - impossible de charger les commandes");
+                return;
             }
+
+            // Convertir en Number pour comparaison sûre
+            const numUserId = Number(userId);
+            const userOrders = state.allOrders.filter(order =>
+                Number(order.userId) === numUserId
+            );
+
+            console.log("Commandes filtrées pour userId", userId, ":", userOrders);
+            commit('SET_USER_ORDERS', userOrders);
         }
     },
     getters: {
