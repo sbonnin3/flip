@@ -26,6 +26,20 @@ export default {
     },
     CLEAR_REDIRECT_PATH(state) {
       state.redirectPath = null;
+    },
+    REMOVE_COMPTE(state, id) {
+      state.comptes = state.comptes.filter(compte => compte.id !== id);
+    },
+    UPDATE_COMPTE(state, updatedCompte) {
+      const index = state.comptes.findIndex(c => c.id === updatedCompte.id);
+      if (index !== -1) {
+        // Crée un nouveau tableau pour déclencher la réactivité
+        state.comptes = [
+          ...state.comptes.slice(0, index),
+          updatedCompte,
+          ...state.comptes.slice(index + 1)
+        ];
+      }
     }
   },
   
@@ -82,6 +96,40 @@ export default {
         return true;
       }
       return false;
+    },
+    async removeCompte({ commit, dispatch }, id) {
+      try {
+        // En environnement réel, vous feriez ici un appel API si nécessaire
+        // await api.deleteCompte(id);
+        
+        // En mode mock (avec vos données locales)
+        commit('REMOVE_COMPTE', id);
+        
+        // Recharge les données si nécessaire
+        await dispatch('initComptes');
+        
+        return Promise.resolve();
+      } catch (error) {
+        return Promise.reject(error);
+      }
+    },
+    async updateCompte({ commit, state }, updatedCompte) {
+      try {
+        // En environnement réel, vous feriez ici un appel API si nécessaire
+        // const response = await api.updateCompte(updatedCompte);
+        
+        // En mode mock (avec vos données locales)
+        commit('UPDATE_COMPTE', updatedCompte);
+        
+        // Si vous éditez le compte connecté, mettez à jour la session
+        if (state.userSession && state.userSession.id === updatedCompte.id) {
+          commit('SET_USER_SESSION', updatedCompte);
+        }
+        
+        return Promise.resolve();
+      } catch (error) {
+        return Promise.reject(error);
+      }
     }
   },
   

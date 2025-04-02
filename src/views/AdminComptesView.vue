@@ -88,11 +88,13 @@ export default {
       isEditModalOpen: false,
       editedCompte: null,
       errorMessage: "",
+      isDeleting: false,
+    deleteError: null
     };
   },
   computed: {
     comptes() {
-      return this.$store.state.comptes;
+      return this.$store.state.user.comptes;
     },
     uniqueRoles() {
       return [...new Set(this.comptes.map((compte) => compte.role))];
@@ -117,6 +119,9 @@ export default {
       });
     },
   },
+  created() {
+  this.$store.dispatch('user/initComptes');
+},
   methods: {
     resetFilters() {
       this.searchQuery = "";
@@ -130,9 +135,19 @@ export default {
         this.sortAsc = true;
       }
     },
-    deleteCompte(id) {
-      this.$store.commit("REMOVE_COMPTE", id);
-    },
+async deleteCompte(id) {
+    this.isDeleting = true;
+    this.deleteError = null;
+    
+    try {
+      await this.$store.dispatch('user/removeCompte', id);
+      // ... reste du code
+    } catch (error) {
+      this.deleteError = error.message;
+    } finally {
+      this.isDeleting = false;
+    }
+  },
     openEditModal(compte) {
       this.editedCompte = { ...compte };
       this.errorMessage = "";
@@ -144,20 +159,27 @@ export default {
       this.isEditModalOpen = false;
     },
     saveEditCompte() {
-      const duplicate = this.comptes.some(
-        (compte) =>
-          compte.identifiant === this.editedCompte.identifiant &&
-          compte.id !== this.editedCompte.id
-      );
+  const duplicate = this.comptes.some(
+    (compte) =>
+      compte.identifiant === this.editedCompte.identifiant &&
+      compte.id !== this.editedCompte.id
+  );
 
-      if (duplicate) {
-        this.errorMessage = "Cet identifiant existe déjà. Veuillez en choisir un autre.";
-        return;
-      }
+  if (duplicate) {
+    this.errorMessage = "Cet identifiant existe déjà. Veuillez en choisir un autre.";
+    return;
+  }
 
-      this.$store.commit("UPDATE_COMPTE", this.editedCompte);
+  // Utilisez l'action du module user
+  this.$store.dispatch('user/updateCompte', this.editedCompte)
+    .then(() => {
       this.closeEditModal();
-    },
+    })
+    .catch(error => {
+      this.errorMessage = "Erreur lors de la mise à jour";
+      console.error(error);
+    });
+},
     getRoleClass(role) {
       const roleClasses = {
         administrateur: "role-administrateur",

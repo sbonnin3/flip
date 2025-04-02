@@ -257,7 +257,7 @@
             </p>
           </div>
           <button type="submit" class="save-button">{{ isNewStand ? 'Créer le stand' : 'Enregistrer les modifications'
-          }}</button>
+            }}</button>
         </form>
       </div>
     </div>
@@ -349,7 +349,7 @@ export default {
           url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
           attribution: '&copy; Esri'
         }
-      }
+      },
     };
   },
   computed: {
@@ -415,20 +415,20 @@ export default {
     }
   },
   async created() {
-  try {
-    await this.initializeData(); // Cette ligne devrait déjà initialiser les points
-    await this.loadJeuxCreation();
+    try {
+      await this.initializeData(); // Cette ligne devrait déjà initialiser les points
+      await this.loadJeuxCreation();
 
-    console.log('Points disponibles:', this.availablePoints); // Vérification
-    
-    if (this.userSession && this.userSession.id) {
-      this.initializeStand();
-      this.initializeTabs();
+      console.log('Points disponibles:', this.availablePoints); // Vérification
+
+      if (this.userSession && this.userSession.id) {
+        this.initializeStand();
+        this.initializeTabs();
+      }
+    } catch (error) {
+      console.error("Initialization error:", error);
     }
-  } catch (error) {
-    console.error("Initialization error:", error);
-  }
-},
+  },
   methods: {
     ...mapActions("restaurants", [
       "initializeRestaurants",
@@ -459,8 +459,11 @@ export default {
     },
 
     closeTournoiModal() {
-      this.showTournoiModal = false;
-    },
+    this.showTournoiModal = false;
+    this.isEditing = false;
+    this.editingTournoiId = null;
+    this.resetTournoiForm();
+  },
 
     changeLayer() {
       // Changer la couche de la carte
@@ -491,17 +494,41 @@ export default {
     },
 
     openEditTournoiModal(tournoi) {
-      this.editingTournoiId = tournoi._id;
-      this.newTournoi = {
-        nom: tournoi.nom,
-        lieu: tournoi.lieu,
-        prix: tournoi.prix,
-        image: tournoi.image,
-        description: tournoi.description,
-        dates: [...tournoi.dates]
+    this.editingTournoiId = tournoi._id;
+    this.isEditing = true;
+    this.newTournoi = {
+      nom: tournoi.nom,
+      lieu: tournoi.lieu,
+      prix: tournoi.prix,
+      image: tournoi.image, // Conserve l'URL existante
+      description: tournoi.description,
+      dates: [...tournoi.dates]
+    };
+    this.showTournoiModal = true;
+  },
+
+    async submitTournoi() {
+    try {
+      const tournoiData = {
+        ...this.newTournoi,
+        _id: this.isEditing ? this.editingTournoiId : Date.now().toString(),
+        prestataireId: this.userSession.id
       };
-      this.showTournoiModal = true;
-    },
+
+      if (this.isEditing) {
+        await this.$store.dispatch('tournois/updateTournoi', tournoiData);
+        this.$toast.success("Tournoi modifié avec succès !");
+      } else {
+        await this.$store.dispatch('tournois/addTournoi', tournoiData);
+        this.$toast.success("Tournoi créé avec succès !");
+      }
+
+      this.closeTournoiModal();
+      await this.$store.dispatch('tournois/fetchTournois');
+    } catch (error) {
+      this.$toast.error(`Erreur: ${error.message}`);
+    }
+  },
 
     async updateTournoi() {
       if (!this.validateTournoi()) return;
@@ -542,12 +569,20 @@ export default {
     },
 
     async initializeData() {
-      await Promise.all([
-        this.initializeRestaurants(),
-        this.fetchTournois(),
-        this.initializePoints()
-      ]);
-      console.log('Points disponibles:', this.availablePoints); // Debug
+      try {
+        await Promise.all([
+          this.initializeRestaurants(),
+          this.fetchTournois(),
+          this.initializePoints()
+        ]);
+
+        console.log('Points disponibles:', this.availablePoints);
+        console.log('Stands existants:', this.allStands);
+
+      } catch (error) {
+        console.error("Initialization error:", error);
+        throw error;
+      }
     },
 
     initializeTabs() {
@@ -631,21 +666,21 @@ export default {
     },
 
     getIconForPoint(point) {
-  // Vérifiez que les icônes sont bien chargées
-  if (!emplacementIcon || !selectedIcon) {
-    console.error('Les icônes ne sont pas chargées correctement');
-    return L.divIcon({className: 'custom-marker'});
-  }
+      // Vérifiez que les icônes sont bien chargées
+      if (!emplacementIcon || !selectedIcon) {
+        console.error('Les icônes ne sont pas chargées correctement');
+        return L.divIcon({ className: 'custom-marker' });
+      }
 
-  const isSelected = this.selectedPoint && this.selectedPoint.idPoint === point.idPoint;
-  
-  return L.icon({
-    iconUrl: isSelected ? selectedIcon : emplacementIcon,
-    iconSize: isSelected ? [35, 35] : [25, 25],
-    iconAnchor: isSelected ? [17, 35] : [12, 25],
-    popupAnchor: [0, -30]
-  });
-},
+      const isSelected = this.selectedPoint && this.selectedPoint.idPoint === point.idPoint;
+
+      return L.icon({
+        iconUrl: isSelected ? selectedIcon : emplacementIcon,
+        iconSize: isSelected ? [35, 35] : [25, 25],
+        iconAnchor: isSelected ? [17, 35] : [12, 25],
+        popupAnchor: [0, -30]
+      });
+    },
 
     async saveStand() {
       if (!this.stand.idPoint) {
@@ -654,48 +689,69 @@ export default {
       }
 
       try {
-        await this.saveStand({
+        // Créez un objet complet à sauvegarder
+        const standToSave = {
           ...this.stand,
-          id: this.isNewStand ? Date.now() : this.stand.id
-        });
+          id: this.isNewStand ? Date.now().toString() : this.stand.id,
+          idPoint: this.selectedPoint.idPoint
+        };
 
+        // Dispatch l'action Vuex
+        await this.$store.dispatch('restaurants/saveStand', standToSave);
+
+        // Mise à jour de la disponibilité du point
         if (this.originalPointId) {
-          this.updatePointAvailability({
+          await this.$store.dispatch('points/updatePointAvailability', {
             pointId: this.originalPointId,
             isAvailable: true
           });
         }
 
-        this.updatePointAvailability({
+        await this.$store.dispatch('points/updatePointAvailability', {
           pointId: this.stand.idPoint,
           isAvailable: false
         });
 
         this.isNewStand = false;
         this.originalPointId = this.stand.idPoint;
-        alert(this.isNewStand ? "Stand créé avec succès !" : "Modifications enregistrées !");
+
+        this.$toast.success("Stand enregistré avec succès !");
+
+        // Rechargez les données
+        await this.initializeData();
+
       } catch (error) {
         console.error("Erreur sauvegarde stand:", error);
-        alert("Une erreur est survenue lors de la sauvegarde");
+        this.$toast.error("Échec de l'enregistrement");
+        throw error; // Important pour que le try/catch parent puisse détecter l'erreur
       }
     },
 
     async createTournoi() {
-      // Validation
-      if (!this.newTournoi.nom || !this.newTournoi.lieu || this.newTournoi.dates.length === 0) {
-        this.$toast.warning("Veuillez remplir tous les champs obligatoires");
-        return;
-      }
+      if (!this.validateTournoi()) return;
 
       try {
-        // Créer l'objet tournoi
+        let imageUrl = null;
+
+        // Gestion de l'image
+        if (this.newTournoi.image instanceof File) {
+          // Si c'est un fichier, convertis-le en URL
+          imageUrl = URL.createObjectURL(this.newTournoi.image);
+        } else if (typeof this.newTournoi.image === 'string') {
+          // Si c'est déjà une URL (édition)
+          imageUrl = this.newTournoi.image;
+        } else {
+          // Image par défaut
+          imageUrl = require('@/assets/images/default-tournoi.png');
+        }
+
         const tournoiData = {
-          _id: Date.now().toString(),
           nom: this.newTournoi.nom,
           lieu: this.newTournoi.lieu,
           prix: Number(this.newTournoi.prix),
+          image: imageUrl,
           description: this.newTournoi.description,
-          prestataireId: this.userSession.id, // L'ID de l'utilisateur connecté
+          prestataireId: this.userSession.id,
           dates: this.newTournoi.dates.map(date => ({
             jour: Number(date.jour),
             mois: Number(date.mois),
@@ -703,27 +759,24 @@ export default {
             heures: Number(date.heures),
             min: Number(date.min),
             placesRestantes: Number(date.placesRestantes)
-          })),
-          image: this.newTournoi.image || require('@/assets/images/default-tournoi.png')
+          }))
         };
 
-        // Dispatch à Vuex
         await this.$store.dispatch('tournois/addTournoi', tournoiData);
 
-        // Réinitialisation et feedback
+        this.$toast.success("Tournoi créé avec succès !");
+        this.closeTournoiModal();
+
+        // Réinitialisation
         this.newTournoi = {
           nom: '',
           lieu: '',
           prix: 0,
           image: null,
           description: '',
-          dates: [],
+          dates: []
         };
 
-        this.closeTournoiModal();
-        this.$toast.success("Tournoi créé avec succès !");
-
-        // Rafraîchir la liste
         await this.$store.dispatch('tournois/fetchTournois');
 
       } catch (error) {
@@ -755,7 +808,7 @@ export default {
     },
 
     handleTournoiImageUpload(event) {
-      this.newTournoi.image = event.target.files[0];
+      this.newTournoi.image = event.target.files[0]; // Stocke l'objet File directement
     },
 
     // Common methods
@@ -1036,7 +1089,6 @@ export default {
 
 .card:hover {
   transform: scale(1.05);
-  background-color: #fce012;
 }
 
 .card-image {
@@ -1294,7 +1346,8 @@ export default {
 .leaflet-container {
   height: 500px;
   width: 100%;
-  z-index: 0; /* Important pour que la carte soit cliquable */
+  z-index: 0;
+  /* Important pour que la carte soit cliquable */
 }
 
 .leaflet-marker-icon {
