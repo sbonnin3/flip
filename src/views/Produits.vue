@@ -6,62 +6,62 @@
         <button class="confirm-button" @click="showAddModal = false">OK</button>
       </div>
     </div>
-    <h1 class="page-title">Produits</h1>
+    <h1 class="page-title">{{ $t('products') }}</h1>
     <div class="tab-container">
       <button :class="{ active: selectedTab === 'Restauration' }"
-        @click="selectTab('Restauration')">Restauration</button>
-      <button :class="{ active: selectedTab === 'Boutique' }" @click="selectTab('Boutique')">Boutique</button>
+              @click="selectTab('Restauration')">{{ $t('food') }}</button>
+      <button :class="{ active: selectedTab === 'Boutique' }" @click="selectTab('Boutique')">{{ $t('shop') }}</button>
     </div>
     <div v-show="selectedTab === 'Restauration'">
       <div v-if="stands.length" class="cards-container">
         <div v-for="restaurant in stands.filter(stand => stand.type === 'restaurants')" :key="restaurant.idRestau"
-          class="card" @click="openModalRestau(restaurant)">
-          <img :src="restaurant.image" alt="Image du restaurant" class="card-image" />
+             class="card" @click="openModalRestau(restaurant)">
+          <img :src="restaurant.image" :alt="$t('restaurantImage')" class="card-image" />
           <div class="card-content">
             <h2 class="card-title">{{ restaurant.nom }}</h2>
           </div>
         </div>
       </div>
-      <p v-else>Aucun restaurants disponible.</p>
+      <p v-else>{{ $t('noRestaurantsAvailable') }}</p>
       <div class="cart_section">
         <div class="container-fluid">
           <div class="row">
             <div class="col-lg-10 offset-lg-1">
               <div class="cart_container">
-                <h1 class="cart_title">Panier</h1>
+                <h1 class="cart_title">{{ $t('cart') }}</h1>
                 <div class="cart_items">
                   <ul class="cart_list">
                     <li v-for="item in cart" :key="item.nom" class="cart_item">
                       <div class="cart_item_image">
-                        <img :src="item.image" alt="Image du produit" />
+                        <img :src="item.image" :alt="$t('productImage')" />
                       </div>
                       <div class="cart_item_info">
-                        <div class="cart_item_title">Nom</div>
+                        <div class="cart_item_title">{{ $t('name') }}</div>
                         <div class="cart_item_text">{{ item.nom }}</div>
                       </div>
                       <div class="cart_item_quantity">
-                        <div class="cart_item_title">Quantité</div>
+                        <div class="cart_item_title">{{ $t('quantity') }}</div>
                         <div class="cart_item_text">{{ item.quantite }}</div>
                       </div>
                       <div class="cart_item_price">
-                        <div class="cart_item_title">Prix</div>
+                        <div class="cart_item_title">{{ $t('price') }}</div>
                         <div class="cart_item_text">{{ item.prix }}€</div>
                       </div>
                       <div class="cart_button_clear_logo" @click="deleteArticle(item)">
-                        <img src="../assets/icons/bin.png" alt="logo poubelle" width="35px" height="35px" />
+                        <img src="../assets/icons/bin.png" :alt="$t('binIcon')" width="35px" height="35px" />
                       </div>
                     </li>
                   </ul>
                 </div>
                 <div class="order_total">
                   <div class="order_total_content text-md-right">
-                    <div class="order_total_title">Prix total: {{cart.reduce((total, item) => total + item.prix *
-                      item.quantite, 0)}}€ </div>
+                    <div class="order_total_title">{{ $t('totalPrice') }}: {{cart.reduce((total, item) => total + item.prix *
+                        item.quantite, 0)}}€ </div>
                   </div>
                 </div>
                 <div class="cart_buttons">
-                  <button class="button cart_button_clear" @click="deleteCommand">Supprimer</button>
-                  <button class="button cart_button_checkout" @click="openCommandConfirmation">Commander</button>
+                  <button class="button cart_button_clear" @click="deleteCommand">{{ $t('delete') }}</button>
+                  <button class="button cart_button_checkout" @click="openCommandConfirmation">{{ $t('order') }}</button>
                 </div>
               </div>
             </div>
@@ -71,10 +71,10 @@
       <div v-if="showConfirmation" class="confirmation-modal">
         <div class="modal-content">
           <span class="close-button" @click="closeConfirmation">&times;</span>
-          <h2>Confirmer la commande</h2>
-          <p>Voulez-vous vraiment confirmer la commande du panier ?</p>
-          <button class="confirm-button" @click="confirmReservation">Confirmer</button>
-          <button class="cancel-button" @click="closeConfirmation">Annuler</button>
+          <h2>{{ $t('confirmOrder') }}</h2>
+          <p>{{ $t('confirmCartOrder') }}</p>
+          <button class="confirm-button" @click="confirmReservation">{{ $t('confirm') }}</button>
+          <button class="cancel-button" @click="closeConfirmation">{{ $t('cancel') }}</button>
         </div>
       </div>
       <div v-if="commandMessage" class="reservation-message">
@@ -84,109 +84,108 @@
         </div>
       </div>
       <ConnexionModal v-if="showLoginModal" :visible="showLoginModal" @close="closeLoginModal"
-        @login-success="handleLoginSuccess" />
+                      @login-success="handleLoginSuccess" />
       <PaymentModal ref="paymentForm" v-if="showPaymentModal" :visible="showPaymentModal" @close="closePaymentModal"
-        @payment-success="handlePaymentSuccess" />
+                    @payment-success="handlePaymentSuccess" />
 
       <div v-if="selectedModalRestau" class="modal">
         <div class="modal-content">
           <span class="close-button" @click="closeModalRestau">&times;</span>
           <h2>{{ selectedModalRestau.nom }}</h2>
-          <img :src="selectedModalRestau.image" alt="Image du restaurant" class="modal-image" />
+          <img :src="selectedModalRestau.image" :alt="$t('restaurantImage')" class="modal-image" />
 
-          <p><strong>Nourritures :</strong></p>
+          <p><strong>{{ $t('foods') }}:</strong></p>
           <div v-if="selectedModalRestau.nourritures && selectedModalRestau.nourritures.length" class="items-container">
             <div v-for="nourriture in selectedModalRestau.nourritures" :key="nourriture.nom" class="item-card">
               <button class="item-button-content" @click="addToCart(nourriture)">
-                <img :src="nourriture.image" alt="Image de l'article" class="item-image" />
+                <img :src="nourriture.image" :alt="$t('itemImage')" class="item-image" />
                 <p>{{ nourriture.nom }} - {{ nourriture.prix }}€</p>
               </button>
             </div>
           </div>
-          <p v-else>Aucune nourriture disponible.</p>
+          <p v-else>{{ $t('noFoodAvailable') }}</p>
 
-          <p><strong>Boissons :</strong></p>
+          <p><strong>{{ $t('drinks') }}:</strong></p>
           <div v-if="selectedModalRestau.boissons && selectedModalRestau.boissons.length" class="items-container">
             <div v-for="boisson in selectedModalRestau.boissons" :key="boisson.nom" class="item-card">
               <button class="item-button-content" @click="addToCart(boisson)">
-                <img :src="boisson.image" alt="Image de l'article" class="item-image" />
+                <img :src="boisson.image" :alt="$t('itemImage')" class="item-image" />
                 <p>{{ boisson.nom }} - {{ boisson.prix }}€</p>
               </button>
             </div>
           </div>
-          <p v-else>Aucune boisson disponible.</p>
+          <p v-else>{{ $t('noDrinksAvailable') }}</p>
 
-          <p><strong>Note</strong></p>
+          <p><strong>{{ $t('rating') }}</strong></p>
           <Note :averageRating="selectedModalRestau.notes" />
 
-          <p><strong>Commentaires :</strong></p>
+          <p><strong>{{ $t('comments') }}:</strong></p>
           <div v-if="selectedModalRestau.commentaires && selectedModalRestau.commentaires.length">
             <div v-for="comment in selectedModalRestau.commentaires" :key="comment.id">
               <p>{{ getUserName(comment.userId) }}</p>
               <div class="comments">{{ comment.texte }}</div>
             </div>
           </div>
-          <p v-else>Aucun commentaire pour le moment.</p>
+          <p v-else>{{ $t('noCommentsYet') }}</p>
 
-          <h3>Laisser un avis</h3>
+          <h3>{{ $t('leaveReview') }}</h3>
           <form @submit.prevent="submitComment">
-            <textarea v-model="newComment" placeholder="Votre commentaire"></textarea>
-            <button type="submit">Envoyer</button>
+            <textarea v-model="newComment" :placeholder="$t('yourComment')"></textarea>
+            <button type="submit">{{ $t('send') }}</button>
           </form>
           <form @submit.prevent="submitRating">
-            <label for="rating">Note (0-5):</label>
+            <label for="rating">{{ $t('rating') }} (0-5):</label>
             <input type="number" id="rating" v-model="newRating" min="0" max="5" />
-            <button type="submit">Envoyer</button>
+            <button type="submit">{{ $t('send') }}</button>
           </form>
         </div>
       </div>
-
     </div>
 
     <div v-if="selectedTab === 'Boutique'">
-      <h2 class="page-other_title">JEUX</h2>
+      <h2 class="page-other_title">{{ $t('games') }}</h2>
       <div v-if="jeux.length" class="cards-container">
         <div v-for="jeu in jeux" :key="jeu._id" class="card" @click="openModalJeu(jeu)">
-          <img :src="jeu.image" alt="Image du jeu" class="card-image" />
+          <img :src="jeu.image" :alt="$t('gameImage')" class="card-image" />
           <div class="card-content">
             <h2 class="card-title">{{ jeu.name }}</h2>
-            <p class="card-price"><strong>Prix :</strong> {{ jeu.prix }}€</p>
+            <p class="card-price"><strong>{{ $t('price') }}:</strong> {{ jeu.prix }}€</p>
           </div>
         </div>
       </div>
-      <p v-else>Aucun jeux disponible.</p>
-      <h2 class="page-other_title">SOUVENIRS</h2>
+      <p v-else>{{ $t('noGamesAvailable') }}</p>
+      <h2 class="page-other_title">{{ $t('souvenirs') }}</h2>
       <div v-if="souvenirs.length" class="cards-container">
         <div v-for="souvenir in souvenirs" :key="souvenir._id" class="card">
-          <img :src="souvenir.image" alt="Image du souvenir" class="card-image" />
+          <img :src="souvenir.image" :alt="$t('souvenirImage')" class="card-image" />
           <div class="card-content">
             <h2 class="card-title">{{ souvenir.nom }}</h2>
-            <p class="card-price"><strong>Prix : </strong> {{ souvenir.prix }}€</p>
+            <p class="card-price"><strong>{{ $t('price') }}: </strong> {{ souvenir.prix }}€</p>
           </div>
         </div>
       </div>
-      <p v-else>Aucun souvenirs disponible.</p>
+      <p v-else>{{ $t('noSouvenirsAvailable') }}</p>
     </div>
     <div v-if="selectedModalJeu" class="modal">
       <div class="modal-content">
         <span class="close-button" @click="closeModalJeu">&times;</span>
         <h2>{{ selectedModalJeu.name }}</h2>
-        <img :src="selectedModalJeu.image" alt="Image du jeu" class="modal-image" />
-        <p><strong>Type :</strong> {{ selectedModalJeu.type }}</p>
-        <p><strong>Joueurs :</strong> {{ selectedModalJeu.nombre_de_joueurs }}</p>
-        <p><strong>Âge minimum : </strong> À partir de {{ selectedModalJeu.age_minimum }} ans</p>
-        <p><strong>Durée : </strong> {{ selectedModalJeu.duree }} min</p>
-        <p><strong>Éditeur :</strong> {{ selectedModalJeu.editeur }}</p>
-        <button class="button cart_button_checkout" @click="openCommandConfirmationBoutique">Commander</button>
+        <img :src="selectedModalJeu.image" :alt="$t('gameImage')" class="modal-image" />
+        <p><strong>{{ $t('type') }}:</strong> {{ selectedModalJeu.type }}</p>
+        <p><strong>{{ $t('players') }}:</strong> {{ selectedModalJeu.nombre_de_joueurs }}</p>
+        <p><strong>{{ $t('minAge') }}: </strong> {{ $t('fromAge', { age: selectedModalJeu.age_minimum }) }}</p>
+        <p><strong>{{ $t('duration') }}: </strong> {{ selectedModalJeu.duree }} {{ $t('minutes') }}</p>
+        <p><strong>{{ $t('publisher') }}:</strong> {{ selectedModalJeu.editeur }}</p>
+        <button class="button cart_button_checkout" @click="openCommandConfirmationBoutique">{{ $t('order') }}</button>
       </div>
     </div>
     <div v-if="showConfirmationBoutique" class="confirmation-modal">
       <div class="modal-content">
         <span class="close-button" @click="closeConfirmationBoutique">&times;</span>
-        <h2>Confirmer la commande</h2>
-        <p>Voulez-vous vraiment confirmer la commande du jeu ?</p>
-        <button class="confirm-button" @click="confirmReservationBoutique">Confirmer</button>
-        <button class="cancel-button" @click="closeConfirmationBoutique">Annuler</button>
+        <h2>{{ $t('confirmOrder') }}</h2>
+        <p>{{ $t('confirmGameOrder') }}</p>
+        <button class="confirm-button" @click="confirmReservationBoutique">{{ $t('confirm') }}</button>
+        <button class="cancel-button" @click="closeConfirmationBoutique">{{ $t('cancel') }}</button>
       </div>
     </div>
     <div v-if="commandMessage" class="reservation-message">
@@ -196,9 +195,9 @@
       </div>
     </div>
     <ConnexionModal v-if="showLoginModal" :visible="showLoginModal" @close="closeLoginModal"
-      @login-success="handleLoginSuccess" />
+                    @login-success="handleLoginSuccess" />
     <PaymentModal v-if="showPaymentModalBoutique" :visible="showPaymentModalBoutique" :showPickupTime="false"
-      @close="closePaymentModalBoutique" @payment-success="handlePaymentSuccessJeu" />
+                  @close="closePaymentModalBoutique" @payment-success="handlePaymentSuccessJeu" />
   </div>
 </template>
 <script>

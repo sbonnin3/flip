@@ -3,75 +3,75 @@
     <div class="form-box">
       <div class="form-value">
         <div v-if="isLogin">
-          <h2>Se connecter</h2>
+          <h2>{{ $t('loginTitle') }}</h2>
           <form @submit.prevent="handleLogin">
             <div class="inputbox">
               <ion-icon name="mail-outline"></ion-icon>
               <input v-model="identifiant" type="text" required />
-              <label for="identifiant">Identifiant</label>
+              <label for="identifiant">{{ $t('username') }}</label>
             </div>
             <div class="inputbox">
               <ion-icon name="lock-closed-outline"></ion-icon>
               <input v-model="motDePasse" type="password" required />
-              <label for="motDePasse">Mot de passe</label>
+              <label for="motDePasse">{{ $t('password') }}</label>
             </div>
-            <button type="submit">Se connecter</button>
+            <button type="submit">{{ $t('loginButton') }}</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
         </div>
-        
+
         <div v-else>
-          <h2>Inscription</h2>
+          <h2>{{ $t('registerTitle') }}</h2>
           <form @submit.prevent="handleRegister">
             <div class="inputbox">
               <ion-icon name="person-outline"></ion-icon>
               <input v-model="nom" type="text" required />
-              <label for="nom">Nom</label>
+              <label for="nom">{{ $t('lastName') }}</label>
             </div>
             <div class="inputbox">
               <ion-icon name="person-outline"></ion-icon>
               <input v-model="prenom" type="text" required />
-              <label for="prenom">Prénom</label>
+              <label for="prenom">{{ $t('firstName') }}</label>
             </div>
             <div class="inputbox">
               <ion-icon name="mail-outline"></ion-icon>
               <input v-model="email" type="email" required />
-              <label for="email">Email</label>
+              <label for="email">{{ $t('email') }}</label>
             </div>
             <div class="inputbox">
               <ion-icon name="mail-outline"></ion-icon>
               <input v-model="identifiant" type="text" required />
-              <label for="identifiant">Identifiant</label>
+              <label for="identifiant">{{ $t('username') }}</label>
             </div>
             <div class="inputbox">
               <ion-icon name="lock-closed-outline"></ion-icon>
               <input v-model="motDePasse" type="password" required />
-              <label for="motDePasse">Mot de passe</label>
+              <label for="motDePasse">{{ $t('password') }}</label>
             </div>
             <div class="inputbox">
               <select v-model="role" id="role">
-                <option value="utilisateur">Utilisateur</option>
-                <option value="restaurateur">Restaurateur</option>
-                <option value="organisateur">Organisateur</option>
-                <option value="vendeur">Vendeur</option>
-                <option value="createur">Créateur</option>
+                <option value="utilisateur">{{ $t('user') }}</option>
+                <option value="restaurateur">{{ $t('restaurateur') }}</option>
+                <option value="organisateur">{{ $t('organizer') }}</option>
+                <option value="vendeur">{{ $t('seller') }}</option>
+                <option value="createur">{{ $t('creator') }}</option>
               </select>
             </div>
             <div v-if="role !== 'utilisateur'" class="inputbox">
               <ion-icon name="key-outline"></ion-icon>
               <input v-model="codeInscription" type="text" required />
-              <label for="codeInscription">Code d'inscription</label>
+              <label for="codeInscription">{{ $t('registrationCode') }}</label>
             </div>
-            <button type="submit">S'inscrire</button>
+            <button type="submit">{{ $t('registerButton') }}</button>
             <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           </form>
         </div>
-        
+
         <div v-if="isLogin" class="register">
-          <p>Pas de compte ? <a href="#" @click="toggleForm('signup')">S'inscrire</a></p>
+          <p>{{ $t('noAccount') }} <a href="#" @click="toggleForm('signup')">{{ $t('registerLink') }}</a></p>
         </div>
         <div v-else class="register">
-          <p>Déjà un compte ? <a href="#" @click="toggleForm('login')">Se connecter</a></p>
+          <p>{{ $t('haveAccount') }} <a href="#" @click="toggleForm('login')">{{ $t('loginLink') }}</a></p>
         </div>
       </div>
     </div>
@@ -105,31 +105,28 @@ export default {
     },
 
     async handleLogin() {
-    const success = await this.login({
-      identifiant: this.identifiant,
-      motDePasse: this.motDePasse
-    });
+      const success = await this.login({
+        identifiant: this.identifiant,
+        motDePasse: this.motDePasse
+      });
 
-    if (success) {
-      // Récupérer la route de redirection ou utiliser '/MonCompte' par défaut
-      const redirectPath = this.$store.state.user.redirectPath || '/MonCompte';
-      // Nettoyer la route de redirection
-      await this.$store.dispatch('user/clearRedirectPath');
-      // Rediriger
-      this.$router.push(redirectPath);
-    } else {
-      this.errorMessage = "Identifiant ou mot de passe incorrect.";
-    }
-  },
+      if (success) {
+        const redirectPath = this.$store.state.user.redirectPath || '/MonCompte';
+        await this.$store.dispatch('user/clearRedirectPath');
+        this.$router.push(redirectPath);
+      } else {
+        this.errorMessage = this.$t('loginError');
+      }
+    },
 
     async handleRegister() {
       if (!this.email.includes("@")) {
-        this.errorMessage = "Veuillez fournir une adresse email valide.";
+        this.errorMessage = this.$t('emailError');
         return;
       }
 
       if (this.role !== "utilisateur" && this.codeInscription !== "1234") {
-        this.errorMessage = "Code d'inscription incorrect.";
+        this.errorMessage = this.$t('codeError');
         return;
       }
 
@@ -144,13 +141,12 @@ export default {
         });
 
         if (success) {
-      // Après inscription, même logique que la connexion
-      const redirectPath = this.$store.state.user.redirectPath || '/MonCompte';
-      await this.$store.dispatch('user/clearRedirectPath');
-      this.$router.push(redirectPath);
-    }
+          const redirectPath = this.$store.state.user.redirectPath || '/MonCompte';
+          await this.$store.dispatch('user/clearRedirectPath');
+          this.$router.push(redirectPath);
+        }
       } catch (error) {
-        this.errorMessage = "Une erreur est survenue lors de l'inscription.";
+        this.errorMessage = this.$t('registerError');
         console.error(error);
       }
     },

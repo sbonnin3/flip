@@ -1,17 +1,17 @@
 <template>
   <div class="page-carte">
     <div class="map-container">
-      <h1 class="page-title">Carte de Parthenay</h1>
+      <h1 class="page-title">{{ $t('mapTitle') }}</h1>
 
       <select v-model="selectedLayer" @change="changeLayer">
-        <option value="osm">Vue Carte</option>
-        <option value="satellite">Vue Satellite</option>
+        <option value="osm">{{ $t('mapView') }}</option>
+        <option value="satellite">{{ $t('satelliteView') }}</option>
       </select>
 
       <select v-model="selectedCategory" @change="filterPoints">
-        <option value="">Toutes les catégories</option>
+        <option value="">{{ $t('allCategories') }}</option>
         <option v-for="category in categories" :key="category" :value="category">
-          {{ category }}
+          {{ $t(category) }}
         </option>
       </select>
 
@@ -29,9 +29,9 @@
       <div v-if="selectedStand" class="stand-info-panel">
         <button class="close-button" @click="closeStandInfo">X</button>
         <h2>{{ selectedStand.nom }}</h2>
-        <img v-if="selectedStand.image" :src="selectedStand.image" alt="Image du stand" class="stand-image" />
-        <p><strong>Type:</strong> {{ selectedStand.type }}</p>
-        <p v-if="selectedStand.description"><strong>Description:</strong> {{ selectedStand.description }}</p>
+        <img v-if="selectedStand.image" :src="selectedStand.image" :alt="$t('standImage')" class="stand-image" />
+        <p><strong>{{ $t('type') }}:</strong> {{ selectedStand.type }}</p>
+        <p v-if="selectedStand.description"><strong>{{ $t('description') }}:</strong> {{ selectedStand.description }}</p>
       </div>
     </div>
   </div>
