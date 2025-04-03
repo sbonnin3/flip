@@ -2,7 +2,7 @@ import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/axi
 
 async function createTournoiFromAPI(data) {
     try {
-        return postRequest('/api/tournamenets', data, 'CREATETOURNOI')
+        return postRequest('/api/tournaments', data, 'CREATETOURNOI')
     } catch (error) {
         console.error('Error creating tournoi from API:', error);
         throw error;

@@ -1,4 +1,4 @@
-import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/axios.service";
+import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/serviceapi/axios.service";
 
 async function createGameFromAPI(data) {
     try {
@@ -23,7 +23,7 @@ async function getGamesFromAPI() {
     }
 }
 
-async function getGameService() {
+export async function getGamesService() {
     let answer = await getGamesFromAPI()
     return answer
 }
@@ -74,7 +74,7 @@ export default {
     createGameFromAPI,
     createGameService,
     getGamesFromAPI,
-    getGameService,
+    getGamesService,
     getGameByIdFromAPI,
     getGameByIdService,
     updateGameFromAPI,

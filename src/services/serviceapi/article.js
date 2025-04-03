@@ -1,4 +1,4 @@
-import {getRequest, postRequest, putRequest, deleteRequest} from "@/services/axios.service";
+import {getRequest, postRequest, putRequest, deleteRequest} from "@/services/serviceapi/axios.service";
 
 async function createArticleFromAPI(data) {
     try {
@@ -28,7 +28,7 @@ async function getArticleService() {
     return answer
 }
 
-async function getArticleByIdFromAPI(id) {
+export async function getArticleByIdFromAPI(id) {
     try {
         return getRequest('/api/articles/' + id, 'GETARTICLES')
     } catch (error) {
@@ -37,7 +37,7 @@ async function getArticleByIdFromAPI(id) {
     }
 }
 
-async function getArticleByIdService(id) {
+export async function getArticleByIdService(id) {
     let answer = await getArticleByIdFromAPI(id)
     return answer
 }

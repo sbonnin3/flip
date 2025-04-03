@@ -54,16 +54,24 @@
           <button @click="resetFilters" class="reset-button">{{ $t('resetFilters') }}</button>
         </div>
 
-        <div class="cards-container" v-if="filteredJeux.length">
-          <div v-for="jeu in filteredJeux" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
-            <img :src="jeu.image" :alt="$t('gameImage')" class="card-image" />
+        <div class="cards-container" v-if="filteredJeux.length > 0">
+          <div v-for="jeu in filteredJeux" :key="jeu.id" class="card" @click="openJeuModal(jeu)">
+            <img :src="getJeuImage(jeu)" :alt="getJeuName(jeu)" class="card-image" />
             <div class="card-content">
-              <h2 class="card-title">{{ jeu.name }}</h2>
-              <p class="card-type">{{ $t('type') }}: {{ jeu.type }}</p>
-              <p class="card-players">{{ $t('playerCount') }}: {{ jeu.nombre_de_joueurs.join(', ') }}</p>
-              <p class="card-age">{{ $t('minAge') }}: {{ jeu.age_minimum }} {{ $t('years') }}</p>
-              <p class="card-duration">{{ $t('duration') }}: {{ jeu.duree }} min</p>
-              <p class="card-stand">{{ $t('standName') }}: {{ jeu.nomsDesStands }}</p>
+              <h2 class="card-title">{{ getJeuName(jeu) }}</h2>
+              <p class="card-type">{{ $t('type') }}: {{ jeu.type || 'Non spécifié' }}</p>
+              <p class="card-players">
+                {{ $t('playerCount') }}: {{ jeu.nombre_joueurs_min }}-{{ jeu.nombre_joueurs_max }}
+              </p>
+              <p class="card-age">
+                {{ $t('minAge') }}: {{ jeu.age_limite }} {{ $t('years') }}
+              </p>
+              <p class="card-duration">
+                {{ $t('duration') }}: {{ jeu.duree }} min
+              </p>
+              <p class="card-stand" v-if="getStandName(jeu)">
+                {{ $t('standName') }}: {{ getStandName(jeu) }}
+              </p>
             </div>
           </div>
         </div>
@@ -209,6 +217,7 @@
 <script>
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
+import {mapActions, mapState} from "vuex";
 
 export default {
   name: 'PageActivites',
@@ -239,14 +248,12 @@ export default {
     };
   },
   computed: {
+    ...mapState("jeux", ["jeux"]),
     reservations() {
       return this.$store.getters['reservations/reservations'];
     },
     reservationStandJeu() {
       return this.$store.getters['reservations/reservationStandJeu'];
-    },
-    jeux() {
-      return this.$store.state.jeux.jeux || [];
     },
     tournois() {
       return this.$store.state.tournois.tournois || [];
@@ -258,25 +265,16 @@ export default {
       return [...new Set(this.jeux.map(jeu => jeu.type))];
     },
     filteredJeux() {
-      return this.jeux.filter(jeu => {
-        const nameMatch = jeu.name.toLowerCase().includes(this.searchName.toLowerCase());
-        const typeMatch = this.selectedTypes.length ? this.selectedTypes.includes(jeu.type) : true;
-        const playersMatch = this.searchPlayers ? jeu.nombre_de_joueurs.includes(Number(this.searchPlayers)) : true;
-        const ageMatch = this.searchAge ? jeu.age_minimum <= Number(this.searchAge) : true;
-        const durationMatch = this.searchDuration ? jeu.duree <= Number(this.searchDuration) : true;
-        const editeurMatch = jeu.editeur.toLowerCase().includes(this.searchEditeur.toLowerCase());
-        const standMatch = jeu.nomsDesStands.toLowerCase().includes(this.searchStand.toLowerCase());
-
-        return nameMatch && typeMatch && playersMatch && ageMatch && durationMatch && editeurMatch && standMatch;
-      });
-    },
+      return this.jeux
+    }
   },
   async created() {
     await this.$store.dispatch('stands/getAllStands');
     await this.$store.dispatch('reservations/fetchReservations');
     await this.$store.dispatch('reservations/fetchAllReservationsStand');
-    await this.$store.dispatch('jeux/getAllJeux');
     await this.$store.dispatch('tournois/fetchTournois');
+    await this.getAllJeux();
+    console.log("TEST IMPORTANT : " + JSON.stringify(this.jeux));
 
     this.$store.state.jeux.jeux = this.jeux.map(jeu => {
       const standIds = Array.isArray(jeu.nom_stand) ? jeu.nom_stand : [jeu.nom_stand];
@@ -295,6 +293,25 @@ export default {
     });
   },
   methods: {
+    ...mapActions("jeux", ["getAllJeux"]),
+
+
+    getJeuImage(jeu) {
+      const path = jeu.produit.image_path
+      console.log(jeu.produit.image_path)
+      try { return require(`@/assets/images/${path}`); }
+      catch { return require('@/assets/images/null.png'); }
+    },
+
+    getJeuName(jeu) {
+      return jeu.produit?.nom_produit || jeu.nom || 'Jeu sans nom';
+    },
+
+    getStandName(jeu) {
+      return jeu.produit?.venduPar?.nom_stand || 'Stand inconnu';
+    },
+
+
     openReservationConfirmation() {
       const currentUser = this.$store.state.user.userSession;
       if (currentUser) {
@@ -556,6 +573,9 @@ export default {
     },
   },
   mounted() {
+      console.log("Données des jeux:", this.jeux);
+      console.log("Jeux filtrés:", this.filteredJeux);
+
     const selectedTab = this.$route.query.tab;
     if (selectedTab) {
       this.selectTab(selectedTab);
