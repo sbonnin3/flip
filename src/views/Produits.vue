@@ -117,25 +117,36 @@
           <p v-else>{{ $t('noDrinksAvailable') }}</p>
 
           <p><strong>{{ $t('rating') }}</strong></p>
-          <Note :averageRating="selectedModalRestau.notes" />
+          <Note :averageRating="calculateAverageRating()" />
+
+          <div v-if="hasUserRated()">
+            <p>{{ $t('yourRating') }}: {{ getUserRating().valeur }}/5</p>
+            <button @click="editRating(getUserRating())">{{ $t('edit') }}</button>
+            <button @click="deleteRating(getUserRating())">{{ $t('delete') }}</button>
+          </div>
+          <div v-else>
+            <form @submit.prevent="submitRating">
+              <label for="rating">{{ $t('rating') }} (0-5):</label>
+              <input type="number" id="rating" v-model="newRating" min="0" max="5" />
+              <button type="submit">{{ $t('send') }}</button>
+            </form>
+          </div>
 
           <p><strong>{{ $t('comments') }}:</strong></p>
           <div v-if="selectedModalRestau.commentaires && selectedModalRestau.commentaires.length">
             <div v-for="comment in selectedModalRestau.commentaires" :key="comment.id">
-              <p>{{ getUserName(comment.userId) }}</p>
+              <p>{{ getAuthor(comment.userId) }}</p>
               <div class="comments">{{ comment.texte }}</div>
+              <button v-if="isCommentOwner(comment)" @click="editComment(comment)">{{ $t('edit') }}</button>
+              <button v-if="isCommentOwner(comment)" @click="deleteComment(comment)">{{ $t('delete') }}</button>
             </div>
           </div>
-          <p v-else>{{ $t('noCommentsYet') }}</p>
+
+          
 
           <h3>{{ $t('leaveReview') }}</h3>
           <form @submit.prevent="submitComment">
             <textarea v-model="newComment" :placeholder="$t('yourComment')"></textarea>
-            <button type="submit">{{ $t('send') }}</button>
-          </form>
-          <form @submit.prevent="submitRating">
-            <label for="rating">{{ $t('rating') }} (0-5):</label>
-            <input type="number" id="rating" v-model="newRating" min="0" max="5" />
             <button type="submit">{{ $t('send') }}</button>
           </form>
         </div>
@@ -451,11 +462,18 @@ export default {
     },
     submitComment() {
       if (this.newComment.trim()) {
+        const currentUser = this.$store.state.user.userSession;
+        if (!currentUser) {
+          alert(this.$t('loginRequired'));
+          return;
+        }
+
         const comment = {
           id: Date.now(),
           texte: this.newComment,
-          userId: this.$store.state.user.userSession.id,
+          userId: currentUser.id,
         };
+
         if (this.editingComment) {
           const index = this.selectedModalRestau.commentaires.findIndex(c => c.id === this.editingComment.id);
           this.$set(this.selectedModalRestau.commentaires, index, comment);
@@ -463,24 +481,39 @@ export default {
         } else {
           this.selectedModalRestau.commentaires.push(comment);
         }
+
         this.newComment = '';
       }
     },
     submitRating() {
-  if (this.newRating >= 0 && this.newRating <= 5) {
-    const rating = {
-      userId: this.$store.state.user.userSession.id,
-      valeur: this.newRating,
-    };
-    if (!this.selectedModalRestau.notes) {
-      this.selectedModalRestau.notes = [];
-    }
-    this.selectedModalRestau.notes.push(rating);
-    this.newRating = 0;
-  } else {
-    alert("La note doit être entre 0 et 5.");
-  }
-},
+      const currentUser = this.$store.state.user.userSession;
+      if (!currentUser) {
+        alert(this.$t('loginRequired'));
+        return;
+      }
+
+      if (this.newRating >= 0 && this.newRating <= 5) {
+        const rating = {
+          userId: currentUser.id,
+          valeur: this.newRating,
+        };
+
+        if (this.editingRating) {
+          const index = this.selectedModalRestau.notes.findIndex(r => r.userId === this.editingRating.userId);
+          this.$set(this.selectedModalRestau.notes, index, rating);
+          this.editingRating = null;
+        } else {
+          if (!this.selectedModalRestau.notes) {
+            this.selectedModalRestau.notes = [];
+          }
+          this.selectedModalRestau.notes.push(rating);
+        }
+
+        this.newRating = 0;
+      } else {
+        alert(this.$t('ratingRangeError'));
+      }
+    },
     editComment(comment) {
       this.newComment = comment.texte;
       this.editingComment = comment;
@@ -489,12 +522,45 @@ export default {
       this.selectedModalRestau.commentaires = this.selectedModalRestau.commentaires.filter(c => c.id !== comment.id);
     },
     editRating(rating) {
-      this.newRating = rating.rating;
+      this.newRating = rating.valeur;
       this.editingRating = rating;
     },
     deleteRating(rating) {
-      this.selectedModalRestau.notes = this.selectedModalRestau.notes.filter(r => r.id !== rating.id);
+      this.selectedModalRestau.notes = this.selectedModalRestau.notes.filter(r => r.userId !== rating.userId);
       this.newRating = 0;
+      this.editingRating = null;
+    },
+    isCommentOwner(comment) {
+      const currentUser = this.$store.state.user.userSession;
+      return currentUser && comment.userId === currentUser.id;
+    },
+    isRatingOwner(rating) {
+      const currentUser = this.$store.state.user.userSession;
+      return currentUser && rating.userId === currentUser.id;
+    },
+    getAuthor(userId) {
+      console.log("called getAuthor with userId:", userId);
+      console.log("comptes:", this.comptes);
+      const user = this.comptes.find(user => user.id === userId);
+      console.log("found user:", user);
+      return user ? user.name : 'Unknown';
+    },
+    hasUserRated() {
+      const currentUser = this.$store.state.user.userSession;
+      if (!currentUser || !this.selectedModalRestau.notes) return false;
+      return this.selectedModalRestau.notes.some(note => note.userId === currentUser.id);
+    },
+    getUserRating() {
+      const currentUser = this.$store.state.user.userSession;
+      if (!currentUser || !this.selectedModalRestau.notes) return null;
+      return this.selectedModalRestau.notes.find(note => note.userId === currentUser.id);
+    },
+    calculateAverageRating() {
+      if (!this.selectedModalRestau || !this.selectedModalRestau.notes || this.selectedModalRestau.notes.length === 0) {
+        return 0;
+      }
+      const total = this.selectedModalRestau.notes.reduce((sum, note) => sum + note.valeur, 0);
+      return total / this.selectedModalRestau.notes.length;
     },
   },
 };
