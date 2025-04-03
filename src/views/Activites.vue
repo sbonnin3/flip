@@ -56,7 +56,7 @@
 
         <div class="cards-container" v-if="filteredJeux.length > 0">
           <div v-for="jeu in filteredJeux" :key="jeu.id" class="card" @click="openJeuModal(jeu)">
-            <img :src="getJeuImage(jeu)" :alt="getJeuName(jeu)" class="card-image" />
+            <img :src="getJeuImage(jeu)" class="card-image"  alt="image"/>
             <div class="card-content">
               <h2 class="card-title">{{ getJeuName(jeu) }}</h2>
               <p class="card-type">{{ $t('type') }}: {{ jeu.type || 'Non spécifié' }}</p>
@@ -81,14 +81,14 @@
       <div id="Tournois" v-show="selectedTab === 'Tournois'">
         <div class="cards-container" v-if="tournois.length">
           <div v-for="tournoi in tournois" :key="tournoi._id" class="card" @click="openModal(tournoi)">
-            <img :src="tournoi.image" :alt="$t('tournamentImage')" class="card-image" />
+            <img :src="getTournoiImage(tournoi)" class="modal-image" />
             <div class="card-content">
-              <h2 class="card-title">{{ tournoi.nom }}</h2>
+              <h2 class="card-title">{{ tournoi.nom_tournoi }}</h2>
               <p class="card-location">{{ tournoi.lieu }}</p>
               <p class="card-date">{{ formatDate(tournoi.dates) }}</p>
-              <p class="card-price">{{ $t('price') }}: {{ tournoi.prix }}€</p>
+              <p class="card-price">{{ $t('price') }}: {{ tournoi.prix_entree }}€</p>
               <p class="card-places">
-                {{ $t('remainingPlaces') }}: {{ getPlacesRestantes(tournoi._id) }}
+                {{ $t('remainingPlaces') }}: {{ getPlacesRestantes(tournoi.id) }}
               </p>
             </div>
           </div>
@@ -147,7 +147,7 @@
         <div class="modal-content">
           <span class="close-button" @click="closeModal">&times;</span>
           <h2>{{ selectedTournoi.nom }}</h2>
-          <img :src="selectedTournoi.image" :alt="$t('tournamentImage')" class="modal-image" />
+          <img :src="getTournoiImage(selectedTournoi)" class="modal-image" />
           <p><strong>{{ $t('location') }}:</strong> {{ selectedTournoi.lieu }}</p>
           <p class="article-quantity">{{ $t('date') }}: {{ formatReservationDate(selectedTournoi.dates[0]) }}</p>
           <p><strong>{{ $t('description') }}:</strong> {{ selectedTournoi.description }}</p>
@@ -250,6 +250,7 @@ export default {
   computed: {
     ...mapState("jeux", ["jeux"]),
     ...mapState("stands", ["stands"]),
+    ...mapState("tournois", ["tournois"]),
     reservations() {
       return this.$store.getters['reservations/reservations'];
     },
@@ -311,10 +312,11 @@ export default {
     await this.$store.dispatch('stands/getAllStands');
     await this.$store.dispatch('reservations/fetchReservations');
     await this.$store.dispatch('reservations/fetchAllReservationsStand');
-    await this.$store.dispatch('tournois/fetchTournois');
+    await this.$store.dispatch('tournois/getAllTournois');
     await this.getAllJeux();
     console.log("TEST IMPORTANT : " + JSON.stringify(this.jeux));
     console.log("test stands: " + JSON.stringify(this.stands));
+    console.log("test tournoi: " + JSON.stringify(this.tournois));
 
     this.$store.state.jeux.jeux = this.jeux.map(jeu => {
       const standIds = Array.isArray(jeu.nom_stand) ? jeu.nom_stand : [jeu.nom_stand];
@@ -335,11 +337,19 @@ export default {
   methods: {
     ...mapActions("jeux", ["getAllJeux"]),
     ...mapActions("stands", ["getAllStands"]),
+    ...mapActions("tournois", ["getAllTournois"]),
 
 
     getJeuImage(jeu) {
       const path = jeu.produit.image_path
       console.log(jeu.produit.image_path)
+      try { return require(`@/assets/images/${path}`); }
+      catch { return require('@/assets/images/null.png'); }
+    },
+
+    getTournoiImage(tournoi) {
+      const path = tournoi.image_path
+      console.log(tournoi.image_path)
       try { return require(`@/assets/images/${path}`); }
       catch { return require('@/assets/images/null.png'); }
     },
@@ -607,11 +617,25 @@ export default {
       this.reservationMessage = '';
     },
     getPlacesRestantes(tournoiId) {
-      const tournoi = this.tournois.find((t) => t._id === tournoiId);
+      const tournoi = this.tournois.find(t => t.id === tournoiId);
       if (!tournoi) return 0;
 
-      return tournoi.dates.reduce((total, date) => total + (date.placesRestantes || 0), 0);
-    },
+      const editionsTournoi = this.$store.state.editionsTournoi || [];
+      const editions = editionsTournoi.filter(ed => ed.id_tournoi === tournoiId);
+
+      if (editions.length === 0) {
+        return tournoi.participants_max || 0;
+      }
+
+      let totalPlacesRestantes = 0;
+      editions.forEach(edition => {
+        const placesReservees = edition.current_participants || 0;
+        const placesRestantesEdition = (edition.capacitee || tournoi.participants_max) - placesReservees;
+        totalPlacesRestantes += Math.max(0, placesRestantesEdition);
+      });
+
+      return totalPlacesRestantes;
+    }
   },
   mounted() {
     console.log("Données des jeux:", this.jeux);

@@ -1,4 +1,4 @@
-import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/axios.service";
+import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/serviceapi/axios.service";
 
 async function createTournoiFromAPI(data) {
     try {
@@ -23,7 +23,7 @@ async function getTournoisFromAPI() {
     }
 }
 
-async function getTournoiService() {
+export async function getTournoiService() {
     let answer = await getTournoisFromAPI()
     return answer
 }
