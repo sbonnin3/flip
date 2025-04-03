@@ -69,8 +69,8 @@
               <p class="card-duration">
                 {{ $t('duration') }}: {{ jeu.duree }} min
               </p>
-              <p class="card-stand" v-if="getStandName(jeu)">
-                {{ $t('standName') }}: {{ getStandName(jeu) }}
+              <p class="card-stand" v-if="stands[jeu.id]">
+                {{ $t('standName') }}: {{ stands[jeu.id].nom_stand }}
               </p>
             </div>
           </div>
@@ -249,6 +249,7 @@ export default {
   },
   computed: {
     ...mapState("jeux", ["jeux"]),
+    ...mapState("stands", ["stands"]),
     reservations() {
       return this.$store.getters['reservations/reservations'];
     },
@@ -265,8 +266,30 @@ export default {
       return [...new Set(this.jeux.map(jeu => jeu.type))];
     },
     filteredJeux() {
-      return this.jeux
+      if (!this.jeux || !Array.isArray(this.jeux)) return [];
+
+      return this.jeux.filter(jeu => {
+        if (!jeu || !jeu.produit) return false;
+
+        const jeuNom = this.getJeuName(jeu).toLowerCase();
+        const jeuType = (jeu.type || '').toLowerCase();
+
+        // Vérifie si le jeu a un stand défini
+        const stand = this.stands[jeu.id] || {};
+        const standNom = stand.nom_stand ? stand.nom_stand.toLowerCase() : '';
+
+        // Vérifications des filtres
+        const nameMatch = !this.searchName || jeuNom.includes(this.searchName.toLowerCase());
+        const typeMatch = !this.selectedTypes.length || this.selectedTypes.includes(jeuType);
+        const playersMatch = !this.searchPlayers || (jeu.nombre_joueurs_min <= Number(this.searchPlayers) && jeu.nombre_joueurs_max >= Number(this.searchPlayers));
+        const ageMatch = !this.searchAge || (jeu.age_limite || 0) <= Number(this.searchAge);
+        const durationMatch = !this.searchDuration || (jeu.duree || 0) <= Number(this.searchDuration);
+        const standMatch = !this.searchStand || standNom.includes(this.searchStand.toLowerCase());
+
+        return nameMatch && typeMatch && playersMatch && ageMatch && durationMatch && standMatch;
+      });
     }
+
   },
   async created() {
     await this.$store.dispatch('stands/getAllStands');
@@ -275,6 +298,7 @@ export default {
     await this.$store.dispatch('tournois/fetchTournois');
     await this.getAllJeux();
     console.log("TEST IMPORTANT : " + JSON.stringify(this.jeux));
+    console.log("test stands: " + JSON.stringify(this.stands));
 
     this.$store.state.jeux.jeux = this.jeux.map(jeu => {
       const standIds = Array.isArray(jeu.nom_stand) ? jeu.nom_stand : [jeu.nom_stand];
@@ -294,6 +318,7 @@ export default {
   },
   methods: {
     ...mapActions("jeux", ["getAllJeux"]),
+    ...mapActions("stands", ["getAllStands"]),
 
 
     getJeuImage(jeu) {
@@ -307,9 +332,9 @@ export default {
       return jeu.produit?.nom_produit || jeu.nom || 'Jeu sans nom';
     },
 
-    getStandName(jeu) {
-      return jeu.produit?.venduPar?.nom_stand || 'Stand inconnu';
-    },
+
+
+
 
 
     openReservationConfirmation() {
@@ -573,8 +598,9 @@ export default {
     },
   },
   mounted() {
-      console.log("Données des jeux:", this.jeux);
-      console.log("Jeux filtrés:", this.filteredJeux);
+    console.log("Données des jeux:", this.jeux);
+    console.log("Jeux filtrés:", this.filteredJeux);
+
 
     const selectedTab = this.$route.query.tab;
     if (selectedTab) {

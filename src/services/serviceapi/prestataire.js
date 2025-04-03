@@ -1,4 +1,4 @@
-import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/axios.service";
+import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/serviceapi/axios.service";
 
 async function createPrestataireFromAPI(data) {
     try {
@@ -23,7 +23,7 @@ async function getPrestatairesFromAPI() {
     }
 }
 
-async function getPrestataireService() {
+export async function getPrestataireService() {
     let answer = await getPrestatairesFromAPI()
     return answer
 }
@@ -37,7 +37,7 @@ async function getPrestataireByIdFromAPI(id) {
     }
 }
 
-async function getPrestataireByIdService(id) {
+export async function getPrestataireByIdService(id) {
     let answer = await getPrestataireByIdFromAPI(id)
     return answer
 }

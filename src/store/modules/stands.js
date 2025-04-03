@@ -1,3 +1,5 @@
+import {getPrestataireService} from "@/services/serviceapi/prestataire";
+
 export default {
   namespaced: true,
   state: {
@@ -5,21 +7,23 @@ export default {
   },
   mutations: {
       SET_STANDS(state, stands) {
-          state.stands = stands.map(stand => ({
-              ...stand,
-              idStand: stand.idStand || `stand-${Math.random().toString(36).substr(2, 9)}`
-          }));
+          state.stands = stands;
       }
   },
   actions: {
-      async getAllStands({ commit }) {
+      async getAllStands({commit}) {
+          console.log("STORE: get all prestataires")
+          let result = null
           try {
-              const { stands } = require("@/datasource/data");
-              commit('SET_STANDS', stands);
-          } catch (error) {
-              console.error("Erreur lors de la récupération des stands :", error);
+
+              result = await getPrestataireService()
+                  commit('SET_STANDS',result)
+                  console.log(result)
           }
-      }
+          catch(err) {
+              console.log("Cas anormal dans getAllPrestataires()")
+          }
+      },
   },
   getters: {
       stands: state => state.stands || [],

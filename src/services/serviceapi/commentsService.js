@@ -1,4 +1,4 @@
-import { getRequest, postRequest, putRequest, deleteRequest } from "@/services/axios.service";
+import { getRequest, postRequest, putRequest, deleteRequest } from "@/services/serviceapi/axios.service";
 
 async function fetchComments(restaurantId) {
     try {

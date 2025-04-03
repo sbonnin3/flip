@@ -1,5 +1,6 @@
 import { getGamesService } from "@/services/serviceapi/games";
 import { getArticleByIdService} from "@/services/serviceapi/article";
+// import { getPrestataireByIdService } from "@/services/serviceapi/prestataire";
 
 export default {
   namespaced: true,
@@ -37,7 +38,6 @@ export default {
         // Si l'API ne fait pas la jointure, il faut la faire côté front
         const jeuxAvecProduits = await Promise.all(
             result.map(async jeu => {
-              // Supposons que vous avez un service pour récupérer le produit
               const produit = await getArticleByIdService(jeu.produit_id)
               return {
                 ...jeu,
