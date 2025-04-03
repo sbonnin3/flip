@@ -1,3 +1,5 @@
+import { createPrestataireService } from "@/services/serviceapi/prestataire";
+
 export default {
     namespaced: true,
     state: {
@@ -22,10 +24,7 @@ export default {
             state.userReservationStandJeu = reservations;
         },
         ADD_RESERVATION(state, reservation) {
-            state.reservations.push({
-                ...reservation,
-                id: Date.now().toString() // Ajout d'un ID unique
-            });
+            state.reservations.push(reservation)
         },
         ADD_STAND_RESERVATION(state, reservation) {
             state.reservationStandJeu.push({
@@ -41,9 +40,9 @@ export default {
         }
     },
     actions: {
-        async fetchAllReservationsStand({ commit }) {
+        async fetchAllReservationsStand({commit}) {
             try {
-                const { reservationStandJeu } = require("@/datasource/data");
+                const {reservationStandJeu} = require("@/datasource/data");
                 commit('SET_ALL_RESERVATIONS_STAND', reservationStandJeu);
                 commit('SET_RESERVATION_STAND_JEU', reservationStandJeu);
             } catch (error) {
@@ -52,16 +51,16 @@ export default {
                 commit('SET_RESERVATION_STAND_JEU', []);
             }
         },
-        async fetchReservations({ commit }) {
+        async fetchReservations({commit}) {
             try {
-                const { reservations } = require("@/datasource/data");
+                const {reservations} = require("@/datasource/data");
                 commit('SET_RESERVATIONS', reservations);
             } catch (error) {
                 console.error("Erreur chargement réservations:", error);
                 commit('SET_RESERVATIONS', []);
             }
         },
-        async fetchUserData({ commit, rootState }) {
+        async fetchUserData({commit, rootState}) {
             try {
                 const userId = rootState.user.userSession?.id;
                 if (!userId) return;
@@ -80,22 +79,22 @@ export default {
                 console.error("Erreur chargement données:", error);
             }
         },
-        async addReservation({ commit, rootState }, reservation) {
+        async addReservation({commit, rootState}, reservation) {
             if (!rootState.user.userSession?.id) {
                 throw new Error("Utilisateur non connecté");
             }
             commit('ADD_RESERVATION', reservation);
             return reservation;
         },
-        async addStandReservation({ commit, rootState }, reservation) {
-            if (!rootState.user.userSession?.id) {
-                throw new Error("Utilisateur non connecté");
+        async addStandReservation({commit}, standData) {
+            try {
+                const result = await createPrestataireService(standData);
+                console.log("Stand créée avec succès", result);
+                commit('ADD_STAND_RESERVATION', result);
+
+            } catch (err) {
+                console.log("Erreur dans addPrestataire", err);
             }
-            if (!reservation.standID) {
-                throw new Error("Stand non valide");
-            }
-            commit('ADD_STAND_RESERVATION', reservation);
-            return reservation;
         },
     },
     getters: {

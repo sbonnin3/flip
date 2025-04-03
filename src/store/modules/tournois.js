@@ -4,6 +4,7 @@ export default {
     namespaced: true,
     state: {
         tournois: [],
+        editionTournois: [],
     },
     mutations: {
         SET_TOURNOIS(state, tournois) {

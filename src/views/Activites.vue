@@ -43,9 +43,6 @@
           </div>
 
           <div class="search-row">
-            <label for="searchEditeur" class="search-label">{{ $t('publisherName') }}:</label>
-            <input id="searchEditeur" type="text" v-model="searchEditeur" :placeholder="$t('searchByPublisher')"
-                   class="search-input" />
             <label for="searchStand" class="search-label">{{ $t('standName') }}:</label>
             <input id="searchStand" type="text" v-model="searchStand" :placeholder="$t('searchByStand')"
                    class="search-input" />
@@ -85,7 +82,7 @@
             <div class="card-content">
               <h2 class="card-title">{{ tournoi.nom_tournoi }}</h2>
               <p class="card-location">{{ tournoi.lieu }}</p>
-              <p class="card-date">{{ formatDate(tournoi.dates) }}</p>
+<!--              <p class="card-date">{{ formatDate(tournoi.dates) }}</p>-->
               <p class="card-price">{{ $t('price') }}: {{ tournoi.prix_entree }}€</p>
               <p class="card-places">
                 {{ $t('remainingPlaces') }}: {{ getPlacesRestantes(tournoi.id) }}
@@ -105,7 +102,6 @@
           <p><strong>{{ $t('playerCount') }}:</strong> {{ selectedJeu.nombre_joueurs_max }} max</p>
           <p><strong>{{ $t('minAge') }}:</strong> {{ selectedJeu.age_minimum }} {{ $t('years') }}</p>
           <p><strong>{{ $t('duration') }}:</strong> {{ selectedJeu.duree }} {{ $t('minutes') }}</p>
-          <p><strong>{{ $t('publisher') }}:</strong> {{ selectedJeu.editeur }}</p>
           <p><strong>{{ $t('standName') }}:</strong> {{ this.stands[selectedJeu.id].nom_stand }}</p>
           <button @click="openReservationJeuConfirmation" class="reset-button">{{ $t('reserve') }}</button>
         </div>
@@ -146,14 +142,14 @@
       <div v-if="selectedTournoi" class="modal">
         <div class="modal-content">
           <span class="close-button" @click="closeModal">&times;</span>
-          <h2>{{ selectedTournoi.nom }}</h2>
+          <h2>{{ selectedTournoi.nom_tournoi }}</h2>
           <img :src="getTournoiImage(selectedTournoi)" class="modal-image" />
           <p><strong>{{ $t('location') }}:</strong> {{ selectedTournoi.lieu }}</p>
-          <p class="article-quantity">{{ $t('date') }}: {{ formatReservationDate(selectedTournoi.dates[0]) }}</p>
-          <p><strong>{{ $t('description') }}:</strong> {{ selectedTournoi.description }}</p>
-          <p><strong>{{ $t('price') }}:</strong> {{ selectedTournoi.prix }}€</p>
+<!--          <p class="article-quantity">{{ $t('date') }}: {{ formatReservationDate(selectedTournoi.dates[0]) }}</p>-->
+          <p><strong>{{ $t('description') }}:</strong> {{ selectedTournoi.description_tournoi }}</p>
+          <p><strong>{{ $t('price') }}:</strong> {{ selectedTournoi.prix_entree }}€</p>
           <p class="card-places">
-            {{ $t('totalRemainingPlaces') }}: {{ getPlacesRestantes(selectedTournoi._id) }}
+            {{ $t('totalRemainingPlaces') }}: {{ getPlacesRestantes(selectedTournoi.id) }}
           </p>
           <button class="reserve-button" @click="openReservationConfirmation">{{ $t('reserve') }}</button>
         </div>
@@ -239,7 +235,6 @@ export default {
       searchPlayers: '',
       searchAge: '',
       searchDuration: '',
-      searchEditeur: '',
       searchStand: '',
       selectedTypes: [],
       predefinedDates: this.generatePredefinedDates(),
@@ -314,10 +309,6 @@ export default {
     await this.$store.dispatch('reservations/fetchAllReservationsStand');
     await this.$store.dispatch('tournois/getAllTournois');
     await this.getAllJeux();
-    console.log("TEST IMPORTANT : " + JSON.stringify(this.jeux));
-    console.log("test stands: " + JSON.stringify(this.stands));
-    console.log("test tournoi: " + JSON.stringify(this.tournois));
-
     this.$store.state.jeux.jeux = this.jeux.map(jeu => {
       const standIds = Array.isArray(jeu.nom_stand) ? jeu.nom_stand : [jeu.nom_stand];
       const nomsDesStands = standIds
@@ -342,14 +333,12 @@ export default {
 
     getJeuImage(jeu) {
       const path = jeu.produit.image_path
-      console.log(jeu.produit.image_path)
       try { return require(`@/assets/images/${path}`); }
       catch { return require('@/assets/images/null.png'); }
     },
 
     getTournoiImage(tournoi) {
       const path = tournoi.image_path
-      console.log(tournoi.image_path)
       try { return require(`@/assets/images/${path}`); }
       catch { return require('@/assets/images/null.png'); }
     },
@@ -389,7 +378,6 @@ export default {
       this.searchPlayers = '';
       this.searchAge = '';
       this.searchDuration = '';
-      this.searchEditeur = '';
       this.searchStand = '';
       this.selectedTypes = [];
     },
@@ -521,23 +509,21 @@ export default {
           min: minutes
         };
 
-        const standIds = Array.isArray(this.selectedJeu.nom_stand)
-            ? this.selectedJeu.nom_stand
-            : [this.selectedJeu.nom_stand];
-
-        const stand = this.stands.find(s =>
-            standIds.includes(s.idStand)
-        );
-
+        // Correction ici - accéder au stand différemment
+        console.log(JSON.stringify(this.selectedJeu.produit.vendupar) + "cest dla merde");
+        const standId = this.selectedJeu.produit.vendupar; // ou la propriété correcte qui lie le jeu au stand
+        const stand = this.stands[standId]; // si stands est un objet avec les IDs comme clés
+        console.log("Stand trouvé:", JSON.stringify(stand));
         if (!stand) {
           throw new Error(this.$t('standNotFound'));
         }
 
         await this.$store.dispatch('reservations/addStandReservation', {
-          jeuID: this.selectedJeu._id,
-          standID: stand.idStand,
-          userId: currentUser.id,
-          date: reservationDate
+          nom: stand.nom_stand,
+          type: stand.id_type,
+          emplacement: stand.id_emplacement,
+          compte: [currentUser.id],
+          image_path: this.selectedJeu.produit.image_path,
         });
 
         const formattedDate = this.formatDateJeux(reservationDate);
@@ -638,10 +624,6 @@ export default {
     }
   },
   mounted() {
-    console.log("Données des jeux:", this.jeux);
-    console.log("Jeux filtrés:", this.filteredJeux);
-
-
     const selectedTab = this.$route.query.tab;
     if (selectedTab) {
       this.selectTab(selectedTab);

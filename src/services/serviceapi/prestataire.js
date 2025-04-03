@@ -9,7 +9,7 @@ async function createPrestataireFromAPI(data) {
     }
 }
 
-async function createPrestataireService(data) {
+export async function createPrestataireService(data) {
     let answer = await createPrestataireFromAPI(data)
     return answer
 }
