@@ -492,31 +492,24 @@ export default {
         return;
       }
 
-      // Convertir newRating en entier
-      const ratingValue = parseInt(this.newRating, 10);
-
-      if (ratingValue >= 0 && ratingValue <= 5) {
+      if (this.newRating >= 0 && this.newRating <= 5) {
         const rating = {
           userId: currentUser.id,
-          valeur: ratingValue, // Utiliser la valeur convertie
+          valeur: this.newRating,
         };
 
         if (this.editingRating) {
-          // Met à jour la note existante
           const index = this.selectedModalRestau.notes.findIndex(r => r.userId === this.editingRating.userId);
-          if (index !== -1) {
-            this.$set(this.selectedModalRestau.notes, index, rating);
-          }
-          this.editingRating = null; // Réinitialise l'état d'édition
+          this.$set(this.selectedModalRestau.notes, index, rating);
+          this.editingRating = null;
         } else {
-          // Ajoute une nouvelle note
           if (!this.selectedModalRestau.notes) {
             this.selectedModalRestau.notes = [];
           }
           this.selectedModalRestau.notes.push(rating);
         }
 
-        this.newRating = 0; // Réinitialise le champ de saisie
+        this.newRating = 0;
       } else {
         alert(this.$t('ratingRangeError'));
       }
@@ -567,9 +560,6 @@ export default {
         return 0;
       }
       const total = this.selectedModalRestau.notes.reduce((sum, note) => sum + note.valeur, 0);
-      console.log("Total rating:", total);
-      console.log("Number of ratings:", this.selectedModalRestau.notes.length);
-      console.log("Average rating:", total / this.selectedModalRestau.notes.length);
       return total / this.selectedModalRestau.notes.length;
     },
   },

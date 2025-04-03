@@ -16,8 +16,8 @@ const actions = {
     commit('setComments', comments);
   },
 
-  async addComment({ commit }, { restaurantId,userId, comment }) {
-    const newComment = await commentsService.addComment(restaurantId,userId, comment);
+  async addComment({ commit }, { restaurantId, comment }) {
+    const newComment = await commentsService.addComment(restaurantId, comment);
     commit('addComment', newComment);
   },
 

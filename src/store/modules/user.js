@@ -1,5 +1,5 @@
 // src/store/user.js
-import userService from '@/services/serviceapi/authService';
+import userService from '@/services/userService';
 
 export default {
   namespaced: true,
