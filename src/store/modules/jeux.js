@@ -1,7 +1,10 @@
+import { getGamesService } from "@/services/serviceapi/games";
+import { getArticleByIdService} from "@/services/serviceapi/article";
+
 export default {
   namespaced: true,
   state: {
-    jeux: require("@/datasource/data").jeux,
+    jeux: [],
     jeuxCreation: []
   },
   mutations: {
@@ -26,17 +29,29 @@ export default {
         return [];
       }
     },
-    async getAllJeux({ commit }) {
+    async getAllJeux({commit}) {
+      console.log("STORE: get all jeux")
       try {
-        // Simule un rechargement depuis la source
-        const jeux = require("@/datasource/data").jeux; 
-        commit('SET_JEUX', jeux);
-        return jeux;
-      } catch (error) {
-        console.error("Erreur chargement jeux:", error);
-        return [];
+        const result = await getGamesService()
+
+        // Si l'API ne fait pas la jointure, il faut la faire côté front
+        const jeuxAvecProduits = await Promise.all(
+            result.map(async jeu => {
+              // Supposons que vous avez un service pour récupérer le produit
+              const produit = await getArticleByIdService(jeu.produit_id)
+              return {
+                ...jeu,
+                produit: produit || null // Ajoute la relation produit
+              }
+            })
+        )
+
+        commit('SET_JEUX', jeuxAvecProduits)
+        console.log("Jeux avec produits chargés:", jeuxAvecProduits)
+      } catch(err) {
+        console.error("Erreur dans getAllJeux():", err)
       }
-    }
+    },
   },
   getters: {
     allJeux: (state) => state.jeux || [],
