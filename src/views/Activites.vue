@@ -100,13 +100,13 @@
         <div class="modal-content">
           <span class="close-button" @click="closeJeuModal">&times;</span>
           <h2>{{ selectedJeu.name }}</h2>
-          <img :src="selectedJeu.image" :alt="$t('gameImage')" class="modal-image" />
-          <p><strong>{{ $t('type') }}:</strong> {{ selectedJeu.type }}</p>
-          <p><strong>{{ $t('playerCount') }}:</strong> {{ selectedJeu.nombre_de_joueurs.join(', ') }}</p>
+          <img :src="getJeuImage(selectedJeu)" :alt="getJeuName(selectedJeu)" class="modal-image" />
+          <p><strong>{{ $t('type') }}:</strong> {{ selectedJeu.type }} </p>
+          <p><strong>{{ $t('playerCount') }}:</strong> {{ selectedJeu.nombre_joueurs_max }} max</p>
           <p><strong>{{ $t('minAge') }}:</strong> {{ selectedJeu.age_minimum }} {{ $t('years') }}</p>
           <p><strong>{{ $t('duration') }}:</strong> {{ selectedJeu.duree }} {{ $t('minutes') }}</p>
           <p><strong>{{ $t('publisher') }}:</strong> {{ selectedJeu.editeur }}</p>
-          <p><strong>{{ $t('standName') }}:</strong> {{ selectedJeu.nomsDesStands }}</p>
+          <p><strong>{{ $t('standName') }}:</strong> {{ this.stands[selectedJeu.id].nom_stand }}</p>
           <button @click="openReservationJeuConfirmation" class="reset-button">{{ $t('reserve') }}</button>
         </div>
       </div>
@@ -269,26 +269,42 @@ export default {
       if (!this.jeux || !Array.isArray(this.jeux)) return [];
 
       return this.jeux.filter(jeu => {
+        // Vérification de base
         if (!jeu || !jeu.produit) return false;
 
-        const jeuNom = this.getJeuName(jeu).toLowerCase();
-        const jeuType = (jeu.type || '').toLowerCase();
+        // Normalisation des données
+        const jeuNom = this.getJeuName(jeu)?.toLowerCase() || '';
+        const jeuType = jeu.type ? jeu.type.toLowerCase() : '';
 
-        // Vérifie si le jeu a un stand défini
-        const stand = this.stands[jeu.id] || {};
+        const stand = this.stands?.[jeu.id] || {};
         const standNom = stand.nom_stand ? stand.nom_stand.toLowerCase() : '';
 
-        // Vérifications des filtres
-        const nameMatch = !this.searchName || jeuNom.includes(this.searchName.toLowerCase());
-        const typeMatch = !this.selectedTypes.length || this.selectedTypes.includes(jeuType);
-        const playersMatch = !this.searchPlayers || (jeu.nombre_joueurs_min <= Number(this.searchPlayers) && jeu.nombre_joueurs_max >= Number(this.searchPlayers));
-        const ageMatch = !this.searchAge || (jeu.age_limite || 0) <= Number(this.searchAge);
-        const durationMatch = !this.searchDuration || (jeu.duree || 0) <= Number(this.searchDuration);
-        const standMatch = !this.searchStand || standNom.includes(this.searchStand.toLowerCase());
+        // Filtres
+        const nameMatch = !this.searchName ||
+            jeuNom.includes(this.searchName.toLowerCase());
 
-        return nameMatch && typeMatch && playersMatch && ageMatch && durationMatch && standMatch;
+        const typeMatch = this.selectedTypes.length === 0 ||
+            this.selectedTypes.map(t => t.toLowerCase()).includes(jeuType);
+
+        const playersMatch = !this.searchPlayers || (
+            jeu.nombre_joueurs_min <= Number(this.searchPlayers) &&
+            jeu.nombre_joueurs_max >= Number(this.searchPlayers)
+        );
+
+        const ageMatch = !this.searchAge ||
+            (jeu.age_limite || 0) <= Number(this.searchAge);
+
+        const durationMatch = !this.searchDuration ||
+            (jeu.duree || 0) <= Number(this.searchDuration);
+
+        const standMatch = !this.searchStand ||
+            standNom.includes(this.searchStand.toLowerCase());
+
+
+        return nameMatch && typeMatch && playersMatch &&
+            ageMatch && durationMatch && standMatch;
       });
-    }
+    },
 
   },
   async created() {
