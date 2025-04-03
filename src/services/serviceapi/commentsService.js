@@ -1,45 +1,84 @@
-import axios from 'axios';
+import { getRequest, postRequest, putRequest, deleteRequest } from "@/services/axios.service";
 
-const API_URL = '/api/comments';
+async function fetchComments(restaurantId) {
+    try {
+        return getRequest(`/api/comments/restaurant/${restaurantId}`, 'FETCH_COMMENTS');
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        throw error;
+    }
+}
+
+async function addComment(restaurantId, comment) {
+    try {
+        return postRequest(`/api/comments/restaurant/${restaurantId}`, comment, 'ADD_COMMENT');
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        throw error;
+    }
+}
+
+async function updateComment(commentId, updatedComment) {
+    try {
+        return putRequest(`/api/comments/${commentId}`, updatedComment, 'UPDATE_COMMENT');
+    } catch (error) {
+        console.error('Error updating comment:', error);
+        throw error;
+    }
+}
+
+async function deleteComment(commentId) {
+    try {
+        return deleteRequest(`/api/comments/${commentId}`, 'DELETE_COMMENT');
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        throw error;
+    }
+}
+
+async function fetchRatings(restaurantId) {
+    try {
+        return getRequest(`/api/ratings/restaurant/${restaurantId}`, 'FETCH_RATINGS');
+    } catch (error) {
+        console.error('Error fetching ratings:', error);
+        throw error;
+    }
+}
+
+async function addRating(restaurantId, rating) {
+    try {
+        return postRequest(`/api/ratings/restaurant/${restaurantId}`, rating, 'ADD_RATING');
+    } catch (error) {
+        console.error('Error adding rating:', error);
+        throw error;
+    }
+}
+
+async function updateRating(ratingId, updatedRating) {
+    try {
+        return putRequest(`/api/ratings/${ratingId}`, updatedRating, 'UPDATE_RATING');
+    } catch (error) {
+        console.error('Error updating rating:', error);
+        throw error;
+    }
+}
+
+async function deleteRating(ratingId) {
+    try {
+        return deleteRequest(`/api/ratings/${ratingId}`, 'DELETE_RATING');
+    } catch (error) {
+        console.error('Error deleting rating:', error);
+        throw error;
+    }
+}
 
 export default {
-  async fetchComments(restaurantId) {
-    const response = await axios.get(`${API_URL}?restaurantId=${restaurantId}`);
-    return response.data;
-  },
-
-  async addComment(restaurantId, comment) {
-    const response = await axios.post(`${API_URL}`, { restaurantId, ...comment });
-    return response.data;
-  },
-
-  async updateComment(commentId, updatedComment) {
-    const response = await axios.put(`${API_URL}/${commentId}`, updatedComment);
-    return response.data;
-  },
-
-  async deleteComment(commentId) {
-    const response = await axios.delete(`${API_URL}/${commentId}`);
-    return response.data;
-  },
-
-  async fetchRatings(restaurantId) {
-    const response = await axios.get(`${API_URL}/ratings?restaurantId=${restaurantId}`);
-    return response.data;
-  },
-
-  async addRating(restaurantId, rating) {
-    const response = await axios.post(`${API_URL}/ratings`, { restaurantId, ...rating });
-    return response.data;
-  },
-
-  async updateRating(ratingId, updatedRating) {
-    const response = await axios.put(`${API_URL}/ratings/${ratingId}`, updatedRating);
-    return response.data;
-  },
-
-  async deleteRating(ratingId) {
-    const response = await axios.delete(`${API_URL}/ratings/${ratingId}`);
-    return response.data;
-  },
+    fetchComments,
+    addComment,
+    updateComment,
+    deleteComment,
+    fetchRatings,
+    addRating,
+    updateRating,
+    deleteRating
 };
