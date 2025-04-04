@@ -148,10 +148,12 @@ export default {
           nom: this.nom,
           prenom: this.prenom,
           email: this.email,
-          identifiant: this.identifiant,
           motDePasse: this.motDePasse,
           role: this.role,
+          identifant: this.identifiant,
         });
+
+        console.log("gojo : " + success)
 
         if (success) {
           const redirectPath = this.$store.state.user.redirectPath || '/MonCompte';
@@ -164,8 +166,8 @@ export default {
       }
     },
   },
-  mounted() {
-    this.initComptes();
+  created() {
+      this.$store.dispatch('user/initComptes');
   },
 };
 </script>

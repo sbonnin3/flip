@@ -9,7 +9,7 @@ async function createUserFromAPI(data) {
     }
 }
 
-async function createUserService(data) {
+export async function createUserService(data) {
     let answer = await createUserFromAPI(data)
     return answer
 }

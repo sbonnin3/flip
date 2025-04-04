@@ -1,6 +1,6 @@
 // src/store/user.js
 import { loginService, getSessionService, logoutService } from "@/services/serviceapi/auth";
-import { getUserService } from "@/services/serviceapi/users";
+import { getUserService, createUserService } from "@/services/serviceapi/users";
 
 export default {
     namespaced: true,
@@ -8,7 +8,7 @@ export default {
         userSession: null, // On ne stocke PLUS dans le localStorage
         comptes: [],
         redirectPath: null,
-        actualUser: null,
+        actualUser: [],
     },
 
     mutations: {
@@ -26,6 +26,7 @@ export default {
         },
         CLEAR_USER_SESSION(state) {
             state.userSession = null;
+            state.actualUser = null;
         },
         ADD_COMPTE(state, newCompte) {
             state.comptes.push(newCompte);
@@ -48,6 +49,16 @@ export default {
     },
 
     actions: {
+        async register({ commit }, userData) {
+            try {
+                const createdUser = await createUserService(userData);
+                commit('ADD_COMPTE', createdUser);
+                return true;
+            } catch (error) {
+                console.error('Error registering user:', error);
+                return false;
+            }
+        },
 
         async initComptes({ commit }) {
             try {
@@ -58,47 +69,57 @@ export default {
             }
         },
 
-        async checkSession({ commit, state }) {
+        async checkSession({ commit, dispatch, state }) {
+            if (localStorage.getItem('loggedOut') === 'true') {
+                commit('CLEAR_USER_SESSION');
+                localStorage.removeItem('loggedOut');
+                return false;
+            }
             try {
                 const response = await getSessionService();
                 if (typeof response === 'string' && response.startsWith('Logged in as')) {
-                    commit('SET_USER_SESSION', state.actualUser);
+                    commit('SET_USER_SESSION', response);
+                    if (state.comptes.length === 0) {
+                        await dispatch('initComptes');
+                    }
+                    const identifiant = response.split(' ')[3];
+                    const user = state.comptes.find(u => u.identifiant === identifiant);
+                    if (user) {
+                        commit('SET_ACTUAL_USER', user);
+                    } else {
+                        commit('CLEAR_USER_SESSION');
+                    }
                     return true;
                 }
                 commit('CLEAR_USER_SESSION');
                 return false;
             } catch (error) {
-                if (error.response?.status === 401) {
-                    commit('CLEAR_USER_SESSION');
-                    return false;
-                }
-                throw error;
+                commit('CLEAR_USER_SESSION');
+                return false;
             }
         },
 
-        async login({ commit, state }, credentials) {
+        async login({ commit, state, dispatch }, credentials) {
             try {
                 const result = await loginService(credentials);
-
                 if (result === "Connecté") {
-                    console.log(JSON.stringify(state.comptes))
+                    if (state.comptes.length === 0) {
+                        await dispatch('initComptes');
+                    }
                     const user = state.comptes.find(
                         u =>
                             u.identifiant === credentials.identifiant &&
                             u.mdp === credentials.password
                     );
-
-
                     if (user) {
+                        // On commit à la fois la session et l'utilisateur actuel
+                        commit('SET_USER_SESSION', result);
                         commit('SET_ACTUAL_USER', user);
                         return true;
                     }
-
-                    // Sinon on nettoie et retourne false
                     commit('CLEAR_USER_SESSION');
                     return false;
                 }
-
                 commit('CLEAR_USER_SESSION');
                 return false;
             } catch (error) {
@@ -112,6 +133,7 @@ export default {
                 await logoutService();
             } finally {
                 commit('CLEAR_USER_SESSION');
+                localStorage.setItem('loggedOut', 'true');
             }
         },
 
@@ -130,4 +152,4 @@ export default {
         comptes: state => state.comptes,
         redirectPath: state => state.redirectPath
     }
-}
+};

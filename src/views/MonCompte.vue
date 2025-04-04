@@ -3,11 +3,11 @@
     <div class="mon-compte-page form-box">
       <h2>Mon Compte</h2>
       <div v-if="userSession" class="user-details">
-        <p><strong>Nom :</strong> {{ userSession.nom }}</p>
-        <p><strong>Prénom :</strong> {{ userSession.prenom }}</p>
-        <p><strong>Email :</strong> {{ userSession.email }}</p>
-        <p><strong>Téléphone :</strong> {{ userSession.telephone || 'Non renseigné' }}</p>
-        <p><strong>Rôle :</strong> {{ formatRole(userSession.role) }}</p>
+        <p><strong>Nom :</strong> {{ actualUser.nom }}</p>
+        <p><strong>Prénom :</strong> {{ actualUser.prenom }}</p>
+        <p><strong>Email :</strong> {{ actualUser.email }}</p>
+        <p><strong>Téléphone :</strong> {{ actualUser.telephone || 'Non renseigné' }}</p>
+        <p><strong>Rôle :</strong> {{ formatRole(actualUser.role) }}</p>
         <button @click="handleLogout" class="logout-btn">Se déconnecter</button>
       </div>
       <div v-else class="not-connected">
@@ -19,19 +19,18 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex';
+import {mapActions, mapState} from 'vuex';
 
 export default {
   name: "PageMonCompte",
   computed: {
-    ...mapState('user', ['userSession']), // Correction: ajout du namespace
-    ...mapState('user', ['actualUser']), // Correction: ajout du namespace
+    ...mapState('user', ['userSession', 'actualUser']),
   },
   methods: {
-    ...mapMutations('user', ['CLEAR_USER_SESSION']), // Correction: ajout du namespace
+    ...mapActions('user', ['logout']),
     
     handleLogout() {
-      this.CLEAR_USER_SESSION();
+      this.logout();
       alert('Vous êtes déconnecté');
       this.$router.push('/Accueil');
     },
@@ -49,7 +48,8 @@ export default {
     }
   },
   mounted() {
-    console.log('User session:', JSON.stringify(this.userSession)); // Pour le débogage
+
+    console.log('User session:', JSON.stringify(this.actualUser)); // Pour le débogage
   }
 };
 </script>

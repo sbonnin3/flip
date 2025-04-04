@@ -5,7 +5,7 @@
       <div class="auth-container">
         <div v-if="isLogin">
           <h2>Connexion</h2>
-          <form @submit.prevent="login">
+          <form @submit.prevent="handleLogin">
             <div class="inputbox">
               <input v-model="identifiant" type="text" id="identifiant" required />
               <label for="identifiant">Identifiant:</label>
@@ -24,7 +24,7 @@
 
         <div v-else>
           <h2>Inscription</h2>
-          <form @submit.prevent="register">
+          <form @submit.prevent="handleRegister">
             <div class="inputbox">
               <input v-model="nom" type="text" id="nom" required />
               <label for="nom">Nom:</label>
@@ -103,7 +103,11 @@ export default {
     };
   },
   methods: {
-    ...mapActions("user", ["setUserSession", "addCompte", "login", "register"]),
+    // On mappe les actions avec des alias pour éviter les conflits
+    ...mapActions("user", {
+      loginUser: "login",
+      registerUser: "register"
+    }),
 
     toggleForm(formType) {
       this.isLogin = formType === "login";
@@ -114,27 +118,23 @@ export default {
       this.$emit("close");
     },
 
-    async login() {
+    async handleLogin() {
       try {
-        const success = await this.$store.dispatch("user/login", {
+        const success = await this.loginUser({
           identifiant: this.identifiant,
-          motDePasse: this.motDePasse
+          password: this.motDePasse,
         });
 
         if (success) {
-          this.setUserSession();
-          this.$emit("login-success");
+          // Connexion réussie, fermer simplement la modal sans redirection
           this.closeModal();
-        } else {
-          this.errorMessage = "Identifiant ou mot de passe incorrect.";
         }
       } catch (error) {
-        this.errorMessage = "Une erreur est survenue lors de la connexion.";
-        console.error(error);
+        this.errorMessage = "Erreur de connexion";
       }
     },
 
-    async register() {
+    async handleRegister() {
       if (!this.email.includes("@")) {
         this.errorMessage = "Veuillez fournir une adresse email valide.";
         return;
@@ -146,7 +146,7 @@ export default {
       }
 
       try {
-        const success = await this.$store.dispatch("user/register", {
+        const success = await this.registerUser({
           nom: this.nom,
           prenom: this.prenom,
           email: this.email,
@@ -158,7 +158,7 @@ export default {
         });
 
         if (success) {
-          this.setUserSession();
+          // Inscription réussie, fermer la modal
           this.$emit("register-success");
           this.closeModal();
         }
@@ -234,8 +234,8 @@ h2 {
   transition: 0.3s;
 }
 
-.inputbox input:focus~label,
-.inputbox input:valid~label {
+.inputbox input:focus ~ label,
+.inputbox input:valid ~ label {
   top: -10px;
   font-size: 0.8em;
   color: white;
@@ -279,7 +279,7 @@ button:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
-p {
+.error-message {
   color: red;
   font-size: 0.9em;
   text-align: center;
@@ -295,20 +295,6 @@ p {
 
 .auth-container::-webkit-scrollbar {
   width: 8px;
-}
-
-.inputbox {
-  position: relative;
-  margin: 20px 0;
-  width: 100%;
-  border-bottom: 2px solid #fff;
-}
-
-.inputbox input:focus~label,
-.inputbox input:valid~label {
-  top: -10px;
-  font-size: 0.8em;
-  color: white;
 }
 
 .auth-container::-webkit-scrollbar-thumb {
