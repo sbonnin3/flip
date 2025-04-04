@@ -1,22 +1,22 @@
-import Vue from 'vue';
-import VueRouter from 'vue-router';
-import Accueil from '../views/Accueil.vue';
-import Activites from '../views/Activites.vue';
-import Carte from '../views/Carte.vue';
-import Produits from '../views/Produits.vue';
-import Connexion from '../views/Connexion.vue';
-import MonCompte from '../views/MonCompte.vue';
-import MesCommandes from '../views/MesCommandes.vue';
-import Reservations from '../views/Reservations.vue';
-import PrestatairesCarte from '../views/PrestatairesCarte.vue';
-import MaPrestation from '../views/MaPrestation.vue';
-import Commandes from '../views/Commandes.vue';
-import Statistiques from '../views/Statistiques.vue';
-import store from '../store/index.js';
-import CommandesBoutique from "../views/CommandesBoutique.vue";
-import MesReservations from "../views/MesReservations.vue";
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+import Accueil from '../views/Accueil.vue'
+import Activites from '../views/Activites.vue'
+import Carte from '../views/Carte.vue'
+import Produits from '../views/Produits.vue'
+import Connexion from '../views/Connexion.vue'
+import MonCompte from '../views/MonCompte.vue'
+import MesCommandes from '../views/MesCommandes.vue'
+import Reservations from '../views/Reservations.vue'
+import PrestatairesCarte from '../views/PrestatairesCarte.vue'
+import MaPrestation from '../views/MaPrestation.vue'
+import Commandes from '../views/Commandes.vue'
+import Statistiques from '../views/Statistiques.vue'
+import store from '../store/index.js'
+import CommandesBoutique from "../views/CommandesBoutique.vue"
+import MesReservations from "../views/MesReservations.vue"
 
-Vue.use(VueRouter);
+Vue.use(VueRouter)
 
 const routes = [
   {
@@ -43,6 +43,7 @@ const routes = [
     path: "/Connexion",
     name: "Connexion",
     component: Connexion,
+    meta: { guest: true }
   },
   {
     path: "/MonCompte",
@@ -112,66 +113,64 @@ const routes = [
     path: "*",
     redirect: "/Accueil",
   },
-];
-
-// ... (les imports restent les mêmes)
+]
 
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes,
   scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition;
-    } else {
-      return { x: 0, y: 0 };
-    }
-  },
-});
+    return savedPosition || { x: 0, y: 0 }
+  }
+})
 
-router.beforeEach((to, from, next) => {
-  const user = store.getters['user/userSession']; // Accès correct au module namespaced
-  
-  // 1. Gestion spécifique de la route /Connexion
-  if (to.path === '/Connexion') {
-    // Si déjà connecté, rediriger vers MonCompte
-    if (user) {
-      return next('/MonCompte');
+router.beforeEach(async (to, from, next) => {
+  if (to.path === from.path) return next(false)
+
+  if (to.meta.guest) {
+    if (store.getters['user/isAuthenticated']) {
+      const redirect = store.state.user.redirectPath || '/MonCompte'
+      store.dispatch('user/clearRedirectPath')
+      return next(redirect)
     }
-    return next(); // Laisser passer si non connecté
+    return next()
   }
 
-  // 2. Vérification des routes protégées
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!user) {
-      // Stocker la route demandée seulement si on ne vient pas déjà de la connexion
-      if (from.path !== '/Connexion') {
-        store.dispatch('user/setRedirectPath', to.fullPath); // Utilisation du fullPath
+    if (!store.getters['user/isAuthenticated']) {
+      await store.dispatch('user/checkSession')
+
+      if (!store.getters['user/isAuthenticated']) {
+        if (from.path !== '/Connexion') {
+          store.dispatch('user/setRedirectPath', to.fullPath)
+        }
+        return next('/Connexion')
       }
-      return next('/Connexion');
     }
-    
-    // Vérifications des rôles spécifiques
-    if (to.meta.requiresAdmin && user.role !== 'administrateur') {
-      return next('/Accueil');
+
+    const userRole = store.getters['user/userSession']?.role
+
+    if (to.meta.requiresAdmin && userRole !== 'administrateur') {
+      return next('/Accueil')
     }
-    
-    if (to.matched.some(record => record.meta.requiresOrganizer) && user.role !== 'organisateur') {
-      return next('/Accueil');
+
+    if (to.matched.some(record => record.meta.requiresOrganizer) && userRole !== 'organisateur') {
+      return next('/Accueil')
     }
-    
-    if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
-      return next('/Accueil');
+
+    if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(userRole)) {
+      return next('/Accueil')
     }
   }
 
-  // 3. Redirection spéciale pour la carte des prestataires
-  if (to.path === '/Carte' && user?.role && ["restaurateur", "vendeur", "createur", "organisateur"].includes(user.role)) {
-    return next('/PrestatairesCarte');
+  if (to.path === '/Carte' && store.getters['user/isAuthenticated']) {
+    const userRole = store.getters['user/userSession']?.role
+    if (["restaurateur", "vendeur", "createur", "organisateur"].includes(userRole)) {
+      return next('/PrestatairesCarte')
+    }
   }
 
-  // 4. Cas par défaut - laisser passer
-  next();
-});
+  next()
+})
 
-export default router;
+export default router

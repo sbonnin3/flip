@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import {mapActions, mapState} from "vuex";
 
 export default {
   name: "PageInscription",
@@ -96,6 +96,9 @@ export default {
       errorMessage: "",
     };
   },
+  computed: {
+    ...mapState("user", ["comptes"]),
+  },
   methods: {
     ...mapActions("user", ["login", "register"]),
 
@@ -105,17 +108,25 @@ export default {
     },
 
     async handleLogin() {
-      const success = await this.login({
-        identifiant: this.identifiant,
-        motDePasse: this.motDePasse
-      });
+      try {
+        const success = await this.login({
+          identifiant: this.identifiant,
+          password: this.motDePasse
+        })
 
-      if (success) {
-        const redirectPath = this.$store.state.user.redirectPath || '/MonCompte';
-        await this.$store.dispatch('user/clearRedirectPath');
-        this.$router.push(redirectPath);
-      } else {
-        this.errorMessage = this.$t('loginError');
+        if (success) {
+          await new Promise(resolve => setTimeout(resolve, 50)) // Attente cycle mise à jour
+          const targetPath = this.$store.state.user.redirectPath || '/MonCompte'
+          this.$store.dispatch('user/clearRedirectPath')
+
+          if (this.$route.path === targetPath) {
+            window.location = targetPath
+          } else {
+            this.$router.replace(targetPath).catch(() => {})
+          }
+        }
+      } catch (error) {
+        this.errorMessage = "Erreur de connexion"
       }
     },
 

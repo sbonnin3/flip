@@ -170,8 +170,9 @@ export default {
           console.warn("Commande sans nom de restaurant:", commande);
         }
 
+
         const restaurant = stands.find(s =>
-            s.nom.toLowerCase() === commande.restaurantNom?.toLowerCase()
+            s.nom === commande.restaurantNom
         );
 
         return {

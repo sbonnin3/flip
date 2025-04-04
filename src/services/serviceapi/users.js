@@ -1,4 +1,4 @@
-import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/axios.service";
+import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/serviceapi/axios.service";
 
 async function createUserFromAPI(data) {
     try {
@@ -23,7 +23,7 @@ async function getUsersFromAPI() {
     }
 }
 
-async function getUserService() {
+export async function getUserService() {
     let answer = await getUsersFromAPI()
     return answer
 }

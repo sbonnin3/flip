@@ -158,6 +158,7 @@
       <div v-if="showConfirmation" class="confirmation-modal">
         <div class="modal-content">
           <span class="close-button" @click="closeConfirmation">&times;</span>
+          <h1>salut test 123</h1>
           <h2>{{ $t('confirmReservation') }}</h2>
           <p>{{ $t('chooseDateForTournament', { tournamentName: selectedTournoi?.nom || '' }) }}</p>
 
@@ -518,12 +519,10 @@ export default {
           throw new Error(this.$t('standNotFound'));
         }
 
-        await this.$store.dispatch('reservations/addStandReservation', {
-          nom: stand.nom_stand,
-          type: stand.id_type,
-          emplacement: stand.id_emplacement,
-          compte: [currentUser.id],
-          image_path: this.selectedJeu.produit.image_path,
+        await this.$store.dispatch('reservations/addGameReservation', {
+          idJeu: this.selectedJeu.id,
+          idUtilisateur: currentUser.id,
+          dateReserv: reservationDate,
         });
 
         const formattedDate = this.formatDateJeux(reservationDate);

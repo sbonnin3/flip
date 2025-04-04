@@ -1,4 +1,4 @@
-import { getAllSouvenirs } from "@/services/souvenirsService";
+import { getAllSouvenirs } from "@/services/serviceapi/article";
 
 export default {
   namespaced: true,

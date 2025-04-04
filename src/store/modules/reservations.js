@@ -1,4 +1,5 @@
-import { createPrestataireService } from "@/services/serviceapi/prestataire";
+
+import {createGameReservationService} from "@/services/serviceapi/gamesReservation";
 
 export default {
     namespaced: true,
@@ -86,14 +87,14 @@ export default {
             commit('ADD_RESERVATION', reservation);
             return reservation;
         },
-        async addStandReservation({commit}, standData) {
+        async addGameReservation({commit}, gameData) {
             try {
-                const result = await createPrestataireService(standData);
-                console.log("Stand créée avec succès", result);
-                commit('ADD_STAND_RESERVATION', result);
+                const result = await createGameReservationService(gameData);
+                console.log("Jeu réservé avec succès", result);
+                commit('SET_USER_RESERVATIONS_JEUX', result);
 
             } catch (err) {
-                console.log("Erreur dans addPrestataire", err);
+                console.log("Erreur dans createGameReservation", err);
             }
         },
     },
