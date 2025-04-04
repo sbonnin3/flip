@@ -25,6 +25,7 @@ export default {
   name: "PageMonCompte",
   computed: {
     ...mapState('user', ['userSession']), // Correction: ajout du namespace
+    ...mapState('user', ['actualUser']), // Correction: ajout du namespace
   },
   methods: {
     ...mapMutations('user', ['CLEAR_USER_SESSION']), // Correction: ajout du namespace
@@ -48,7 +49,7 @@ export default {
     }
   },
   mounted() {
-    console.log('User session:', this.userSession); // Pour le débogage
+    console.log('User session:', JSON.stringify(this.userSession)); // Pour le débogage
   }
 };
 </script>

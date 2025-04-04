@@ -99,8 +99,9 @@ export default {
   computed: {
     ...mapState("user", ["comptes"]),
   },
+
   methods: {
-    ...mapActions("user", ["login", "register"]),
+    ...mapActions("user", ["login", "register", "initComptes"]),
 
     toggleForm(formType) {
       this.isLogin = formType === "login";
@@ -129,6 +130,7 @@ export default {
         this.errorMessage = "Erreur de connexion"
       }
     },
+
 
     async handleRegister() {
       if (!this.email.includes("@")) {
@@ -161,6 +163,9 @@ export default {
         console.error(error);
       }
     },
+  },
+  mounted() {
+    this.initComptes();
   },
 };
 </script>
