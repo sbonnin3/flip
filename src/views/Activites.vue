@@ -193,8 +193,8 @@
         </div>
       </div>
 
-<!--      <PaymentModal v-if="showPaymentModal" :visible="showPaymentModal" :showPickupTime="false"-->
-<!--                    @close="closePaymentModal" @payment-success="handlePaymentSuccess"/>-->
+      <!--      <PaymentModal v-if="showPaymentModal" :visible="showPaymentModal" :showPickupTime="false"-->
+      <!--                    @close="closePaymentModal" @payment-success="handlePaymentSuccess"/>-->
     </div>
   </div>
 </template>
@@ -295,28 +295,82 @@ export default {
     ...mapActions("stands", ["getAllStands"]),
     ...mapActions("tournois", ["getAllTournois", "getEditionTournois", "inscriptionTournoi"]),
 
+    formatTournamentDate(dateString) {
+      if (!dateString) return 'Date non spécifiée';
+
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (e) {
+        console.error("Erreur de formatage de date:", e);
+        return dateString; // Retourne la chaine originale si le formatage échoue
+      }
+    },
+
     getEditionForTournoi(tournoi) {
-      if (!tournoi || !tournoi.id) return {date_edition: 'Date non disponible'};
+      if (!tournoi || !tournoi.id) return { date_edition: 'Date non disponible' };
 
       const edition = this.$store.state.tournois.editionsTournoi.find(
           ed => ed.id_tournoi === tournoi.id
       );
 
-      if (!edition) return {date_edition: 'Date non disponible'};
+      if (!edition) return { date_edition: 'Date non disponible' };
 
+      // Nouvelle fonction de formatage plus robuste
       const formatDate = (dateString) => {
         try {
-          const date = new Date(dateString);
-          return date.toLocaleDateString('fr-FR', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
+          // Si c'est déjà un objet Date (cas où dateString serait un timestamp PostgreSQL)
+          if (dateString instanceof Date) {
+            return dateString.toLocaleDateString('fr-FR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+          }
+
+          // Si c'est une chaîne ISO (2023-07-15T14:00:00.000Z)
+          if (typeof dateString === 'string' && dateString.includes('T')) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+          }
+
+          // Si c'est une chaîne PostgreSQL (2023-07-15 14:00:00)
+          if (typeof dateString === 'string') {
+            const [datePart, timePart] = dateString.split(' ');
+            const [year, month, day] = datePart.split('-');
+            const [hours, minutes] = timePart.split(':');
+            const date = new Date(year, month-1, day, hours, minutes);
+            return date.toLocaleDateString('fr-FR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+          }
+
+          return 'Date non disponible';
         } catch (e) {
-          return dateString;
+          console.error("Erreur de formatage de date:", e, "Date originale:", dateString);
+          return dateString || 'Date non disponible';
         }
       };
 
@@ -394,22 +448,13 @@ export default {
           return;
         }
 
-        // Calcul des places restantes
-        const capacitee = Number(edition.capacitee) || 0;
-        const participants = Number(edition.current_participants) || 0;
-        const placesRestantes = Math.max(0, capacitee - participants);
-
-        if (placesRestantes === 0) {
-          this.reservationMessage = this.$t('noPlacesAvailable');
-          return;
-        }
         await this.$store.dispatch('tournois/inscriptionTournoi', {
           id_utilisateur: currentUser.id,
           id_session: edition.id,
           nomEquipe: this.teamName,
         });
 
-        this.reservationMessage = this.$t('reservationConfirmed');
+        this.reservationMessage = `${this.$t('reservationConfirmed')} - ${this.selectedTournoi.nom_tournoi} (${edition.date_edition})`;
         this.teamName = '';
         this.closeConfirmation();
         this.closeModal();
@@ -420,7 +465,6 @@ export default {
       }
     },
 
-    // Les autres méthodes restent inchangées
     selectTab(tab) {
       this.selectedTab = tab;
     },
