@@ -66,8 +66,8 @@
               <p class="card-duration">
                 {{ $t('duration') }}: {{ jeu.duree }} min
               </p>
-              <p class="card-stand" v-if="stands[jeu.id]">
-                {{ $t('standName') }}: {{ stands[jeu.id].nom_stand }}
+              <p class="card-stand" v-if="getStandName(jeu)">
+                {{ $t('standName') }}: {{ getStandName(jeu) }}
               </p>
             </div>
           </div>
@@ -102,7 +102,7 @@
           <p><strong>{{ $t('playerCount') }}:</strong> {{ selectedJeu.nombre_joueurs_max }} max</p>
           <p><strong>{{ $t('minAge') }}:</strong> {{ selectedJeu.age_minimum }} {{ $t('years') }}</p>
           <p><strong>{{ $t('duration') }}:</strong> {{ selectedJeu.duree }} {{ $t('minutes') }}</p>
-          <p><strong>{{ $t('standName') }}:</strong> {{ this.stands[selectedJeu.id].nom_stand }}</p>
+          <p><strong>{{ $t('standName') }}:</strong> {{ getStandName(selectedJeu) }}</p>
           <button @click="openReservationJeuConfirmation" class="reset-button">{{ $t('reserve') }}</button>
         </div>
       </div>
@@ -273,8 +273,7 @@ export default {
         const jeuNom = this.getJeuName(jeu)?.toLowerCase() || '';
         const jeuType = jeu.type ? jeu.type.toLowerCase() : '';
 
-        const stand = this.stands?.[jeu.id] || {};
-        const standNom = stand.nom_stand ? stand.nom_stand.toLowerCase() : '';
+        const standNom = this.getStandName(jeu).toLowerCase();
 
         // Filtres
         const nameMatch = !this.searchName ||
@@ -310,26 +309,28 @@ export default {
     await this.$store.dispatch('reservations/fetchAllReservationsStand');
     await this.$store.dispatch('tournois/getAllTournois');
     await this.getAllJeux();
-    this.$store.state.jeux.jeux = this.jeux.map(jeu => {
-      const standIds = Array.isArray(jeu.nom_stand) ? jeu.nom_stand : [jeu.nom_stand];
-      const nomsDesStands = standIds
-          .map(idStand => {
-            const stand = this.stands.find(s => s.idStand === idStand);
-            return stand ? stand.nom : this.$t('unknownStand');
-          })
-          .filter(Boolean)
-          .join(", ");
-
-      return {
-        ...jeu,
-        nomsDesStands
-      };
-    });
   },
   methods: {
     ...mapActions("jeux", ["getAllJeux"]),
     ...mapActions("stands", ["getAllStands"]),
     ...mapActions("tournois", ["getAllTournois"]),
+
+    getStandName(jeu) {
+      // Vérification que le jeu, son produit et vendupar existent
+      if (!jeu?.produit?.vendupar) return this.$t('unknownStand');
+
+      // Récupération de l'ID du stand
+      const standId = jeu.produit.vendupar;
+
+      // Recherche du stand dans le store
+      const stand = this.$store.state.stands.stands.find(s =>
+          s.id === standId || s.idStand == standId
+      );
+
+      // Retour du nom du stand ou une valeur par défaut
+      return stand?.nom_stand || this.$t('unknownStand');
+    },
+
 
 
     getJeuImage(jeu) {
@@ -497,21 +498,29 @@ export default {
           return;
         }
 
-        const currentUser = this.$store.state.user.userSession;
+
+        const currentUser = this.$store.state.user.actualUser;
         if (!currentUser?.id) {
           this.showLoginModal = true;
           return;
         }
 
         const [hours, minutes] = this.selectedTime.split(':').map(Number);
-        const reservationDate = {
-          ...this.selectedDate,
-          heures: hours,
-          min: minutes
-        };
+        // const reservationDate = {
+        //   ...this.selectedDate,
+        //   heures: hours,
+        //   min: minutes
+        // };
 
-        // Correction ici - accéder au stand différemment
-        console.log(JSON.stringify(this.selectedJeu.produit.vendupar) + "cest dla merde");
+        // reservatioDate est un string
+        console.log("negro: " + minutes)
+        const reservationDate = `${this.selectedDate.jour}/${this.selectedDate.mois}/${this.selectedDate.annee} ${hours + 2}:${minutes}`;
+        const reservationDatePrint = {
+            ...this.selectedDate,
+            heures: hours,
+            min: minutes
+        }
+
         const standId = this.selectedJeu.produit.vendupar; // ou la propriété correcte qui lie le jeu au stand
         const stand = this.stands[standId]; // si stands est un objet avec les IDs comme clés
         console.log("Stand trouvé:", JSON.stringify(stand));
@@ -519,13 +528,15 @@ export default {
           throw new Error(this.$t('standNotFound'));
         }
 
+        console.log("Jeu sélectionné:", JSON.stringify(this.selectedJeu) + " id utilistateur : " + currentUser.id);
+
         await this.$store.dispatch('reservations/addGameReservation', {
           idJeu: this.selectedJeu.id,
           idUtilisateur: currentUser.id,
           dateReserv: reservationDate,
         });
 
-        const formattedDate = this.formatDateJeux(reservationDate);
+        const formattedDate = this.formatDateJeux(reservationDatePrint);
         const formattedTime = this.formatTime(reservationDate);
         this.reservationMessage = this.$t('reservationConfirmed', {
           date: formattedDate,

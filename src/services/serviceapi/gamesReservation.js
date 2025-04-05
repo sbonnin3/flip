@@ -1,8 +1,8 @@
-import {postRequest} from "@/services/serviceapi/axios.service";
+import {postRequest, getRequest} from "@/services/serviceapi/axios.service";
 
 export async function createGameReservationService(data) {
     try {
-        return postRequest('/aapi/reservJeu/reservations', data, 'CREATEGAME')
+        return postRequest('/api/reservJeu/reservations', data, 'CREATEGAME')
     } catch (error) {
         console.error('Error creating reservation for a game from API:', error);
         throw error;
@@ -14,7 +14,23 @@ async function createGameReservationFromAPI(data) {
     return answer
 }
 
+async function getGameReservationByUserIdFromAPI(id) {
+    try {
+        return getRequest('/api/reservJeu/reservations/user/' + id, 'GETRESERVATIONSUSER')
+    } catch (error) {
+        console.error('Error getting reservations by user ID from API:', error);
+        throw error;
+    }
+}
+
+export async function getGameReservationByUserIdService(id) {
+    let answer = await getGameReservationByUserIdFromAPI(id)
+    return answer
+}
+
 export default {
     createGameReservationService,
-    createGameReservationFromAPI
+    createGameReservationFromAPI,
+    getGameReservationByUserIdFromAPI,
+    getGameReservationByUserIdService
 }

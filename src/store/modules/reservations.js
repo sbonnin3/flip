@@ -1,5 +1,5 @@
 
-import {createGameReservationService} from "@/services/serviceapi/gamesReservation";
+import {createGameReservationService, getGameReservationByUserIdService} from "@/services/serviceapi/gamesReservation";
 
 export default {
     namespaced: true,
@@ -52,9 +52,10 @@ export default {
                 commit('SET_RESERVATION_STAND_JEU', []);
             }
         },
-        async fetchReservations({commit}) {
+        async fetchReservations({commit}, id) {
             try {
-                const {reservations} = require("@/datasource/data");
+                const reservations = await getGameReservationByUserIdService(id);
+                console.log("Réservations récupérées:", JSON.stringify(reservations));
                 commit('SET_RESERVATIONS', reservations);
             } catch (error) {
                 console.error("Erreur chargement réservations:", error);
@@ -90,13 +91,23 @@ export default {
         async addGameReservation({commit}, gameData) {
             try {
                 const result = await createGameReservationService(gameData);
-                console.log("Jeu réservé avec succès", result);
+                console.log("crohn 1" + JSON.stringify(gameData))
+                console.log("Jeu réservé avec succès", JSON.stringify(result));
                 commit('SET_USER_RESERVATIONS_JEUX', result);
 
             } catch (err) {
                 console.log("Erreur dans createGameReservation", err);
             }
         },
+        async getGameReservationByUserId({commit}, id) {
+            try {
+                const result = await getGameReservationByUserIdService(id);
+                commit('SET_USER_RESERVATIONS_JEUX', result);
+
+            } catch (err) {
+                console.log("Erreur dans getGameReservationByUserId", err);
+            }
+        }
     },
     getters: {
         allReservationsStand: state => state.allReservationsStand || [],

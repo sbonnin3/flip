@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import {mapState} from "vuex";
 import NavBar from "@/components/NavBar.vue";
 
 export default {
@@ -20,7 +20,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("user", ["userSession"]),
+    ...mapState("user", {
+      userSession: "actualUser"
+    }),
   },
   watch: {
     userSession: {
@@ -32,6 +34,7 @@ export default {
   },
   methods: {
     updateNavTitles() {
+      console.log("User session crohn plein:", JSON.stringify(this.userSession)); // Pour le débogage
       this.navTitles = [
         { text: "Accueil" },
         { text: "Carte" },
@@ -39,7 +42,7 @@ export default {
       ];
 
       if (this.userSession) {
-        if (["vendeur", "restaurateur", "createur", "organisateur"].includes(this.userSession.role)) {
+        if (["vendeur", "restaurateur", "createur", "organisateur"].includes(this.userSession.role.toLowerCase())) {
           this.navTitles = this.navTitles.filter(title => title.text !== "Produits");
         }
         if (this.userSession.role === "utilisateur") {

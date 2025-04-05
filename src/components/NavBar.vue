@@ -26,9 +26,6 @@ import {mapState} from "vuex";
 export default {
   name: "NavBar",
   // On mappe "actualUser" en "userSession" pour que ces deux propriétés soient identiques.
-  ...mapState("user", {
-    userSession: "actualUser"
-  }),
   props: {
     titles: {
       type: Array,
@@ -42,6 +39,9 @@ export default {
     };
   },
   computed: {
+    ...mapState("user", {
+      userSession: "actualUser"
+    }),
     currentLanguage() {
       return this.$i18n.locale.toUpperCase();
     },

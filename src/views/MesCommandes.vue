@@ -4,22 +4,21 @@
 
     <div class="tab-container">
       <button :class="{ active: selectedTab === 'Tournois' }" @click="selectTab('Tournois')">Tournois</button>
-      <button :class="{ active: selectedTab === 'Articles' }" @click="selectTab('Articles')">Articles </button>
+      <button :class="{ active: selectedTab === 'Articles' }" @click="selectTab('Articles')">Articles</button>
       <button :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Jeux</button>
-      <button :class="{ active: selectedTab === 'JeuxReserve' }" @click="selectTab('JeuxReserve')">Jeux
-        réservés</button>
+      <button :class="{ active: selectedTab === 'JeuxReserve' }" @click="selectTab('JeuxReserve')">Jeux réservés</button>
     </div>
 
     <div v-show="selectedTab === 'Tournois'">
       <p v-if="$store.state.reservations.userReservations === null">
         Chargement en cours...
       </p>
-      <p v-if="commandes.length === 0">
+      <p v-else-if="commandesTournois.length === 0">
         Aucun tournoi réservé
       </p>
       <div v-else>
         <h2 class="section-title">Commandes de tournois</h2>
-        <div v-for="(commande, index) in commandes" :key="index" class="card">
+        <div v-for="(commande, index) in commandesTournois" :key="index" class="card">
           <div class="card-content">
             <h3 class="card-title">Tournoi de {{ commande.tournoiNom }}</h3>
             <div class="article">
@@ -40,14 +39,14 @@
       <p v-if="!userOrders">
         Chargement en cours...
       </p>
-      <p v-else-if="articleCommandes.length === 0">
+      <p v-else-if="commandesArticles.length === 0">
         Aucune commande d'articles
       </p>
-      <div class="cards-container" v-else >
-        <h2 class="section-title">Commandes d'Articles</h2>
-        <div v-for="(commande, index) in articleCommandes" :key="'commande-' + index" class="card">
+      <div v-else>
+        <h2 class="section-title">Commandes d'articles</h2>
+        <div v-for="(commande, index) in commandesArticles" :key="index" class="card">
           <div class="card-content">
-            <h3 class="card-title">Commande n° {{ commande.orderNumber }} chez {{ commande.restaurantNom }}</h3>
+            <h3 class="card-title">Commande n°{{ commande.orderNumber }}</h3>
             <div v-for="article in commande.articles" :key="article.nom" class="article">
               <p class="article-name">{{ article.nom }}</p>
               <p class="article-quantity">Quantité : {{ article.quantite }}</p>
@@ -63,14 +62,14 @@
       <p v-if="$store.state.reservations.userReservationsJeux === null">
         Chargement en cours...
       </p>
-      <p v-if="commandesJeu.length === 0">
-        Aucun jeux réservé
+      <p v-else-if="commandesJeux.length === 0">
+        Aucun jeu réservé
       </p>
       <div v-else>
         <h2 class="section-title">Commandes de jeux</h2>
-        <div v-for="(commande, index) in commandesJeu" :key="index" class="card">
+        <div v-for="(commande, index) in commandesJeux" :key="index" class="card">
           <div class="card-content">
-            <h3 class="card-title">Commande numéro {{ commande.orderNumber }}</h3>
+            <h3 class="card-title">Commande n°{{ commande.orderNumber }}</h3>
             <div class="article">
               <p class="article-name">Nom du jeu : {{ commande.jeuNom }}</p>
               <p class="article-price">Prix : {{ commande.prix }}€</p>
@@ -82,169 +81,141 @@
     </div>
 
     <div v-show="selectedTab === 'JeuxReserve'">
-      <p v-if="$store.state.reservations.userReservationStandJeu === null">
-        Chargement en cours...
-      </p>
-      <p v-if="commandesStandJeu.length === 0">
-        Aucun stand de jeu réservé
-      </p>
-
-      <div class="cards-container" v-else>
-        <h2 class="section-title">Commandes de jeux</h2>
-        <div v-for="(commande, index) in commandesStandJeu" :key="index" class="card">
+      <p v-if="loading">Chargement en cours...</p>
+      <p v-else-if="reservationsJeux.length === 0">Aucun jeu réservé</p>
+      <div v-else>
+        <h2 class="section-title">Mes réservations de jeux</h2>
+        <div v-for="reservation in reservationsJeux" :key="reservation.id" class="card">
           <div class="card-content">
-            <h3 class="card-title">Stand : {{ commande.standName }}</h3>
+            <h3 class="card-title">{{ getJeuNom(reservation.id_jeu) }}</h3>
             <div class="article">
-              <p class="article-name">Nom du jeu : {{ commande.jeuNom }}</p>
-              <p class="article-quantity">
-                Date : {{ formatReservationDate(commande.date || commande.dateReservation) }}
-              </p>
+              <p class="article-date">Date : {{ reservation.date_reservation }}</p>
+              <p class="article-stand">Stand : {{ getStandName(reservation.id_jeu) }}</p>
             </div>
-            <p class="card-status">{{ commande.status }}</p>
+            <p class="card-status">Statut : Confirmée</p>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 
 export default {
   name: "PageMesCommandes",
   data() {
     return {
       selectedTab: "Tournois",
-    }
+      loadingReservations: true
+    };
   },
   async created() {
     await this.loadUserData();
   },
-
   computed: {
     ...mapGetters("reservations", ['userReservations', 'userReservationsJeux', 'userReservationStandJeu']),
     ...mapGetters("commandes", ['userOrders']),
-    commandes() {
-      const tournois = this.$store.state.tournois.tournois || [];
-      const reservations = this.userReservations || [];
+    ...mapState(["jeux", "stands", "tournois"]),
 
+    commandesTournois() {
+      const reservations = this.userReservations || [];
       return reservations.map(reservation => {
-        const tournoi = tournois.find(t =>
+        const tournoi = this.tournois.tournois?.find(t =>
             String(t.id) === String(reservation.tournoiId) ||
             String(t._id) === String(reservation.tournoiId)
-        );
+        ) || {};
 
         return {
           ...reservation,
-          tournoiNom: tournoi?.nom || `[ID ${reservation.tournoiId}]`,
+          tournoiNom: tournoi.nom || `[ID ${reservation.tournoiId}]`,
           status: 'Confirmée'
         };
       });
     },
-    commandesJeu() {
-      const jeux = this.$store.state.jeux.jeux || [];
-      const reservations = this.userReservationsJeux || [];
 
-      return reservations.map(reservation => {
-        const jeu = jeux.find(j =>
-            j.id === reservation.jeuID ||
-            j._id === reservation.jeuID
-        );
-
-        return {
-          ...reservation,
-          jeuNom: jeu?.name || `Jeu ${reservation.jeuID}`,
-          status: 'Confirmée'
-        };
-      });
+    commandesArticles() {
+      return this.userOrders || [];
     },
-    articleCommandes() {
-      const orders = this.userOrders || [];
-      const stands = this.$store.state.stands?.stands || [];
 
-      return orders.map(commande => {
-        // Debug des données problématiques
-        if (!commande.restaurantNom) {
-          console.warn("Commande sans nom de restaurant:", commande);
-        }
-
-
-        const restaurant = stands.find(s =>
-            s.nom === commande.restaurantNom
-        );
-
-        return {
-          ...commande,
-          restaurantNom: restaurant?.nom || commande.restaurantNom || 'Restaurant inconnu',
-          status: commande.status ||
-              (commande.pickupTime
-                  ? `À récupérer à ${commande.pickupTime}`
-                  : 'Payée. A chercher au stand.'),
-          total: commande.articles?.reduce((sum, art) => sum + (art.prix * art.quantite), 0) || 0
-        };
-      });
+    commandesJeux() {
+      return []
     },
-    commandesStandJeu() {
-      if (!this.userReservationStandJeu) return [];
 
-      return this.userReservationStandJeu.map(reservation => {
-        const jeux = this.$store.state.jeux?.jeux || [];
-        const stands = this.$store.state.stands?.stands || [];
-
-        const jeu = jeux.find(j => j._id === reservation.jeuID || j.id === reservation.jeuID);
-        const stand = stands.find(s => s._id === reservation.standID || s.idStand === reservation.standID);
-
-        return {
-          ...reservation,
-          jeuNom: jeu ? jeu.nom || jeu.name : 'Jeu inconnu',
-          standName: stand ? stand.nom : 'Stand inexistant',
-          status: 'Confirmée'
-        };
-      });
+    reservationsJeux() {
+      return this.userReservationsJeux || [];
     }
   },
   methods: {
     async loadUserData() {
       try {
-        // Charge toutes les données utilisateur
-        await this.$store.dispatch('reservations/fetchUserData');
-
-        // Charge toutes les commandes
-        await this.$store.dispatch('commandes/initOrders');
-
-        // Ensuite filtre pour l'utilisateur
-        await this.$store.dispatch('commandes/loadUserOrders');
-
-        // Charge les autres données nécessaires
+        this.loadingReservations = true;
         await Promise.all([
-          this.$store.dispatch('tournois/getAllTournois'),
-          this.$store.dispatch('jeux/getAllJeux'),
-          this.$store.dispatch('stands/getAllStands')
+          this.$store.dispatch("reservations/getGameReservationByUserId", this.$store.state.user.actualUser.id),
+          this.$store.dispatch("commandes/loadUserOrders"),
+          this.$store.dispatch("jeux/getAllJeux"),
+          this.$store.dispatch("stands/getAllStands"),
+          // this.$store.dispatch("produits/getAllProduits"),
+          this.$store.dispatch("tournois/getAllTournois")
         ]);
       } catch (error) {
         console.error("Erreur chargement données:", error);
+      } finally {
+        this.loadingReservations = false;
       }
     },
+
+    getJeuNom(jeuId) {
+      const jeu = this.jeux.jeux?.find(j =>
+          j.id === jeuId || j._id === jeuId
+      );
+
+      console.log("enieme test:" + JSON.stringify(jeu));
+
+      // Vérification que le jeu existe
+      if (!jeu) return this.$t('unknownGame');
+
+      // Retour du nom du jeu ou une valeur par défaut
+      return jeu.produit.nom_produit || this.$t('unknownGame');
+    },
+
+    getStandName(jeuId) {
+      console.log("test reservation:" + JSON.stringify(this.reservationsJeux));
+      const jeu = this.jeux.jeux?.find(j =>
+          j.id === jeuId || j._id === jeuId
+      );
+
+      // Vérification que le jeu, son produit et vendupar existent
+      if (!jeu?.produit?.vendupar) return this.$t('unknownStand');
+
+      // Récupération de l'ID du stand
+      const standId = jeu.produit.vendupar;
+
+      // Recherche du stand dans le store
+      const stand = this.$store.state.stands.stands.find(s =>
+          s.id === standId || s.idStand == standId
+      );
+
+      // Retour du nom du stand ou une valeur par défaut
+      return stand?.nom_stand || this.$t('unknownStand');
+    },
+
     selectTab(tab) {
       this.selectedTab = tab;
     },
+
     formatReservationDate(date) {
       if (!date) return 'Date invalide';
       const {jour, mois, annee, heures, min} = date;
 
       if (jour !== undefined && mois !== undefined && annee !== undefined) {
-        const formattedJour = jour.toString().padStart(2, '0');
-        const formattedMois = mois.toString().padStart(2, '0');
-        const formattedHeures = heures !== undefined ? heures.toString().padStart(2, '0') : '00';
-        const formattedMinutes = min !== undefined ? min.toString().padStart(2, '0') : '00';
-
-        return `${formattedJour}/${formattedMois}/${annee} à ${formattedHeures}h${formattedMinutes}`;
+        const formattedHeures = heures !== undefined ? (heures - 2).toString().padStart(2, '0') : '00';
+        return `${jour.toString().padStart(2, '0')}/${mois.toString().padStart(2, '0')}/${annee} à ${formattedHeures}h${min?.toString().padStart(2, '0') || '00'}`;
       }
-
       return 'Date invalide';
     },
+
   }
 };
 </script>
@@ -340,5 +311,12 @@ export default {
   font-size: 0.95em;
   color: #666;
   margin: 5px 0;
+}
+
+.article-date,
+.article-stand {
+  font-size: 0.9em;
+  color: #555;
+  margin: 3px 0;
 }
 </style>
