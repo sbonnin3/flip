@@ -9,21 +9,21 @@
       </div>
 
       <ConnexionModal v-if="showLoginModal" :visible="showLoginModal" @close="closeLoginModal"
-                      @login-success="handleLoginSuccess" />
+                      @login-success="handleLoginSuccess"/>
 
       <div v-show="selectedTab === 'Jeux'">
         <div class="search-container">
           <div class="search-row">
             <label for="searchName" class="search-label">{{ $t('gameName') }}:</label>
             <input id="searchName" type="text" v-model="searchName" :placeholder="$t('searchByName')"
-                   class="search-input" />
+                   class="search-input"/>
           </div>
 
           <div class="search-row">
             <label class="search-label">{{ $t('gameType') }}:</label>
             <div class="checkbox-container">
               <label v-for="type in jeuTypes" :key="type" class="checkbox-label">
-                <input type="checkbox" v-model="selectedTypes" :value="type" /> {{ type }}
+                <input type="checkbox" v-model="selectedTypes" :value="type"/> {{ type }}
               </label>
             </div>
           </div>
@@ -31,21 +31,22 @@
           <div class="search-row">
             <label for="searchPlayers" class="search-label">{{ $t('playerCount') }}:</label>
             <input id="searchPlayers" type="number" v-model="searchPlayers" min="1" :placeholder="$t('playerCount')"
-                   class="search-input" />
+                   class="search-input"/>
 
             <label for="searchAge" class="search-label">{{ $t('minAge') }}:</label>
             <input id="searchAge" type="number" v-model="searchAge" min="1" :placeholder="$t('minAge')"
-                   class="search-input" />
+                   class="search-input"/>
 
             <label for="searchDuration" class="search-label">{{ $t('maxDuration') }}:</label>
-            <input id="searchDuration" type="number" v-model="searchDuration" min="1" :placeholder="$t('maxDurationMinutes')"
-                   class="search-input" />
+            <input id="searchDuration" type="number" v-model="searchDuration" min="1"
+                   :placeholder="$t('maxDurationMinutes')"
+                   class="search-input"/>
           </div>
 
           <div class="search-row">
             <label for="searchStand" class="search-label">{{ $t('standName') }}:</label>
             <input id="searchStand" type="text" v-model="searchStand" :placeholder="$t('searchByStand')"
-                   class="search-input" />
+                   class="search-input"/>
           </div>
 
           <button @click="resetFilters" class="reset-button">{{ $t('resetFilters') }}</button>
@@ -53,7 +54,7 @@
 
         <div class="cards-container" v-if="filteredJeux.length > 0">
           <div v-for="jeu in filteredJeux" :key="jeu.id" class="card" @click="openJeuModal(jeu)">
-            <img :src="getJeuImage(jeu)" class="card-image"  alt="image"/>
+            <img :src="getJeuImage(jeu)" class="card-image" alt="image"/>
             <div class="card-content">
               <h2 class="card-title">{{ getJeuName(jeu) }}</h2>
               <p class="card-type">{{ $t('type') }}: {{ jeu.type || 'Non spécifié' }}</p>
@@ -78,11 +79,11 @@
       <div id="Tournois" v-show="selectedTab === 'Tournois'">
         <div class="cards-container" v-if="tournois.length">
           <div v-for="tournoi in tournois" :key="tournoi._id" class="card" @click="openModal(tournoi)">
-            <img :src="getTournoiImage(tournoi)" class="modal-image" />
+            <img :src="getTournoiImage(tournoi)" class="modal-image"/>
             <div class="card-content">
               <h2 class="card-title">{{ tournoi.nom_tournoi }}</h2>
               <p class="card-location">{{ tournoi.lieu }}</p>
-<!--              <p class="card-date">{{ formatDate(tournoi.dates) }}</p>-->
+              <p class="card-date">{{ getEditionForTournoi(tournoi).date_edition }}</p>
               <p class="card-price">{{ $t('price') }}: {{ tournoi.prix_entree }}€</p>
               <p class="card-places">
                 {{ $t('remainingPlaces') }}: {{ getPlacesRestantes(tournoi.id) }}
@@ -97,7 +98,7 @@
         <div class="modal-content">
           <span class="close-button" @click="closeJeuModal">&times;</span>
           <h2>{{ selectedJeu.name }}</h2>
-          <img :src="getJeuImage(selectedJeu)" :alt="getJeuName(selectedJeu)" class="modal-image" />
+          <img :src="getJeuImage(selectedJeu)" :alt="getJeuName(selectedJeu)" class="modal-image"/>
           <p><strong>{{ $t('type') }}:</strong> {{ selectedJeu.type }} </p>
           <p><strong>{{ $t('playerCount') }}:</strong> {{ selectedJeu.nombre_joueurs_max }} max</p>
           <p><strong>{{ $t('minAge') }}:</strong> {{ selectedJeu.age_minimum }} {{ $t('years') }}</p>
@@ -112,10 +113,12 @@
           <span class="close-button" @click="closeConfirmationJeux">&times;</span>
           <h2>{{ $t('confirmReservation') }}</h2>
           <p>
-            {{ $t('confirmGameReservation', {
-            gameName: selectedJeu.name,
-            standName: selectedJeu.nomsDesStands
-          }) }}
+            {{
+              $t('confirmGameReservation', {
+                gameName: selectedJeu.name,
+                standName: selectedJeu.nomsDesStands
+              })
+            }}
           </p>
 
           <div class="form-group">
@@ -129,7 +132,7 @@
 
           <div class="form-group">
             <label for="reservationTime" class="inline-label">{{ $t('enterTime') }}:</label>
-            <input id="reservationTime" type="time" v-model="selectedTime" required class="form-input" />
+            <input id="reservationTime" type="time" v-model="selectedTime" required class="form-input"/>
           </div>
 
           <div class="form-buttons">
@@ -143,9 +146,9 @@
         <div class="modal-content">
           <span class="close-button" @click="closeModal">&times;</span>
           <h2>{{ selectedTournoi.nom_tournoi }}</h2>
-          <img :src="getTournoiImage(selectedTournoi)" class="modal-image" />
+          <img :src="getTournoiImage(selectedTournoi)" class="modal-image"/>
           <p><strong>{{ $t('location') }}:</strong> {{ selectedTournoi.lieu }}</p>
-<!--          <p class="article-quantity">{{ $t('date') }}: {{ formatReservationDate(selectedTournoi.dates[0]) }}</p>-->
+          <p class="article-quantity">{{ $t('date') }}: {{ getEditionForTournoi(selectedTournoi).date_edition }}</p>
           <p><strong>{{ $t('description') }}:</strong> {{ selectedTournoi.description_tournoi }}</p>
           <p><strong>{{ $t('price') }}:</strong> {{ selectedTournoi.prix_entree }}€</p>
           <p class="card-places">
@@ -158,25 +161,17 @@
       <div v-if="showConfirmation" class="confirmation-modal">
         <div class="modal-content">
           <span class="close-button" @click="closeConfirmation">&times;</span>
-          <h1>salut test 123</h1>
           <h2>{{ $t('confirmReservation') }}</h2>
-          <p>{{ $t('chooseDateForTournament', { tournamentName: selectedTournoi?.nom || '' }) }}</p>
+          <p>{{ selectedTournoi?.nom_tournoi }}</p>
 
-          <form v-if="selectedTournoi?.dates" @submit.prevent="confirmReservation">
+          <form @submit.prevent="confirmReservation">
             <div>
-              <label for="reservationDate">{{ $t('date') }}:</label>
-              <select id="reservationDate" v-model="reservationDate" required>
-                <option v-for="date in selectedTournoi.dates"
-                        :key="`${date.jour}-${date.mois}-${date.annee}-${date.heures}-${date.min}`" :value="date">
-                  {{ formatReservationDate(date) }} - {{ date.placesRestantes }} {{ $t('remainingPlaces') }}
-                </option>
-              </select>
+              <p><strong>{{ $t('date') }}:</strong> {{ getEditionForTournoi(selectedTournoi).date_edition }}</p>
             </div>
 
             <div>
               <label for="teamName">{{ $t('teamName') }}:</label>
-              <input id="teamName" type="text" v-model="teamName" :placeholder="$t('enterTeamName')"
-                     required />
+              <input id="teamName" type="text" v-model="teamName" :placeholder="$t('enterTeamName')" required/>
             </div>
 
             <div v-if="reservationMessage" class="error-message">
@@ -188,48 +183,38 @@
               <button type="button" @click="closeConfirmation" class="cancel-button">{{ $t('cancel') }}</button>
             </div>
           </form>
-          <p v-else>{{ $t('noDatesAvailable') }}</p>
         </div>
       </div>
 
       <div v-if="reservationMessage" class="reservation-message">
         <div class="modal-content">
           <p>{{ reservationMessage }}</p>
-          <p v-if="reservationDate">
-            <strong>{{ $t('visitDate') }}:</strong> {{ formatReservationDate(reservationDate) }}
-          </p>
-          <p v-if="reservationDate">
-            <strong>{{ $t('time') }}:</strong> {{ formatTime(reservationDate) }}
-          </p>
           <button @click="closeReservationMessage">OK</button>
         </div>
       </div>
 
-      <PaymentModal v-if="showPaymentModal" :visible="showPaymentModal" :showPickupTime="false"
-                    @close="closePaymentModal" @payment-success="handlePaymentSuccess" />
+<!--      <PaymentModal v-if="showPaymentModal" :visible="showPaymentModal" :showPickupTime="false"-->
+<!--                    @close="closePaymentModal" @payment-success="handlePaymentSuccess"/>-->
     </div>
   </div>
 </template>
 
 <script>
 import ConnexionModal from "@/components/Connexion.vue";
-import PaymentModal from "@/components/PaymentForm.vue";
 import {mapActions, mapState} from "vuex";
 
 export default {
   name: 'PageActivites',
-  components: { PaymentModal, ConnexionModal },
+  components: {ConnexionModal},
   data() {
     return {
       selectedTab: 'Jeux',
-      reservationDate: null,
       selectedJeu: null,
       selectedTournoi: null,
       showConfirmation: false,
       showConfirmationJeux: false,
       showLoginModal: false,
       showPaymentModal: false,
-      pickupTime: '',
       reservationMessage: '',
       teamName: '',
       searchName: '',
@@ -246,7 +231,7 @@ export default {
   computed: {
     ...mapState("jeux", ["jeux"]),
     ...mapState("stands", ["stands"]),
-    ...mapState("tournois", ["tournois"]),
+    ...mapState("tournois", ["tournois", "editionsTournoi"]),
     reservations() {
       return this.$store.getters['reservations/reservations'];
     },
@@ -266,16 +251,12 @@ export default {
       if (!this.jeux || !Array.isArray(this.jeux)) return [];
 
       return this.jeux.filter(jeu => {
-        // Vérification de base
         if (!jeu || !jeu.produit) return false;
 
-        // Normalisation des données
         const jeuNom = this.getJeuName(jeu)?.toLowerCase() || '';
         const jeuType = jeu.type ? jeu.type.toLowerCase() : '';
-
         const standNom = this.getStandName(jeu).toLowerCase();
 
-        // Filtres
         const nameMatch = !this.searchName ||
             jeuNom.includes(this.searchName.toLowerCase());
 
@@ -296,12 +277,10 @@ export default {
         const standMatch = !this.searchStand ||
             standNom.includes(this.searchStand.toLowerCase());
 
-
         return nameMatch && typeMatch && playersMatch &&
             ageMatch && durationMatch && standMatch;
       });
     },
-
   },
   async created() {
     await this.$store.dispatch('stands/getAllStands');
@@ -309,55 +288,78 @@ export default {
     await this.$store.dispatch('reservations/fetchAllReservationsStand');
     await this.$store.dispatch('tournois/getAllTournois');
     await this.getAllJeux();
+    await this.getEditionTournois();
   },
   methods: {
     ...mapActions("jeux", ["getAllJeux"]),
     ...mapActions("stands", ["getAllStands"]),
-    ...mapActions("tournois", ["getAllTournois"]),
+    ...mapActions("tournois", ["getAllTournois", "getEditionTournois", "inscriptionTournoi"]),
+
+    getEditionForTournoi(tournoi) {
+      if (!tournoi || !tournoi.id) return {date_edition: 'Date non disponible'};
+
+      const edition = this.$store.state.tournois.editionsTournoi.find(
+          ed => ed.id_tournoi === tournoi.id
+      );
+
+      if (!edition) return {date_edition: 'Date non disponible'};
+
+      const formatDate = (dateString) => {
+        try {
+          const date = new Date(dateString);
+          return date.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        } catch (e) {
+          return dateString;
+        }
+      };
+
+      return {
+        ...edition,
+        date_edition: formatDate(edition.date_edition)
+      };
+    },
 
     getStandName(jeu) {
-      // Vérification que le jeu, son produit et vendupar existent
       if (!jeu?.produit?.vendupar) return this.$t('unknownStand');
-
-      // Récupération de l'ID du stand
       const standId = jeu.produit.vendupar;
-
-      // Recherche du stand dans le store
       const stand = this.$store.state.stands.stands.find(s =>
           s.id === standId || s.idStand == standId
       );
-
-      // Retour du nom du stand ou une valeur par défaut
       return stand?.nom_stand || this.$t('unknownStand');
     },
 
-
-
     getJeuImage(jeu) {
-      const path = jeu.produit.image_path
-      try { return require(`@/assets/images/${path}`); }
-      catch { return require('@/assets/images/null.png'); }
+      const path = jeu.produit.image_path;
+      try {
+        return require(`@/assets/images/${path}`);
+      } catch {
+        return require('@/assets/images/null.png');
+      }
     },
 
     getTournoiImage(tournoi) {
-      const path = tournoi.image_path
-      try { return require(`@/assets/images/${path}`); }
-      catch { return require('@/assets/images/null.png'); }
+      const path = tournoi.image_path;
+      try {
+        return require(`@/assets/images/${path}`);
+      } catch {
+        return require('@/assets/images/null.png');
+      }
     },
 
     getJeuName(jeu) {
       return jeu.produit?.nom_produit || jeu.nom || 'Jeu sans nom';
     },
 
-
-
-
-
-
     openReservationConfirmation() {
       const currentUser = this.$store.state.user.userSession;
       if (currentUser) {
-        this.reservationDate = null;
         this.showConfirmation = true;
       } else {
         this.showLoginModal = true;
@@ -372,6 +374,53 @@ export default {
         this.showLoginModal = true;
       }
     },
+
+    async confirmReservation() {
+      try {
+        if (!this.teamName) {
+          this.reservationMessage = this.$t('enterTeamName');
+          return;
+        }
+
+        const currentUser = this.$store.state.user.actualUser;
+        if (!currentUser?.id) {
+          this.showLoginModal = true;
+          return;
+        }
+
+        const edition = this.getEditionForTournoi(this.selectedTournoi);
+        if (!edition || !edition.id) {
+          this.reservationMessage = this.$t('noPlacesAvailable');
+          return;
+        }
+
+        // Calcul des places restantes
+        const capacitee = Number(edition.capacitee) || 0;
+        const participants = Number(edition.current_participants) || 0;
+        const placesRestantes = Math.max(0, capacitee - participants);
+
+        if (placesRestantes === 0) {
+          this.reservationMessage = this.$t('noPlacesAvailable');
+          return;
+        }
+        await this.$store.dispatch('tournois/inscriptionTournoi', {
+          id_utilisateur: currentUser.id,
+          id_session: edition.id,
+          nomEquipe: this.teamName,
+        });
+
+        this.reservationMessage = this.$t('reservationConfirmed');
+        this.teamName = '';
+        this.closeConfirmation();
+        this.closeModal();
+
+      } catch (error) {
+        console.error("Erreur de réservation:", error);
+        this.reservationMessage = error.message || this.$t('reservationError');
+      }
+    },
+
+    // Les autres méthodes restent inchangées
     selectTab(tab) {
       this.selectedTab = tab;
     },
@@ -389,7 +438,7 @@ export default {
     closeJeuModal() {
       this.selectedJeu = null;
     },
-    openModal(tournoi) {
+    async openModal(tournoi) {
       this.selectedTournoi = tournoi;
     },
     closeModal() {
@@ -421,83 +470,19 @@ export default {
       const minute = date.min ? date.min.toString().padStart(2, '0') : '00';
       return `${hour}:${minute}`;
     },
-
-    formatReservationDate(date) {
-      if (!date || !date.jour || !date.mois || !date.annee) {
-        return this.$t('invalidDate');
-      }
-
-      const jour = date.jour.toString().padStart(2, '0');
-      const mois = date.mois.toString().padStart(2, '0');
-      const heures = date.heures ? date.heures.toString().padStart(2, '0') : '00';
-      const minutes = date.min ? date.min.toString().padStart(2, '0') : '00';
-
-      return `${jour}/${mois}/${date.annee} ${this.$t('at')} ${heures}:${minutes}`;
-    },
     isTeamNameTaken(teamName) {
       return this.reservations.some(
           (reservation) =>
-              reservation.tournoiId === this.selectedTournoi._id &&
+              reservation.tournoiId === this.selectedTournoi.id &&
               reservation.teamName.toLowerCase() === teamName.toLowerCase()
       );
     },
-
-    async confirmReservation() {
-      try {
-        if (!this.reservationDate || !this.teamName) {
-          this.reservationMessage = this.$t('selectDateAndTeam');
-          return;
-        }
-
-        const currentUser = this.$store.state.user.userSession;
-        if (!currentUser?.id) {
-          this.showLoginModal = true;
-          return;
-        }
-
-        const selectedDate = this.selectedTournoi.dates.find(
-            date => date.jour === this.reservationDate.jour &&
-                date.mois === this.reservationDate.mois &&
-                date.annee === this.reservationDate.annee &&
-                date.heures === this.reservationDate.heures &&
-                date.min === this.reservationDate.min
-        );
-
-        if (!selectedDate || selectedDate.placesRestantes === 0) {
-          this.reservationMessage = this.$t('noPlacesAvailable');
-          return;
-        }
-
-        selectedDate.placesRestantes -= 1;
-
-        await this.$store.dispatch('reservations/addReservation', {
-          tournoiId: this.selectedTournoi._id,
-          userId: currentUser.id,
-          places: 1,
-          prix: this.selectedTournoi.prix,
-          dateReservation: { ...this.reservationDate },
-          teamName: this.teamName
-        });
-
-        this.reservationMessage = this.$t('paymentDone');
-        this.teamName = '';
-        this.closeConfirmation();
-        this.openPaymentModal();
-        this.closeModal();
-
-      } catch (error) {
-        console.error("Erreur de réservation:", error);
-        this.reservationMessage = error.message || this.$t('reservationError');
-      }
-    },
-
     async confirmReservationJeux() {
       try {
         if (!this.selectedDate || !this.selectedTime) {
           alert(this.$t('selectDateAndTime'));
           return;
         }
-
 
         const currentUser = this.$store.state.user.actualUser;
         if (!currentUser?.id) {
@@ -506,28 +491,18 @@ export default {
         }
 
         const [hours, minutes] = this.selectedTime.split(':').map(Number);
-        // const reservationDate = {
-        //   ...this.selectedDate,
-        //   heures: hours,
-        //   min: minutes
-        // };
-
-        // reservatioDate est un string
-        const reservationDate = `${this.selectedDate.jour}/${this.selectedDate.mois}/${this.selectedDate.annee} ${hours + 2}:${minutes}`;
+        const reservationDate = `${this.selectedDate.jour}/${this.selectedDate.mois}/${this.selectedDate.annee} ${hours}:${minutes}`;
         const reservationDatePrint = {
-            ...this.selectedDate,
-            heures: hours,
-            min: minutes
+          ...this.selectedDate,
+          heures: hours,
+          min: minutes
         }
 
-        const standId = this.selectedJeu.produit.vendupar; // ou la propriété correcte qui lie le jeu au stand
-        const stand = this.stands[standId]; // si stands est un objet avec les IDs comme clés
-        console.log("Stand trouvé:", JSON.stringify(stand));
+        const standId = this.selectedJeu.produit.vendupar;
+        const stand = this.stands[standId];
         if (!stand) {
           throw new Error(this.$t('standNotFound'));
         }
-
-        console.log("Jeu sélectionné:", JSON.stringify(this.selectedJeu) + " id utilistateur : " + currentUser.id);
 
         await this.$store.dispatch('reservations/addGameReservation', {
           idJeu: this.selectedJeu.id,
@@ -564,7 +539,7 @@ export default {
 
       return dates;
     },
-    formatDateJeux({ jour, mois, annee }) {
+    formatDateJeux({jour, mois, annee}) {
       const formattedDay = jour.toString().padStart(2, '0');
       const formattedMonth = mois.toString().padStart(2, '0');
       return `${formattedDay}/${formattedMonth}/${annee}`;
@@ -572,35 +547,12 @@ export default {
     resetReservationFields() {
       this.reservationDate = '';
     },
-    handlePaymentSuccess() {
-      const placesRestantes = this.getPlacesRestantes(this.selectedTournoi._id, this.selectedTournoi.placesLimite);
-      if (placesRestantes > 0) {
-        const currentUser = this.$store.state.userSession;
-        if (currentUser) {
-          this.reservations.push({
-            tournoiId: this.selectedTournoi._id,
-            userId: currentUser.id,
-            places: 1,
-            prix: this.selectedTournoi.prix,
-            date: this.formatDate(this.selectedTournoi.dates),
-          });
-        } else {
-          this.showLoginModal = true;
-        }
-        this.reservationMessage = this.$t('paymentDone');
-        this.closePaymentModal();
-        this.closeModal();
-      }
-    },
-
     openPaymentModal() {
       this.showPaymentModal = true;
     },
-
     closePaymentModal() {
       this.showPaymentModal = false;
     },
-
     closeLoginModal() {
       this.showLoginModal = false;
     },
@@ -612,30 +564,42 @@ export default {
       this.reservationMessage = '';
     },
     getPlacesRestantes(tournoiId) {
-      const tournoi = this.tournois.find(t => t.id === tournoiId);
-      if (!tournoi) return 0;
+      if (!tournoiId) return 0;
 
-      const editionsTournoi = this.$store.state.editionsTournoi || [];
-      const editions = editionsTournoi.filter(ed => ed.id_tournoi === tournoiId);
-
-      if (editions.length === 0) {
-        return tournoi.participants_max || 0;
+      // Vérifier si editionsTournoi est bien chargé
+      if (!this.$store.state.tournois.editionsTournoi ||
+          !Array.isArray(this.$store.state.tournois.editionsTournoi)) {
+        console.error("EditionsTournoi non chargées ou format invalide");
+        return 0;
       }
 
-      let totalPlacesRestantes = 0;
-      editions.forEach(edition => {
-        const placesReservees = edition.current_participants || 0;
-        const placesRestantesEdition = (edition.capacitee || tournoi.participants_max) - placesReservees;
-        totalPlacesRestantes += Math.max(0, placesRestantesEdition);
-      });
+      const edition = this.$store.state.tournois.editionsTournoi.find(
+          ed => ed.id_tournoi === tournoiId
+      );
 
-      return totalPlacesRestantes;
+      if (!edition) {
+        console.error("Edition non trouvée pour tournoi ID:", tournoiId);
+        return 0;
+      }
+
+      // Vérifier que les valeurs sont bien des nombres
+      const capacitee = Number(edition.capacitee) || 0;
+      const participants = Number(edition.current_participants) || 0;
+
+      return Math.max(0, capacitee - participants);
     }
   },
   mounted() {
     const selectedTab = this.$route.query.tab;
     if (selectedTab) {
       this.selectTab(selectedTab);
+    }
+    try {
+      this.$store.dispatch('tournois/getEditionTournois');
+      const editionTournois = this.$store.state.tournois.editionTournois;
+      console.log('Edition Tournoi récupéré:', editionTournois);
+    } catch (err) {
+      console.error("Erreur lors de la récupération du tournoi:", err);
     }
   },
   watch: {
@@ -649,6 +613,7 @@ export default {
 </script>
 
 <style scoped>
+/* Le CSS reste inchangé */
 .reservation-message {
   position: fixed;
   top: 0;

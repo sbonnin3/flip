@@ -37,7 +37,7 @@ async function getTournoiByIdFromAPI(id) {
     }
 }
 
-async function getTournoiByIdService(id) {
+export async function getTournoiByIdService(id) {
     let answer = await getTournoiByIdFromAPI(id)
     return answer
 }
@@ -70,6 +70,64 @@ async function deleteTournoiService(id) {
     return answer
 }
 
+async function getEditionTournoiByIdFromAPI(id) {
+    try {
+        return getRequest('/api/tournaments/editions/' + id, 'GETEDITIONTOURNOIBYID')
+    } catch (error) {
+        console.error('Error getting edition tournoi by ID from API:', error);
+        throw error;
+    }
+}
+
+export async function getEditionTournoiByIdService(id) {
+    let answer = await getEditionTournoiByIdFromAPI(id)
+    return answer
+}
+
+async function getEditionTournoisFromAPI() {
+    try {
+        return getRequest('/api/editions/getAllEditions', 'GETEDITIONTOURNOIS')
+    } catch (error) {
+        console.error('Error getting edition tournois from API:', error);
+        throw error;
+    }
+}
+
+export async function getEditionTournoiService() {
+    let answer = await getEditionTournoisFromAPI()
+    return answer
+}
+
+async function inscriptionTournoiFromAPI(dataInscription) {
+    try {
+        return postRequest('/api/inscription/inscrire/', dataInscription,'INSCRIPTIONTOURNOI')
+    } catch (error) {
+        console.error('Error creating tournoi from API:', error);
+        throw error;
+    }
+}
+
+export async function inscriptionTournoiService(dataInscription) {
+    let answer = await inscriptionTournoiFromAPI(dataInscription)
+    return answer
+}
+
+async function getInscriptionTournoisByIdUserFromAPI(id) {
+    try {
+        return getRequest('/api/inscription/inscriptions/' + id, 'GETINSCRIPTIONTOURNOIS')
+    } catch (error) {
+        console.error('Error getting inscription tournois from API:', error);
+        throw error;
+    }
+}
+
+export async function getInscriptionTournoisByIdUserService(id) {
+    let answer = await getInscriptionTournoisByIdUserFromAPI(id)
+    return answer
+}
+
+
+
 
 
 export default {
@@ -82,5 +140,13 @@ export default {
     updateTournoiByIdFromAPI,
     updateTournoiByIdService,
     deleteTournoiFromAPI,
-    deleteTournoiService
+    deleteTournoiService,
+    getEditionTournoiByIdService,
+    getEditionTournoiByIdFromAPI,
+    getEditionTournoiService,
+    getEditionTournoisFromAPI,
+    inscriptionTournoiFromAPI,
+    inscriptionTournoiService,
+    getInscriptionTournoisByIdUserFromAPI,
+    getInscriptionTournoisByIdUserService
 }

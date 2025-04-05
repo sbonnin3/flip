@@ -34,7 +34,6 @@ export default {
   },
   methods: {
     updateNavTitles() {
-      console.log("User session crohn plein:", JSON.stringify(this.userSession)); // Pour le débogage
       this.navTitles = [
         { text: "Accueil" },
         { text: "Carte" },

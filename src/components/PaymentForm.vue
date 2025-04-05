@@ -23,12 +23,12 @@
           <div v-if="selected === 'Carte Bancaire'">
             <div class="inputbox">
               <input v-model="paymentDetails.cardNumber" type="tel" placeholder="xxxx xxxx xxxx xxxx" maxlength="19"
-                id="cardNumber" required />
+                     id="cardNumber" required />
               <label for="cardNumber">Numéro de carte :</label>
             </div>
             <div class="inputbox">
               <input v-model="paymentDetails.expirationDate" type="tel" placeholder="MM/AA" maxlength="7"
-                id="expirationDate" required />
+                     id="expirationDate" required />
               <label for="expirationDate">Date d'expiration :</label>
             </div>
             <div class="inputbox">
@@ -44,7 +44,7 @@
           <div v-if="selected === 'PayPal'">
             <div class="inputbox">
               <input v-model="paymentDetails.paypalEmail" type="email" placeholder="paypal@gmail.com" id="paypalEmail"
-                required />
+                     required />
               <label for="paypalEmail">Email :</label>
             </div>
           </div>
@@ -57,15 +57,12 @@
           <button type="submit" :disabled="!validatePayment()">Payer</button>
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </form>
-
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-
 export default {
   name: 'PaymentModal',
   props: {
@@ -75,7 +72,7 @@ export default {
     },
     showPickupTime: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   data() {
@@ -94,10 +91,6 @@ export default {
       errorMessage: null,
     };
   },
-  computed: {
-    ...mapGetters('commandes',['userOrders', 'currentOrder']),
-  },
-
   methods: {
     toggleDropdown() {
       this.dropdownOpen = !this.dropdownOpen;
@@ -106,16 +99,29 @@ export default {
     selectOption(option) {
       this.selected = option;
       this.dropdownOpen = false;
+      this.errorMessage = null;
+      this.resetPaymentDetails();
+    },
+
+    resetPaymentDetails() {
+      this.paymentDetails = {
+        cardNumber: '',
+        expirationDate: '',
+        cvv: '',
+        cardName: '',
+        paypalEmail: '',
+      };
     },
 
     validatePayment() {
       if (this.selected === 'Carte Bancaire') {
-        return this.paymentDetails.cardNumber &&
-          this.paymentDetails.expirationDate &&
-          this.paymentDetails.cvv &&
-          this.paymentDetails.cardName;
-      } else if (this.selected === 'PayPal') {
-        return this.paymentDetails.paypalEmail;
+        const cardValid = this.paymentDetails.cardNumber.replace(/\s/g, '').length === 16;
+        const dateValid = /^\d{2}\/\d{2}$/.test(this.paymentDetails.expirationDate);
+        const cvvValid = this.paymentDetails.cvv.length >= 3;
+        return cardValid && dateValid && cvvValid && this.paymentDetails.cardName.trim() !== '';
+      }
+      if (this.selected === 'PayPal') {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.paymentDetails.paypalEmail);
       }
       return false;
     },
@@ -125,38 +131,26 @@ export default {
         this.errorMessage = "Veuillez remplir tous les champs correctement.";
         return;
       }
-      this.$emit("payment-success");
+
+      // Formatage des données avant envoi
+      const paymentData = {
+        method: this.selected,
+        details: {...this.paymentDetails},
+        timestamp: new Date().toISOString()
+      };
+
+      if (this.showPickupTime) {
+        paymentData.pickupTime = this.pickupTime;
+      }
+
+      this.$emit("payment-success", paymentData);
       this.closePaymentModal();
     },
 
-    getPickupTime() {
-      return this.pickupTime;
-    },
-
-    generateRecap(orders) {
-      if (!orders.length) return "Aucune commande à afficher";
-
-      const restaurantRecaps = orders.map(order => {
-        if (!order.articles?.length) {
-          return `Restaurant ${order.restaurantNom || 'Inconnu'} - Pas d'articles`;
-        }
-
-        const articlesText = order.articles.map(a =>
-            `- ${a.nom} (${a.quantite}x ${a.prix.toFixed(2)}€)`
-        ).join('\n');
-
-        const total = order.articles.reduce((sum, a) => sum + (a.prix * a.quantite), 0);
-
-        return `🍽️ ${order.restaurantNom}
-${articlesText}
-Total: ${total.toFixed(2)}€
-⏱️ À récupérer à: ${order.pickupTime || 'non précisé'}`;
-      });
-
-      return `📋 VOS COMMANDES\n${restaurantRecaps.join('\n\n')}`;
-    },
-
     closePaymentModal() {
+      this.resetPaymentDetails();
+      this.selected = "";
+      this.errorMessage = null;
       this.$emit("close");
     },
   },

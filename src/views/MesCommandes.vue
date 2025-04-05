@@ -13,21 +13,21 @@
       <p v-if="$store.state.reservations.userReservations === null">
         Chargement en cours...
       </p>
-      <p v-else-if="commandesTournois.length === 0">
+      <p v-else-if="this.inscriptionsTournoi.length === 0">
         Aucun tournoi réservé
       </p>
       <div v-else>
         <h2 class="section-title">Commandes de tournois</h2>
-        <div v-for="(commande, index) in commandesTournois" :key="index" class="card">
+        <div v-for="(commande, index) in this.inscriptionsTournoi" :key="index" class="card">
           <div class="card-content">
-            <h3 class="card-title">Tournoi de {{ commande.tournoiNom }}</h3>
+            <h3 class="card-title">Nom du tournoi : {{ getTournamentName(commande.id_edition_tournoi) }} </h3>
             <div class="article">
-              <p class="article-name">Places réservées : {{ commande.places }}</p>
+              <p class="article-name">Informations : </p>
               <p class="article-quantity">
-                Date : {{ formatReservationDate(commande.date || commande.dateReservation) }}
+                Date d'inscription : {{ formatDateISO(commande.date_inscription) }}
               </p>
-              <p class="article-price">Prix : {{ commande.prix }}€</p>
-              <p class="article-team">Nom de l'équipe : {{ commande.teamName || 'Aucun' }}</p>
+              <p class="article-price">Prix : {{ getTournamentPrice(commande.id_edition_tournoi) }}€</p>
+              <p class="article-team">Nom de l'équipe : {{ commande.nomequipe || 'Aucun' }}</p>
             </div>
             <p class="card-status">{{ commande.status }}</p>
           </div>
@@ -43,7 +43,7 @@
         Aucune commande d'articles
       </p>
       <div v-else>
-        <h2 class="section-title">Commandes d'articles</h2>
+        <h2 class="sectfion-title">Commandes d'articles</h2>
         <div v-for="(commande, index) in commandesArticles" :key="index" class="card">
           <div class="card-content">
             <h3 class="card-title">Commande n°{{ commande.orderNumber }}</h3>
@@ -89,7 +89,7 @@
           <div class="card-content">
             <h3 class="card-title">{{ getJeuNom(reservation.id_jeu) }}</h3>
             <div class="article">
-              <p class="article-date">Date : {{ reservation.date_reservation }}</p>
+              <p class="article-date">Date : {{ formatDateISO(reservation.date_reservation) }}</p>
               <p class="article-stand">Stand : {{ getStandName(reservation.id_jeu) }}</p>
             </div>
             <p class="card-status">Statut : Confirmée</p>
@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 
 export default {
   name: "PageMesCommandes",
@@ -118,6 +118,7 @@ export default {
     ...mapGetters("reservations", ['userReservations', 'userReservationsJeux', 'userReservationStandJeu']),
     ...mapGetters("commandes", ['userOrders']),
     ...mapState(["jeux", "stands", "tournois"]),
+    ...mapState("tournois", ["tournois", "inscriptionsTournoi", "editionsTournoi"]),
 
     commandesTournois() {
       const reservations = this.userReservations || [];
@@ -139,6 +140,7 @@ export default {
       return this.userOrders || [];
     },
 
+
     commandesJeux() {
       return []
     },
@@ -157,14 +159,53 @@ export default {
           this.$store.dispatch("jeux/getAllJeux"),
           this.$store.dispatch("stands/getAllStands"),
           // this.$store.dispatch("produits/getAllProduits"),
-          this.$store.dispatch("tournois/getAllTournois")
+          this.$store.dispatch("tournois/getAllTournois"),
+            this.$store.dispatch("tournois/getAllInscriptionTournoisByIdUser", this.$store.state.user.actualUser.id),
         ]);
+        console.log("test edition de tournois par le user:" + JSON.stringify(this.inscriptionsTournoi));
       } catch (error) {
         console.error("Erreur chargement données:", error);
       } finally {
         this.loadingReservations = false;
       }
     },
+    ...mapActions("tournois", ["getEditionTournoiById", "getTournoiById"]),
+
+    getTournamentName(tournoiId) {
+      const tournoi = this.$store.state.tournois.tournois?.find(t =>
+          String(t.id) === String(tournoiId) ||
+          String(t._id) === String(tournoiId)
+      );
+      return tournoi?.nom_tournoi || `Tournoi ID: ${tournoiId}`;
+    },
+
+    formatDateISO(dateString) {
+      if (!dateString) return 'Date invalide';
+
+      try {
+        const date = new Date(dateString);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+
+        return `${day}/${month}/${year} à ${hours}h${minutes}`;
+      } catch (e) {
+        console.error("Erreur de formatage de date:", e);
+        return 'Date invalide';
+      }
+    },
+
+    // cest vraiment pas optmimal mais bon, on avait pas dans l'api de quoi faire ce que je voulais faire
+    getTournamentPrice(tournoiId) {
+      const tournoi = this.$store.state.tournois.tournois?.find(t =>
+          String(t.id) === String(tournoiId) ||
+          String(t._id) === String(tournoiId)
+      );
+      return tournoi?.prix_entree || `Prix non défini`;
+    },
+
 
     getJeuNom(jeuId) {
       const jeu = this.jeux.jeux?.find(j =>
