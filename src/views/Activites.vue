@@ -513,7 +513,6 @@ export default {
         // };
 
         // reservatioDate est un string
-        console.log("negro: " + minutes)
         const reservationDate = `${this.selectedDate.jour}/${this.selectedDate.mois}/${this.selectedDate.annee} ${hours + 2}:${minutes}`;
         const reservationDatePrint = {
             ...this.selectedDate,

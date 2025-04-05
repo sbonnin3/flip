@@ -116,7 +116,6 @@ export default {
         })
 
         if (success) {
-          await new Promise(resolve => setTimeout(resolve, 50)) // Attente cycle mise à jour
           const targetPath = this.$store.state.user.redirectPath || '/MonCompte'
           this.$store.dispatch('user/clearRedirectPath')
 
@@ -133,35 +132,33 @@ export default {
 
 
     async handleRegister() {
-      if (!this.email.includes("@")) {
-        this.errorMessage = this.$t('emailError');
-        return;
-      }
-
-      if (this.role !== "utilisateur" && this.codeInscription !== "1234") {
-        this.errorMessage = this.$t('codeError');
-        return;
-      }
-
       try {
-        const success = await this.register({
+        // 1. Nettoie la session actuelle avant l'inscription
+        await this.$store.dispatch('user/logout');
+
+        // 2. Envoi des données au serveur
+        const success = await this.$store.dispatch('user/register', {
           nom: this.nom,
           prenom: this.prenom,
           email: this.email,
           motDePasse: this.motDePasse,
           role: this.role,
-          identifant: this.identifiant,
+          identifiant: this.identifiant,
         });
 
-        console.log("gojo : " + success)
-
         if (success) {
-          const redirectPath = this.$store.state.user.redirectPath || '/MonCompte';
-          await this.$store.dispatch('user/clearRedirectPath');
-          this.$router.push(redirectPath);
+          const loginSuccess = await this.$store.dispatch('user/login', {
+            identifiant: this.identifiant,
+            password: this.motDePasse
+          });
+
+          if (loginSuccess) {
+            const targetPath = this.$store.state.user.redirectPath || '/MonCompte';
+            this.$router.push(targetPath).catch(() => {});
+          }
         }
       } catch (error) {
-        this.errorMessage = this.$t('registerError');
+        this.errorMessage = "Erreur lors de l'inscription";
         console.error(error);
       }
     },

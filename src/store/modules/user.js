@@ -99,31 +99,27 @@ export default {
             }
         },
 
-        async login({ commit, state, dispatch }, credentials) {
+        async login({ commit, dispatch }, credentials) {
             try {
                 const result = await loginService(credentials);
+
                 if (result === "Connecté") {
-                    if (state.comptes.length === 0) {
-                        await dispatch('initComptes');
-                    }
-                    const user = state.comptes.find(
-                        u =>
-                            u.identifiant === credentials.identifiant &&
-                            u.mdp === credentials.password
-                    );
+                    // Recharge les comptes à jour
+                    await dispatch('initComptes');
+
+                    // Met à jour la session immédiatement
+                    commit('SET_USER_SESSION', `Logged in as ${credentials.identifiant}`);
+
+                    // Trouve l'utilisateur correspondant
+                    const user = this.state.user.comptes.find(u => u.identifiant === credentials.identifiant);
                     if (user) {
-                        // On commit à la fois la session et l'utilisateur actuel
-                        commit('SET_USER_SESSION', result);
                         commit('SET_ACTUAL_USER', user);
                         return true;
                     }
-                    commit('CLEAR_USER_SESSION');
-                    return false;
                 }
-                commit('CLEAR_USER_SESSION');
                 return false;
             } catch (error) {
-                commit('CLEAR_USER_SESSION');
+                console.error('Login error:', error);
                 return false;
             }
         },

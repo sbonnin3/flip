@@ -15,7 +15,16 @@ export default {
         },
         UPDATE_TOURNOI(state, {index, tournoi}) {
             state.tournois.splice(index, 1, tournoi);
-        }
+        },
+        SET_EDITION_TOURNOIS(state, tournoi) {
+            state.editionTournois = tournoi;
+        },
+        CLEAR_EDITION_TOURNOIS(state) {
+            state.editionTournois = [];
+        },
+        REMOVE_TOURNOI(state, id) {
+            state.tournois = state.tournois.filter(t => t._id !== id);
+        },
     },
     actions: {
         async getAllTournois({commit}) {
@@ -29,6 +38,20 @@ export default {
                 console.log("Cas anormal dans getAllTournois()")
             }
         },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         async updateTournoi({commit, state}, tournoi) {
             const index = state.tournois.findIndex(t => t._id === tournoi._id);
