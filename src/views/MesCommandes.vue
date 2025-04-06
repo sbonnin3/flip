@@ -44,7 +44,7 @@
         Aucun jeu réservé
       </p>
       <div v-else>
-        <h2 class="section-title">Commandes de jeux</h2>
+        <h2 class="section-title">Commandes d'articles</h2>
         <div v-for="(commande, index) in actualBasket" :key="index" class="card">
           <div class="card-content">
             <h3 class="card-title">Commande n°{{ commande.id }}</h3>
