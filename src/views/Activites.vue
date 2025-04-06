@@ -535,12 +535,11 @@ export default {
         }
 
         const [hours, minutes] = this.selectedTime.split(':').map(Number);
-        const reservationDate = `${this.selectedDate.jour}/${this.selectedDate.mois}/${this.selectedDate.annee} ${hours}:${minutes}`;
         const reservationDatePrint = {
           ...this.selectedDate,
           heures: hours,
           min: minutes
-        }
+        };
 
         const standId = this.selectedJeu.produit.vendupar;
         const stand = this.stands[standId];
@@ -551,15 +550,12 @@ export default {
         await this.$store.dispatch('reservations/addGameReservation', {
           idJeu: this.selectedJeu.id,
           idUtilisateur: currentUser.id,
-          dateReserv: reservationDate,
+          dateReserv: `${this.selectedDate.jour}/${this.selectedDate.mois}/${this.selectedDate.annee} ${hours}:${minutes}`,
         });
 
-        const formattedDate = this.formatDateJeux(reservationDatePrint);
-        const formattedTime = this.formatTime(reservationDate);
-        this.reservationMessage = this.$t('reservationConfirmed', {
-          date: formattedDate,
-          time: formattedTime
-        });
+        // Formatage cohérent avec les tournois
+        const formattedDate = this.formatDateJeuxComplete(reservationDatePrint);
+        this.reservationMessage = `${this.$t('reservationConfirmed')} - ${this.getJeuName(this.selectedJeu)} (${formattedDate})`;
         this.closeConfirmationJeux();
         this.closeJeuModal();
 
@@ -587,6 +583,17 @@ export default {
       const formattedDay = jour.toString().padStart(2, '0');
       const formattedMonth = mois.toString().padStart(2, '0');
       return `${formattedDay}/${formattedMonth}/${annee}`;
+    },
+    formatDateJeuxComplete({jour, mois, annee, heures, min}) {
+      const date = new Date(annee, mois - 1, jour, heures, min);
+      return date.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     },
     resetReservationFields() {
       this.reservationDate = '';

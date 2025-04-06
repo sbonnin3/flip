@@ -23,7 +23,7 @@ async function getArticlesFromAPI() {
     }
 }
 
-async function getArticleService() {
+export async function getArticleService() {
     let answer = await getArticlesFromAPI()
     return answer
 }

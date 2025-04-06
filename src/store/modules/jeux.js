@@ -6,7 +6,7 @@ export default {
   namespaced: true,
   state: {
     jeux: [],
-    jeuxCreation: []
+    jeuxCreation: [],
   },
   mutations: {
     SET_JEUX(state, jeux) {
@@ -17,7 +17,7 @@ export default {
     },
     ADD_JEUX(state, jeux) {
       state.jeux.push(jeux);
-    }
+    },
   },
   actions: {
     async fetchJeuxCreation({ commit }) {

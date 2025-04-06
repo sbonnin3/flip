@@ -86,14 +86,14 @@ async function getBasketOrderService() {
 
 async function addProductToBasketFromAPI(data) {
     try {
-        return postRequest('/api/basket/addproduct', data, 'ADDPRODUCTTOBASKET')
+        return postRequest('/api/basket/addProduct', data, 'ADDPRODUCTTOBASKET')
     } catch (error) {
         console.error('Error adding product to basket from API:', error);
         throw error;
     }
 }
 
-async function addProductToBasketService(data) {
+export async function addProductToBasketService(data) {
     let answer = await addProductToBasketFromAPI(data)
     return answer
 }
@@ -168,6 +168,20 @@ async function sendBasketToHistoricService(id, data) {
     return answer
 }
 
+async function getBasketByUserIdFromAPI(id) {
+    try {
+        return getRequest('/api/basket/userBasket/' + id, 'GETBASKETBYUSERID')
+    } catch (error) {
+        console.error('Error getting basket by user ID from API:', error);
+        throw error;
+    }
+}
+
+export async function getBasketByUserIdService(id) {
+    let answer = await getBasketByUserIdFromAPI(id)
+    return answer
+}
+
 
 export default {
     getBasketsService,
@@ -193,5 +207,7 @@ export default {
     getSpecificOrderService,
     getSpecificOrderFromAPI,
     sendBasketToHistoricService,
-    sendBasketToHistoricFromAPI
+    sendBasketToHistoricFromAPI,
+    getBasketByUserIdService,
+    getBasketByUserIdFromAPI,
 }

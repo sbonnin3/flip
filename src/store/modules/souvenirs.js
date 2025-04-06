@@ -1,4 +1,4 @@
-import { getAllSouvenirs } from "@/services/serviceapi/article";
+import { getArticleService } from "@/services/serviceapi/article";
 
 export default {
   namespaced: true,
@@ -13,10 +13,8 @@ export default {
   actions: {
     async getAllSouvenirs({ commit }) {
       try {
-        const response = await getAllSouvenirs();
-        if (response.error === 0) {
-          commit('SET_SOUVENIRS', response.data);
-        }
+        const response = await getArticleService();
+          commit('SET_SOUVENIRS', response);
       } catch (error) {
         console.error("Erreur lors de la récupération des souvenirs :", error);
       }

@@ -142,7 +142,7 @@
             </div>
           </div>
 
-          
+
 
           <h3>{{ $t('leaveReview') }}</h3>
           <form @submit.prevent="submitComment">
@@ -156,22 +156,22 @@
     <div v-if="selectedTab === 'Boutique'">
       <h2 class="page-other_title">{{ $t('games') }}</h2>
       <div v-if="jeux.length" class="cards-container">
-        <div v-for="jeu in jeux" :key="jeu._id" class="card" @click="openModalJeu(jeu)">
-          <img :src="jeu.image" :alt="$t('gameImage')" class="card-image" />
+        <div v-for="jeu in jeux" :key="jeu.id" class="card" @click="openModalJeu(jeu)">
+          <img :src="getJeuImage(jeu)" :alt="$t('gameImage')" class="card-image" />
           <div class="card-content">
-            <h2 class="card-title">{{ jeu.name }}</h2>
-            <p class="card-price"><strong>{{ $t('price') }}:</strong> {{ jeu.prix }}€</p>
+            <h2 class="card-title">{{ jeu.produit.nom_produit }}</h2>
+            <p class="card-price"><strong>{{ $t('price') }}:</strong> {{ jeu.produit.prix_produit }}€</p>
           </div>
         </div>
       </div>
       <p v-else>{{ $t('noGamesAvailable') }}</p>
       <h2 class="page-other_title">{{ $t('souvenirs') }}</h2>
-      <div v-if="souvenirs.length" class="cards-container">
-        <div v-for="souvenir in souvenirs" :key="souvenir._id" class="card">
-          <img :src="souvenir.image" :alt="$t('souvenirImage')" class="card-image" />
+      <div v-if="filteredSouvenirs.length" class="cards-container">
+        <div v-for="souvenir in filteredSouvenirs" :key="souvenir.id" class="card">
+          <img :src="getSouvenirImage(souvenir)" :alt="$t('souvenirImage')" class="card-image" />
           <div class="card-content">
-            <h2 class="card-title">{{ souvenir.nom }}</h2>
-            <p class="card-price"><strong>{{ $t('price') }}: </strong> {{ souvenir.prix }}€</p>
+            <h2 class="card-title">{{ souvenir.nom_produit }}</h2>
+            <p class="card-price"><strong>{{ $t('price') }}:</strong> {{ souvenir.prix_produit }}€</p>
           </div>
         </div>
       </div>
@@ -180,13 +180,12 @@
     <div v-if="selectedModalJeu" class="modal">
       <div class="modal-content">
         <span class="close-button" @click="closeModalJeu">&times;</span>
-        <h2>{{ selectedModalJeu.name }}</h2>
-        <img :src="selectedModalJeu.image" :alt="$t('gameImage')" class="modal-image" />
+        <h2>{{ selectedModalJeu.produit.nom_produit }}</h2>
+        <img :src="getJeuImage(selectedModalJeu)" :alt="$t('gameImage')" class="modal-image" />
         <p><strong>{{ $t('type') }}:</strong> {{ selectedModalJeu.type }}</p>
-        <p><strong>{{ $t('players') }}:</strong> {{ selectedModalJeu.nombre_de_joueurs }}</p>
-        <p><strong>{{ $t('minAge') }}: </strong> {{ $t('fromAge', { age: selectedModalJeu.age_minimum }) }}</p>
+        <p><strong>{{ $t('players') }}:</strong> {{ selectedModalJeu.nombre_joueurs_min }}-{{ selectedModalJeu.nombre_joueurs_max }}</p>
+        <p><strong>{{ $t('minAge') }}: </strong> {{ $t('fromAge', { age: selectedModalJeu.age_limite }) }}</p>
         <p><strong>{{ $t('duration') }}: </strong> {{ selectedModalJeu.duree }} {{ $t('minutes') }}</p>
-        <p><strong>{{ $t('publisher') }}:</strong> {{ selectedModalJeu.editeur }}</p>
         <button class="button cart_button_checkout" @click="openCommandConfirmationBoutique">{{ $t('order') }}</button>
       </div>
     </div>
@@ -212,8 +211,7 @@
   </div>
 </template>
 <script>
-import { jeux, souvenirs, reservationsJeux, commandes, stands } from '@/datasource/data';
-import { mapActions, mapGetters } from 'vuex';
+import {mapActions, mapGetters, mapState} from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
 import Note from "@/components/StarRating.vue";
@@ -242,11 +240,11 @@ export default {
       editingComment: null,
       editingRating: null,
       newRating: 0,
-      jeux,
-      stands,
-      souvenirs,
-      reservationsJeux,
-      commandes,
+      // jeux,
+      // stands,
+      // souvenirs,
+      // reservationsJeux,
+      // commandes,
     };
   },
   mounted() {
@@ -270,7 +268,33 @@ export default {
   computed: {
     ...mapGetters('restaurants', ['restaurants']),
     ...mapGetters('commandes', ['userOrders']),
-    ...mapGetters('user', ['comptes'])
+    ...mapGetters('user', ['comptes']),
+    ...mapState('souvenirs', ['souvenirs']),
+    ...mapState('jeux', ['jeux']),
+    ...mapState('stands', ['stands']),
+    ...mapState('order', ['jeuxAchetes', 'actualBasket']),
+
+    filteredSouvenirs() {
+      if (!this.souvenirs || !Array.isArray(this.souvenirs)) return [];
+      console.log("Tous les souvenirs filtré:", JSON.stringify(this.souvenirs.filter(produit =>
+          produit.type_article && produit.type_article.toLowerCase().includes('souvenir')))); // Voir tout ce qui est disponible
+
+
+      return this.souvenirs.filter(produit =>
+          produit.type_article && produit.type_article.toLowerCase().includes('souvenir')
+      );
+    },
+
+
+
+  },
+  async created() {
+    await this.$store.dispatch('souvenirs/getAllSouvenirs');
+    await this.$store.dispatch('jeux/getAllJeux');
+    await this.$store.dispatch('stands/getAllStands');
+    console.log("JEUX :", JSON.stringify(this.jeux));
+    console.log("souvenirs :", JSON.stringify(this.souvenirs));
+
   },
     stands() {
       // Toujours retourner les restaurants du store
@@ -290,6 +314,27 @@ export default {
   },
   methods: {
     ...mapActions('commandes', ['addArticleOrder', 'setCurrentOrder', 'resetCurrentOrder']),
+    ...mapActions("jeux", ["getAllJeux"]),
+    ...mapActions("order", ["addProductToBasket"]),
+
+    getJeuImage(jeu) {
+      const path = jeu.produit.image_path;
+      try {
+        return require(`@/assets/images/${path}`);
+      } catch {
+        return require('@/assets/images/null.png');
+      }
+    },
+
+    getSouvenirImage(souvenir) {
+      const path = souvenir.image_path;
+      try {
+        return require(`@/assets/images/${path}`);
+      } catch {
+        return require('@/assets/images/null.png');
+      }
+    },
+
     selectTab(tab) {
       this.selectedTab = tab;
     },
@@ -396,15 +441,15 @@ export default {
         : [];
     },
     handlePaymentSuccessJeu() {
-      const currentUser = this.$store.state.user.userSession;
-      const maxOrderNumber = this.reservationsJeux.reduce((max, reservation) =>
-        Math.max(max, reservation.orderNumber || 0), 0);
-      this.reservationsJeux.push({
-        jeuID: this.selectedModalJeu._id,
-        userId: currentUser.id,
-        orderNumber: maxOrderNumber + 1,
-        prix: this.selectedModalJeu.prix,
-      });
+      const currentUser = this.$store.state.user.actualUser;
+      this.addProductToBasket(
+          {
+            id_produit: this.actualBasket.id,
+            id_utilisateur: currentUser.id,
+
+          }
+      )
+
       this.commandMessage = "Paiement effectué. Votre réservation a été confirmée !";
       this.closeModalJeu();
       this.closeConfirmationBoutique();

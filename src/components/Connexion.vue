@@ -135,35 +135,33 @@ export default {
     },
 
     async handleRegister() {
-      if (!this.email.includes("@")) {
-        this.errorMessage = "Veuillez fournir une adresse email valide.";
-        return;
-      }
-
-      if (this.role !== "utilisateur" && this.codeInscription !== "1234") {
-        this.errorMessage = "Code d'inscription incorrect.";
-        return;
-      }
-
       try {
-        const success = await this.registerUser({
+        // 1. Nettoie la session actuelle avant l'inscription
+        await this.$store.dispatch('user/logout');
+
+        // 2. Envoi des données au serveur
+        const success = await this.$store.dispatch('user/register', {
           nom: this.nom,
           prenom: this.prenom,
           email: this.email,
-          identifiant: this.identifiant,
           motDePasse: this.motDePasse,
           role: this.role,
-          telephone: "0102030405",
-          photoProfil: "https://via.placeholder.com/150",
+          identifiant: this.identifiant,
         });
 
         if (success) {
-          // Inscription réussie, fermer la modal
-          this.$emit("register-success");
-          this.closeModal();
+          const loginSuccess = await this.$store.dispatch('user/login', {
+            identifiant: this.identifiant,
+            password: this.motDePasse
+          });
+
+          if (loginSuccess) {
+            this.$emit("register-success");
+            this.closeModal();
+          }
         }
       } catch (error) {
-        this.errorMessage = "Une erreur est survenue lors de l'inscription.";
+        this.errorMessage = "Erreur lors de l'inscription";
         console.error(error);
       }
     },
