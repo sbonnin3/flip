@@ -248,17 +248,8 @@ export default {
     };
   },
   mounted() {
-  this.$store.dispatch("restaurants/initializeRestaurants").then(() => {
-    this.$forceUpdate();  // Force le composant à se mettre à jour
-  });
 },
   watch: {
-    restaurants: {
-      handler(newRestaurants) {
-        this.stands = newRestaurants;
-      },
-      immediate: true
-    },
     '$route.query.tab'(newTab) {
       if (newTab) {
         this.selectTab(newTab);
@@ -266,7 +257,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('restaurants', ['restaurants']),
     ...mapGetters('commandes', ['userOrders']),
     ...mapGetters('user', ['comptes']),
     ...mapState('souvenirs', ['souvenirs']),

@@ -101,7 +101,7 @@
           <img :src="getJeuImage(selectedJeu)" :alt="getJeuName(selectedJeu)" class="modal-image"/>
           <p><strong>{{ $t('type') }}:</strong> {{ selectedJeu.type }} </p>
           <p><strong>{{ $t('playerCount') }}:</strong> {{ selectedJeu.nombre_joueurs_max }} max</p>
-          <p><strong>{{ $t('minAge') }}:</strong> {{ selectedJeu.age_minimum }} {{ $t('years') }}</p>
+          <p><strong>{{ $t('minAge') }}:</strong> {{ selectedJeu.age_limite }} {{ $t('years') }}</p>
           <p><strong>{{ $t('duration') }}:</strong> {{ selectedJeu.duree }} {{ $t('minutes') }}</p>
           <p><strong>{{ $t('standName') }}:</strong> {{ getStandName(selectedJeu) }}</p>
           <button @click="openReservationJeuConfirmation" class="reset-button">{{ $t('reserve') }}</button>
