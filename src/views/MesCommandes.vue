@@ -5,7 +5,6 @@
     <div class="tab-container">
       <button :class="{ active: selectedTab === 'Tournois' }" @click="selectTab('Tournois')">Tournois</button>
       <button :class="{ active: selectedTab === 'Articles' }" @click="selectTab('Articles')">Articles</button>
-      <button :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Jeux</button>
       <button :class="{ active: selectedTab === 'JeuxReserve' }" @click="selectTab('JeuxReserve')">Jeux réservés</button>
     </div>
 
@@ -35,46 +34,25 @@
       </div>
     </div>
 
-    <div v-show="selectedTab === 'Articles'">
-      <p v-if="!userOrders">
-        Chargement en cours...
-      </p>
-      <p v-else-if="commandesArticles.length === 0">
-        Aucune commande d'articles
-      </p>
-      <div v-else>
-        <h2 class="sectfion-title">Commandes d'articles</h2>
-        <div v-for="(commande, index) in commandesArticles" :key="index" class="card">
-          <div class="card-content">
-            <h3 class="card-title">Commande n°{{ commande.orderNumber }}</h3>
-            <div v-for="article in commande.articles" :key="article.nom" class="article">
-              <p class="article-name">{{ article.nom }}</p>
-              <p class="article-quantity">Quantité : {{ article.quantite }}</p>
-              <p class="article-price">Prix : {{ article.prix }}€</p>
-            </div>
-            <p class="card-status">{{ commande.status }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div v-show="selectedTab === 'Jeux'">
+
+    <div v-show="selectedTab === 'Articles'">
       <p v-if="$store.state.reservations.userReservationsJeux === null">
         Chargement en cours...
       </p>
-      <p v-else-if="commandesJeux.length === 0">
+      <p v-else-if="actualBasket.length === 0">
         Aucun jeu réservé
       </p>
       <div v-else>
         <h2 class="section-title">Commandes de jeux</h2>
-        <div v-for="(commande, index) in commandesJeux" :key="index" class="card">
+        <div v-for="(commande, index) in actualBasket" :key="index" class="card">
           <div class="card-content">
-            <h3 class="card-title">Commande n°{{ commande.orderNumber }}</h3>
+            <h3 class="card-title">Commande n°{{ commande.id }}</h3>
             <div class="article">
-              <p class="article-name">Nom du jeu : {{ commande.jeuNom }}</p>
-              <p class="article-price">Prix : {{ commande.prix }}€</p>
+              <p class="article-name">Type : {{ commande.type }}</p>
+              <p class="article-price">Prix : {{ commande.valeur_panier }}€</p>
             </div>
-            <p class="card-status">{{ commande.status }}</p>
+            <p class="card-status">Commande payé : {{ commande.paid }}</p>
           </div>
         </div>
       </div>
@@ -119,6 +97,7 @@ export default {
     ...mapGetters("commandes", ['userOrders']),
     ...mapState(["jeux", "stands", "tournois"]),
     ...mapState("tournois", ["tournois", "inscriptionsTournoi", "editionsTournoi"]),
+    ...mapState("order", ["actualBasket"]),
 
     commandesTournois() {
       const reservations = this.userReservations || [];
@@ -158,6 +137,7 @@ export default {
           this.$store.dispatch("commandes/loadUserOrders"),
           this.$store.dispatch("jeux/getAllJeux"),
           this.$store.dispatch("stands/getAllStands"),
+          this.$store.dispatch("order/getBasketFromUserId", this.$store.state.user.actualUser.id),
           // this.$store.dispatch("produits/getAllProduits"),
           this.$store.dispatch("tournois/getAllTournois"),
             this.$store.dispatch("tournois/getAllInscriptionTournoisByIdUser", this.$store.state.user.actualUser.id),
@@ -170,6 +150,19 @@ export default {
       }
     },
     ...mapActions("tournois", ["getEditionTournoiById", "getTournoiById"]),
+
+    getProduitName(produitId) {
+      const produit = this.produits.produits?.find(p =>
+          p.id === produitId || p._id === produitId
+      );
+      return produit?.nom_produit || `Produit ID: ${produitId}`;
+    },
+    getProduitPrice(produitId) {
+      const produit = this.produits.produits?.find(p =>
+          p.id === produitId || p._id === produitId
+      );
+      return produit?.prix_produit || 0;
+    },
 
     getTournamentName(tournoiId) {
       const tournoi = this.$store.state.tournois.tournois?.find(t =>

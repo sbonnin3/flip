@@ -13,61 +13,17 @@
       <button :class="{ active: selectedTab === 'Boutique' }" @click="selectTab('Boutique')">{{ $t('shop') }}</button>
     </div>
     <div v-show="selectedTab === 'Restauration'">
-      <div v-if="stands.length" class="cards-container">
-        <div v-for="restaurant in stands.filter(stand => stand.type === 'restaurants')" :key="restaurant.idRestau"
+      <div v-if="filteredRestaurants.length" class="cards-container">
+        <div v-for="restaurant in filteredRestaurants" :key="restaurant.id"
              class="card" @click="openModalRestau(restaurant)">
-          <img :src="restaurant.image" :alt="$t('restaurantImage')" class="card-image" />
+          <img :src="getRestaurantImage(restaurant)" :alt="$t('restaurantImage')" class="card-image" />
           <div class="card-content">
-            <h2 class="card-title">{{ restaurant.nom }}</h2>
+            <h2 class="card-title">{{ restaurant.nom_stand }}</h2>
           </div>
         </div>
       </div>
       <p v-else>{{ $t('noRestaurantsAvailable') }}</p>
-      <div class="cart_section">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-lg-10 offset-lg-1">
-              <div class="cart_container">
-                <h1 class="cart_title">{{ $t('cart') }}</h1>
-                <div class="cart_items">
-                  <ul class="cart_list">
-                    <li v-for="item in cart" :key="item.nom" class="cart_item">
-                      <div class="cart_item_image">
-                        <img :src="item.image" :alt="$t('productImage')" />
-                      </div>
-                      <div class="cart_item_info">
-                        <div class="cart_item_title">{{ $t('name') }}</div>
-                        <div class="cart_item_text">{{ item.nom }}</div>
-                      </div>
-                      <div class="cart_item_quantity">
-                        <div class="cart_item_title">{{ $t('quantity') }}</div>
-                        <div class="cart_item_text">{{ item.quantite }}</div>
-                      </div>
-                      <div class="cart_item_price">
-                        <div class="cart_item_title">{{ $t('price') }}</div>
-                        <div class="cart_item_text">{{ item.prix }}€</div>
-                      </div>
-                      <div class="cart_button_clear_logo" @click="deleteArticle(item)">
-                        <img src="../assets/icons/bin.png" :alt="$t('binIcon')" width="35px" height="35px" />
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-                <div class="order_total">
-                  <div class="order_total_content text-md-right">
-                    <div class="order_total_title">{{ $t('totalPrice') }}: {{cart.reduce((total, item) => total + item.prix *
-                        item.quantite, 0)}}€ </div>
-                  </div>
-                </div>
-                <div class="cart_buttons">
-                  <button class="button cart_button_clear" @click="deleteCommand">{{ $t('delete') }}</button>
-                  <button class="button cart_button_checkout" @click="openCommandConfirmation">{{ $t('order') }}</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
       <div v-if="showConfirmation" class="confirmation-modal">
         <div class="modal-content">
           <span class="close-button" @click="closeConfirmation">&times;</span>
@@ -91,15 +47,15 @@
       <div v-if="selectedModalRestau" class="modal">
         <div class="modal-content">
           <span class="close-button" @click="closeModalRestau">&times;</span>
-          <h2>{{ selectedModalRestau.nom }}</h2>
-          <img :src="selectedModalRestau.image" :alt="$t('restaurantImage')" class="modal-image" />
+          <h2>{{ selectedModalRestau.nom_stand }}</h2>
+          <img :src="getRestaurantImage(selectedModalRestau)" :alt="$t('restaurantImage')" class="modal-image" />
 
           <p><strong>{{ $t('foods') }}:</strong></p>
-          <div v-if="selectedModalRestau.nourritures && selectedModalRestau.nourritures.length" class="items-container">
-            <div v-for="nourriture in selectedModalRestau.nourritures" :key="nourriture.nom" class="item-card">
+          <div v-if="filteredNourritures.length" class="items-container">
+            <div v-for="nourriture in filteredNourritures" :key="nourriture.id" class="item-card">
               <button class="item-button-content" @click="addToCart(nourriture)">
-                <img :src="nourriture.image" :alt="$t('itemImage')" class="item-image" />
-                <p>{{ nourriture.nom }} - {{ nourriture.prix }}€</p>
+                <img :src="getProduitImage(nourriture)" :alt="$t('itemImage')" class="item-image" />
+                <p>{{ nourriture.nom_produit }} - {{ nourriture.prix_produit }}€</p>
               </button>
             </div>
           </div>
@@ -259,10 +215,12 @@ export default {
   computed: {
     ...mapGetters('commandes', ['userOrders']),
     ...mapGetters('user', ['comptes']),
+    ...mapGetters('produits', ['getNourrituresByStandId']),
     ...mapState('souvenirs', ['souvenirs']),
     ...mapState('jeux', ['jeux']),
     ...mapState('stands', ['stands']),
     ...mapState('order', ['jeuxAchetes', 'actualBasket']),
+    ...mapState('produits', ['produits']),
 
     filteredSouvenirs() {
       if (!this.souvenirs || !Array.isArray(this.souvenirs)) return [];
@@ -275,6 +233,23 @@ export default {
       );
     },
 
+    filteredRestaurants() {
+      if (!this.stands || !Array.isArray(this.stands)) return [];
+      console.log("GOJO:", JSON.stringify(this.stands.filter(stand => stand.id_type === 5)));
+      return this.stands.filter(stand => stand.id_type === 5); // l'id du type "restaurant" est TOUT LE TEMPS 5
+    },
+
+    filteredNourritures() {
+      if (!this.selectedModalRestau?.id || !Array.isArray(this.produits)) {
+        return [];
+      }
+      const restaurantId = this.selectedModalRestau.id;
+      return this.produits.filter(produit => produit.vendupar === restaurantId);
+    },
+
+
+
+
 
 
   },
@@ -282,7 +257,8 @@ export default {
     await this.$store.dispatch('souvenirs/getAllSouvenirs');
     await this.$store.dispatch('jeux/getAllJeux');
     await this.$store.dispatch('stands/getAllStands');
-    console.log("JEUX :", JSON.stringify(this.jeux));
+    await this.$store.dispatch('produits/getAllProduits');
+    console.log("STANDS VRM IMPORTANT :", JSON.stringify(this.stands));
     console.log("souvenirs :", JSON.stringify(this.souvenirs));
 
   },
@@ -316,6 +292,24 @@ export default {
       }
     },
 
+    getRestaurantImage(restaurant) {
+      const path = restaurant.image_path;
+      try {
+        return require(`@/assets/images/${path}`);
+      } catch {
+        return require('@/assets/images/null.png');
+      }
+    },
+
+    getProduitImage(produit) {
+      const path = produit.image_path;
+      try {
+        return require(`@/assets/images/${path}`);
+      } catch {
+        return require('@/assets/images/null.png');
+      }
+    },
+
     getSouvenirImage(souvenir) {
       const path = souvenir.image_path;
       try {
@@ -335,6 +329,7 @@ export default {
       this.selectedModalJeu = null;
     },
     openModalRestau(restaurant) {
+      console.log("Selected restaurant:", JSON.stringify(restaurant));
       this.selectedModalRestau = restaurant;
     },
     closeModalRestau() {
@@ -434,9 +429,9 @@ export default {
       const currentUser = this.$store.state.user.actualUser;
       this.addProductToBasket(
           {
-            id_produit: this.actualBasket.id,
-            id_utilisateur: currentUser.id,
-
+            id_user: currentUser.id,
+            id_produit: this.selectedModalJeu.produit_id,
+            quantite: 1,
           }
       )
 
@@ -467,19 +462,31 @@ export default {
     closePaymentModalBoutique() {
       this.showPaymentModalBoutique = false;
     },
-    addToCart(article) {
-      if (!article.nom || !article.prix || !article.image) {
-        console.error("Article invalide :", article);
+    addToCart(produit) {
+      // Vérifier si l'utilisateur est connecté
+      if (!this.$store.state.user.userSession) {
+        this.showLoginModal = true;
         return;
       }
-      const itemInCart = this.cart.find(item => item.nom === article.nom);
-      if (itemInCart) {
-        itemInCart.quantite += 1;
-      } else {
-        this.cart.push({ ...article, quantite: 1, restaurant: this.selectedModalRestau.nom });
+
+      if (!produit.nom_produit || !produit.prix_produit || !produit.image_path) {
+        console.error("Produit invalide :", produit);
+        return;
       }
-      this.addMessage = `"${article.nom}" a été ajouté au panier !`;
+
+      const currentUser = this.$store.state.user.actualUser;
+
+      // Ajouter au panier via Vuex
+      this.addProductToBasket({
+        id_user: currentUser.id,
+        id_produit: produit.id, // Utilisez produit.id directement
+        quantite: 1,
+      });
+
+      // Message de confirmation
+      this.addMessage = `"${produit.nom_produit}" a été ajouté au panier !`;
       this.showAddModal = true;
+
       setTimeout(() => {
         this.showAddModal = false;
       }, 3000);

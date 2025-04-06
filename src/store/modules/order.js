@@ -21,8 +21,8 @@ export default {
             let result = null
             try {
                 result = await addProductToBasketService(addData)
+                console.log("TEST DAJOUT PRODUIT:" + JSON.stringify(addData))
                 commit('SET_JEUX_ACHETES', result)
-                console.log(result)
             } catch (err) {
                 console.log("Cas anormal dans addProductToBasketService()")
             }
