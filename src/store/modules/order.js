@@ -5,11 +5,15 @@ export default {
     namespaced: true,
     state: {
         jeuxAchetes: [],
+        nourrituresAchetes: [],
         actualBasket: [],
     },
     mutations: {
         SET_JEUX_ACHETES(state, jeuxAchetes) {
             state.jeuxAchetes = jeuxAchetes;
+        },
+        SET_NOURRITURES_ACHETES(state, nourrituresAchetes) {
+            state.jeuxAchetes = nourrituresAchetes;
         },
         SET_ACTUAL_BASKET(state, actualBasket) {
             state.actualBasket = actualBasket;
@@ -23,6 +27,7 @@ export default {
                 result = await addProductToBasketService(addData)
                 console.log("TEST DAJOUT PRODUIT:" + JSON.stringify(addData))
                 commit('SET_JEUX_ACHETES', result)
+                commit('SET_NOURRITURES_ACHETES', result)
             } catch (err) {
                 console.log("Cas anormal dans addProductToBasketService()")
             }

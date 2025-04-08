@@ -41,7 +41,7 @@
         Chargement en cours...
       </p>
       <p v-else-if="actualBasket.length === 0">
-        Aucun jeu réservé
+        Aucun articles commandés.
       </p>
       <div v-else>
         <h2 class="section-title">Commandes d'articles</h2>
