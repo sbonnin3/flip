@@ -3,12 +3,12 @@
     <div class="map-container">
       <h1 class="page-title">{{ $t('mapTitle') }}</h1>
 
-      <select v-model="selectedLayer" @change="changeLayer">
+      <select v-model="selectedLayer">
         <option value="osm">{{ $t('mapView') }}</option>
         <option value="satellite">{{ $t('satelliteView') }}</option>
       </select>
 
-      <select v-model="selectedCategory" @change="filterPoints">
+      <select v-model="selectedCategory">
         <option value="">{{ $t('allCategories') }}</option>
         <option v-for="category in categories" :key="category" :value="category">
           {{ $t(category) }}
@@ -20,7 +20,7 @@
         <l-tile-layer :url="layers[selectedLayer].url" :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
         <l-marker v-for="(point, index) in filteredPoints" :key="index" :lat-lng="point.coordinates"
-                  :icon="getIconForPoint(point)" @mouseover="enlargeIcon(point.idPoint)" @mouseout="resetIcon()"
+                  :icon="getIconForPoint(point)" @mouseover="enlargeIcon(point.id)" @mouseout="resetIcon()"
                   @click="showStandInfo(point)">
           <l-tooltip>{{ getTooltipText(point) }}</l-tooltip>
         </l-marker>
@@ -28,10 +28,12 @@
 
       <div v-if="selectedStand" class="stand-info-panel">
         <button class="close-button" @click="closeStandInfo">X</button>
-        <h2>{{ selectedStand.nom }}</h2>
-        <img v-if="selectedStand.image" :src="selectedStand.image" :alt="$t('standImage')" class="stand-image" />
-        <p><strong>{{ $t('type') }}:</strong> {{ selectedStand.type }}</p>
-        <p v-if="selectedStand.description"><strong>{{ $t('description') }}:</strong> {{ selectedStand.description }}</p>
+        <h2>{{ selectedStand.nom_stand || selectedStand.nom }}</h2>
+        <img v-if="selectedStand.image_path" :src="getStandImage(selectedStand)" :alt="$t('standImage')" class="stand-image" />
+        <p><strong>{{ $t('type') }}:</strong>
+          <span v-if="selectedStand.id_type">{{ getStandType(selectedStand.id_type) }}</span>
+          <span v-else>{{ selectedStand.categorie }}</span>
+        </p>
       </div>
     </div>
   </div>
@@ -41,7 +43,7 @@
 import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { points, stands } from "@/datasource/data.js";
+import { mapState } from "vuex";
 
 import toiletIcon from "@/assets/icons/toilet-icon.png";
 import parkingIcon from "@/assets/icons/parking-icon.png";
@@ -71,16 +73,16 @@ export default {
       bounds: [[46.620, -0.270], [46.680, -0.230]],
       selectedCategory: "",
       selectedLayer: "osm",
-      points,
-      stands,
       hoveredPointId: null,
       selectedStand: null,
       layers: {
         osm: {
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          attribution: '',
         },
         satellite: {
           url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          attribution: '',
         },
       },
       icons: {
@@ -95,34 +97,68 @@ export default {
     };
   },
   computed: {
+    ...mapState("points", ["points"]),
+    ...mapState("stands", ["stands", "typeStands"]),
     filteredPoints() {
-      return this.points.filter(point => {
-        const categoryMatch = this.selectedCategory === "" || point.category === this.selectedCategory;
-        return categoryMatch && (point.category !== 'Emplacement' || point.disponible === false);
-      });
+      return this.points
+          .filter(point => {
+            const categoryMatch = this.selectedCategory === "" || point.categorie === this.selectedCategory;
+
+            if (point.categorie === 'Emplacement') {
+              return categoryMatch;
+            } else {
+              return categoryMatch && !point.reserve;
+            }
+          })
+          .map(point => ({
+            ...point,
+            coordinates: [point.coordonnees_y, point.coordonnees_x]
+          }));
     },
     categories() {
-      return [...new Set(this.points.map(point => point.category))];
+      return [...new Set(this.points.map(point => point.categorie))];
     },
   },
+  async created() {
+    await this.$store.dispatch("points/getAllPoints");
+    await this.$store.dispatch("stands/getAllStands");
+    await this.$store.dispatch("stands/getAllTypesStand");
+  },
   methods: {
+    getStandImage(stand) {
+        const path = stand.image_path;
+        try {
+          return require(`@/assets/images/${path}`);
+        } catch {
+          return require('@/assets/images/null.png');
+        }
+    },
+
+    getStandType(idType) {
+      const type = this.typeStands.find(t => t.id === idType);
+      return type ? type.intitule : 'Inconnu';
+    },
     getTooltipText(point) {
-      const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
-      return standAssocie ? standAssocie.nom : point.name;
+      const standAssocie = this.stands.find(stand => stand.id_emplacement === point.id);
+      return standAssocie ? standAssocie.nom_stand : point.nom;
     },
     getIconForPoint(point) {
-      const baseIconUrl = this.icons[point.category] || this.icons.Emplacement;
-      const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
+      const standAssocie = this.stands.find(stand => stand.id_emplacement === point.id);
+      let iconUrl = this.icons.Emplacement;
 
-      let iconUrl = baseIconUrl;
       if (standAssocie) {
-        let standType = standAssocie.type.toLowerCase();
-        if (standType === 'restaurants') standType = 'Restauration';
-        if (standType === 'boutique') standType = 'Boutique';
-        iconUrl = this.icons[standType.charAt(0).toUpperCase() + standType.slice(1)];
+        const typeStand = this.typeStands.find(t => t.id === standAssocie.id_type);
+        let standType = typeStand ? typeStand.intitule : 'Emplacement';
+
+        if (standType.toLowerCase() === 'restaurant') standType = 'Restauration';
+        if (standType.toLowerCase() === 'boutique') standType = 'Boutique';
+
+        iconUrl = this.icons[standType] || this.icons.Emplacement;
+      } else {
+        iconUrl = this.icons[point.categorie] || this.icons.Emplacement;
       }
 
-      const isHovered = this.hoveredPointId === point.idPoint;
+      const isHovered = this.hoveredPointId === point.id;
       const iconSize = isHovered ? [40, 40] : [30, 30];
 
       return L.icon({
@@ -139,15 +175,12 @@ export default {
       this.hoveredPointId = null;
     },
     showStandInfo(point) {
-      const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
-      if (standAssocie) {
-        this.selectedStand = standAssocie;
-      }
+      const stand = this.stands.find(stand => stand.id_emplacement === point.id);
+      this.selectedStand = stand || point; // Affiche les infos même sans stand
     },
     closeStandInfo() {
       this.selectedStand = null;
     },
-    changeLayer() { },
   },
 };
 </script>

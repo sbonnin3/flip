@@ -70,6 +70,20 @@ async function deletePrestataireService(id) {
     return answer
 }
 
+async function getTypePrestataireFromAPI() {
+    try {
+        return getRequest('/api/types', 'GETTYPEPRESTATAIRE')
+    } catch (error) {
+        console.error('Error getting type prestataire from API:', error);
+        throw error;
+    }
+}
+
+export async function getTypePrestataireService() {
+    let answer = await getTypePrestataireFromAPI()
+    return answer
+}
+
 
 export default {
     createPrestataireFromAPI,
@@ -81,5 +95,7 @@ export default {
     updatePrestataireFromAPI,
     updatePrestataireService,
     deletePrestataireFromAPI,
-    deletePrestataireService
+    deletePrestataireService,
+    getTypePrestataireFromAPI,
+    getTypePrestataireService
 }
