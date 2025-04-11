@@ -107,11 +107,11 @@
           <p v-else>{{ $t('noFoodAvailable') }}</p>
 
           <p><strong>{{ $t('drinks') }}:</strong></p>
-          <div v-if="selectedModalRestau.boissons && selectedModalRestau.boissons.length" class="items-container">
-            <div v-for="boisson in selectedModalRestau.boissons" :key="boisson.nom" class="item-card">
+          <div v-if="filteredBoissons.length" class="items-container">
+            <div v-for="boisson in filteredBoissons.length" :key="boisson.id" class="item-card">
               <button class="item-button-content" @click="addToCart(boisson)">
-                <img :src="boisson.image" :alt="$t('itemImage')" class="item-image" />
-                <p>{{ boisson.nom }} - {{ boisson.prix }}€</p>
+                <img :src="getProduitImage(boisson)" :alt="$t('itemImage')" class="item-image" />
+                <p>{{ boisson.nom_produit }} - {{ boisson.prix_produit }}€</p>
               </button>
             </div>
           </div>
@@ -293,7 +293,15 @@ export default {
         return [];
       }
       const restaurantId = this.selectedModalRestau.id;
-      return this.produits.filter(produit => produit.vendupar === restaurantId);
+      return this.produits.filter(produit => produit.vendupar === restaurantId && produit.type_article === 'Nourriture');
+    },
+
+    filteredBoissons() {
+      if (!this.selectedModalRestau?.id || !Array.isArray(this.produits)) {
+        return [];
+      }
+      const restaurantId = this.selectedModalRestau.id;
+      return this.produits.filter(produit => produit.vendupar === restaurantId && produit.type_article === 'Boisson');
     },
 
 
