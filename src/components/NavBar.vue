@@ -47,10 +47,10 @@ export default {
     },
     displayedTitles() {
       let modifiedTitles = [...this.titles];
-      if (this.userSession && this.userSession.role === 'administrateur') {
+      if (this.userSession && this.userSession.role.toLowerCase() === 'administrateur') {
         const comptesIndex = modifiedTitles.findIndex(title => title.text === 'Comptes');
         if (comptesIndex === -1) {
-          modifiedTitles.push({text: 'Comptes', color: 'black'});
+          modifiedTitles.push({text: 'Comptes', color: 'white'});
         }
       }
 

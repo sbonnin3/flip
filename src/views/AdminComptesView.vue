@@ -38,7 +38,7 @@
           <td>{{ compte.email }}</td>
           <td>{{ compte.role }}</td>
           <td>
-            <button v-if="compte.role !== 'administrateur'" @click="deleteCompte(compte.id)">
+            <button v-if="compte.role.toLowerCase() !== 'administrateur'" @click="deleteCompte(compte.id)">
               Supprimer
             </button>
             <button @click="openEditModal(compte)">Modifier</button>
@@ -68,7 +68,7 @@
         </label>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         <div class="modal-actions">
-          <button @click="saveEditCompte">Enregistrer</button>
+          <button @click="saveEditCompte" style="color: black">Enregistrer</button>
           <button @click="closeEditModal">Annuler</button>
         </div>
       </div>
@@ -140,7 +140,8 @@ async deleteCompte(id) {
     this.deleteError = null;
     
     try {
-      await this.$store.dispatch('user/removeCompte', id);
+      await this.$store.dispatch('user/deleteCompte', id);
+      await this.$store.dispatch('user/initComptes')
       // ... reste du code
     } catch (error) {
       this.deleteError = error.message;
@@ -197,184 +198,275 @@ async deleteCompte(id) {
 
 <style scoped>
 :root {
-  --primary-color: #007bff;
-  --primary-hover: #0056b3;
-  --secondary-color: #e0e0e0;
-  --secondary-hover: #cccccc;
-  --error-color: red;
-  --font-color-dark: #333;
-  --font-color-light: #555;
-  --border-color: #ddd;
-  --modal-bg: rgba(0, 0, 0, 0.7);
-  --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  --primary-color: #4361ee;
+  --primary-hover: #3a56d4;
+  --secondary-color: #f8f9fa;
+  --secondary-hover: #e9ecef;
+  --danger-color: #ef233c;
+  --danger-hover: #d90429;
+  --success-color: #2b9348;
+  --success-hover: #008000;
+  --warning-color: #ffaa00;
+  --text-dark: #212529;
+  --text-medium: #495057;
+  --text-light: #6c757d;
+  --border-color: #dee2e6;
+  --bg-light: #f8f9fa;
+  --bg-dark: #343a40;
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }
 
 .admin-comptes-container {
-  margin-top: 80px;
-  padding: 20px;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+h1 {
+  color: var(--text-dark);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  text-align: center;
 }
 
 .search-container {
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .search-bar {
   flex: 1;
-  padding: 8px;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
 }
 
-.search-button,
-.reset-button {
-  padding: 8px 12px;
-  border: none;
-  background-color: var(--primary-color);
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.search-button:hover,
-.reset-button:hover {
-  background-color: var(--primary-hover);
+.search-bar:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }
 
 .role-filters {
-  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--bg-light);
+  border-radius: var(--radius-md);
 }
 
 .role-filters label {
-  margin-right: 10px;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: var(--text-medium);
+  font-size: 0.9rem;
+}
+
+.reset-button {
+  padding: 0.5rem 1rem;
+  background-color: var(--text-light);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  margin-left: auto;
+}
+
+.reset-button:hover {
+  background-color: var(--text-medium);
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.5rem 0;
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
-th,
-td {
-  border: 1px solid var(--border-color);
-  padding: 8px;
+th, td {
+  padding: 1rem;
   text-align: left;
+  border-bottom: 1px solid var(--border-color);
 }
 
-th span {
-  margin-left: 5px;
-  font-size: 12px;
+th {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 500;
+  position: sticky;
+  top: 0;
+  cursor: pointer;
+  transition: var(--transition);
 }
 
 th:hover {
-  background-color: #f4f4f4;
+  background-color: var(--primary-hover);
 }
 
+th span {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+}
+
+td {
+  color: var(--text-medium);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background-color: var(--secondary-color);
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+}
+
+button:last-child {
+  margin-right: 0;
+}
+
+button[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Role-specific row colors */
 .role-administrateur {
-  background-color: #ffcccc;
+  background-color: rgba(239, 35, 60, 0.1);
 }
 
 .role-restaurateur {
-  background-color: #ccffcc;
+  background-color: rgba(43, 147, 72, 0.1);
 }
 
 .role-vendeur {
-  background-color: #ccccff;
+  background-color: rgba(0, 119, 182, 0.1);
 }
 
 .role-createur {
-  background-color: #ffffcc;
+  background-color: rgba(255, 170, 0, 0.1);
 }
 
 .role-organisateur {
-  background-color: #ffccff;
+  background-color: rgba(156, 36, 113, 0.1);
 }
 
 .role-utilisateur {
-  background-color: #e6e6e6;
+  background-color: rgba(108, 117, 125, 0.05);
 }
 
-.error-message {
-  color: var(--error-color);
-  margin-top: 10px;
-  font-size: 14px;
-}
-
+/* Modal styles */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--modal-bg);
+  background: var(--modal-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(3px);
 }
 
 .modal {
-  background: #777777;
-  border-radius: 12px;
-  box-shadow: var(--box-shadow);
-  padding: 30px;
-  max-width: 450px;
-  width: 90%;
-  text-align: left;
-  font-family: Arial, sans-serif;
-  position: relative;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal h2 {
-  margin-bottom: 20px;
-  font-size: 22px;
-  font-weight: bold;
-  color: var(--font-color-dark);
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
   text-align: center;
+  font-weight: 600;
 }
 
 .modal label {
   display: block;
-  margin-bottom: 10px;
-  font-size: 16px;
-  color: var(--font-color-light);
+  margin-bottom: 0.5rem;
+  color: var(--text-medium);
+  font-size: 0.9rem;
 }
 
 .modal input,
 .modal select {
   width: 100%;
-  padding: 10px;
-  font-size: 15px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin-bottom: 20px;
-  outline: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: var(--transition);
 }
 
 .modal input:focus,
 .modal select:focus {
+  outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }
 
 .modal-actions {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
 .modal-actions button {
-  flex: 1;
-  padding: 12px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
 }
 
 .modal-actions button:first-child {
@@ -388,29 +480,91 @@ th:hover {
 
 .modal-actions button:last-child {
   background-color: var(--secondary-color);
-  color: var(--font-color-dark);
+  color: var(--text-medium);
 }
 
 .modal-actions button:last-child:hover {
   background-color: var(--secondary-hover);
 }
 
-@media (max-width: 600px) {
+.error-message {
+  color: var(--danger-color);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Button variants */
+button.delete-button {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+button.delete-button:hover {
+  background-color: var(--danger-hover);
+}
+
+button.edit-button {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+button.edit-button:hover {
+  background-color: #e69500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-comptes-container {
+    padding: 1rem;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .role-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .reset-button {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
   .modal {
-    padding: 20px;
+    padding: 1.5rem;
+    margin: 0 1rem;
   }
 
-  .modal h2 {
-    font-size: 20px;
-  }
-
-  .modal input,
-  .modal select {
-    font-size: 14px;
+  .modal-actions {
+    flex-direction: column;
   }
 
   .modal-actions button {
-    font-size: 14px;
+    width: 100%;
   }
+}
+
+/* Loading state */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 3px solid var(--primary-color);
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
 }
 </style>

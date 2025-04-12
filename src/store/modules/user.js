@@ -1,6 +1,6 @@
 // src/store/user.js
 import { loginService, getSessionService, logoutService } from "@/services/serviceapi/auth";
-import { getUserService, createUserService } from "@/services/serviceapi/users";
+import { getUserService, createUserService, deleteUserService } from "@/services/serviceapi/users";
 
 export default {
     namespaced: true,
@@ -121,6 +121,16 @@ export default {
             } catch (error) {
                 console.error('Login error:', error);
                 return false;
+            }
+        },
+
+        async deleteCompte({commit}, id) {
+            try {
+                const result = await deleteUserService(id);
+                commit('REMOVE_COMPTE', result);
+
+            } catch (err) {
+                console.log("Erreur dans deletecompte", err);
             }
         },
 

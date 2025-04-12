@@ -51,7 +51,7 @@ async function updateUserFromAPI(id, data) {
     }
 }
 
-async function updateUserService(id, data) {
+export async function updateUserService(id, data) {
     let answer = await updateUserFromAPI(id, data)
     return answer
 }
@@ -65,7 +65,7 @@ async function deleteUserFromAPI(id) {
     }
 }
 
-async function deleteUserService(id) {
+export async function deleteUserService(id) {
     let answer = await deleteUserFromAPI(id)
     return answer
 }

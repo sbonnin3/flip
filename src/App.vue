@@ -70,7 +70,7 @@ export default {
           this.navTitles.splice(1, 0, { text: "Activités" });
         }
 
-        if (this.userSession.role === "administrateur") {
+        if (this.userSession.role.toLowerCase() === "administrateur") {
           const comptesIndex = this.navTitles.findIndex(title => title.text === 'Comptes');
           if (comptesIndex === -1) {
             this.navTitles.push({ text: "Comptes" });
