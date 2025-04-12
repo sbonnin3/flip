@@ -3,15 +3,20 @@
     <h1 class="page-title">Gestion de ma prestation</h1>
     <div class="tab-container">
       <button v-if="isTabVisible('Catalogue')" :class="{ active: selectedTab === 'Catalogue' }"
-        @click="selectTab('Catalogue')">Catalogue</button>
+              @click="selectTab('Catalogue')">Catalogue
+      </button>
       <button v-if="isTabVisible('Jeux')" :class="{ active: selectedTab === 'Jeux' }" @click="selectTab('Jeux')">Mes
-        jeux</button>
+        jeux
+      </button>
       <button v-if="isTabVisible('Emplacement')" :class="{ active: selectedTab === 'Emplacement' }"
-        @click="selectTab('Emplacement')">Mon emplacement</button>
+              @click="selectTab('Emplacement')">Mon emplacement
+      </button>
       <button v-if="isTabVisible('MesTournois')" :class="{ active: selectedTab === 'MesTournois' }"
-        @click="selectTab('MesTournois')">Mes tournois</button>
+              @click="selectTab('MesTournois')">Mes tournois
+      </button>
       <button v-if="isTabVisible('MonRestaurant')" :class="{ active: selectedTab === 'MonRestaurant' }"
-        @click="selectTab('MonRestaurant')">Mon restaurant</button>
+              @click="selectTab('MonRestaurant')">Mon restaurant
+      </button>
     </div>
     <div v-show="selectedTab === 'MonRestaurant'">
       <template v-if="restaurant">
@@ -19,21 +24,21 @@
         <p><strong>Nom :</strong> {{ restaurant.nom }}</p>
         <p>
           <strong>Image :</strong>
-          <img :src="restaurant.image" alt="Image du restaurant" style="max-width: 300px;" />
+          <img :src="restaurant.image" alt="Image du restaurant" style="max-width: 300px;"/>
         </p>
         <button @click="openEditRestaurantModal">Modifier le restaurant</button>
 
         <h3>Liste des Articles Disponibles</h3>
         <div class="articles-container">
           <div v-for="(article, index) in uniqueArticles" :key="index" class="article-card"
-            :class="{ 'article-restaurant': isRestaurantArticle(article), 'article-other': !isRestaurantArticle(article) }">
-            <img :src="article.image" alt="Image de l'article" class="article-image" />
+               :class="{ 'article-restaurant': isRestaurantArticle(article), 'article-other': !isRestaurantArticle(article) }">
+            <img :src="article.image" alt="Image de l'article" class="article-image"/>
             <div class="article-info">
               <h4>{{ article.nom }}</h4>
               <p>Prix : {{ article.prix }} €</p>
               <p>Type : {{ article.type || 'Non spécifié' }}</p>
               <button @click="toggleArticleInRestaurant(article)"
-                :class="isRestaurantArticle(article) ? 'remove-button' : 'add-button'">
+                      :class="isRestaurantArticle(article) ? 'remove-button' : 'add-button'">
                 {{ isRestaurantArticle(article) ? 'Supprimer' : 'Ajouter' }}
               </button>
             </div>
@@ -44,11 +49,11 @@
       <template v-else>
         <div>
           <label for="newRestaurantName">Nom du restaurant :</label>
-          <input id="newRestaurantName" v-model="newRestaurantName" type="text" />
+          <input id="newRestaurantName" v-model="newRestaurantName" type="text"/>
         </div>
         <div>
           <label for="newRestaurantImage">Image du restaurant :</label>
-          <input id="newRestaurantImage" type="file" @change="handleNewRestaurantImage" />
+          <input id="newRestaurantImage" type="file" @change="handleNewRestaurantImage"/>
         </div>
         <button @click="handleCreateRestaurant">Créer un restaurant</button>
       </template>
@@ -58,12 +63,12 @@
           <h2>Modifier le restaurant</h2>
           <div class="inputBox">
             <label for="editRestaurantName">Nom du restaurant :</label>
-            <input id="editRestaurantName" v-model="editRestaurantDetails.nom" type="text" />
+            <input id="editRestaurantName" v-model="editRestaurantDetails.nom" type="text"/>
           </div>
           <div class="imageBox">
             <label for="editRestaurantImage">Image du restaurant :</label>
-            <input id="editRestaurantImage" type="file" @change="handleEditRestaurantImage" />
-            <img :src="editRestaurantDetails.image" alt="Prévisualisation" style="max-width: 100%; margin-top: 10px;" />
+            <input id="editRestaurantImage" type="file" @change="handleEditRestaurantImage"/>
+            <img :src="editRestaurantDetails.image" alt="Prévisualisation" style="max-width: 100%; margin-top: 10px;"/>
           </div>
           <button @click="saveEditedRestaurant" class="confirm-button">Enregistrer</button>
           <button @click="closeEditRestaurantModal" class="cancel-button">Annuler</button>
@@ -73,7 +78,7 @@
     <div v-show="selectedTab === 'Catalogue'">
       <div class="cards-container" v-if="jeux.length">
         <div v-for="jeu in jeux" :key="jeu.name" class="card">
-          <img :src="getJeuImage(jeu)" alt="Image du jeu" class="card-image" />
+          <img :src="getJeuImage(jeu)" alt="Image du jeu" class="card-image"/>
           <div class="card-content">
             <h2 class="card-title">{{ getJeuName(jeu) }}</h2>
             <p class="card-type">Type : {{ jeu.type }}</p>
@@ -87,7 +92,7 @@
           <div class="modal-content">
             <span class="close-button" @click="closeJeuModal">&times;</span>
             <h2>{{ selectedJeu.name }}</h2>
-            <img :src="selectedJeu.image" alt="Image du jeu" class="modal-image" />
+            <img :src="selectedJeu.image" alt="Image du jeu" class="modal-image"/>
             <p><strong>Type :</strong> {{ selectedJeu.type }}</p>
             <p><strong>Nombre de joueurs :</strong> {{ selectedJeu.nombre_de_joueurs.join(', ') }}</p>
             <p><strong>Âge minimum :</strong> {{ selectedJeu.age_minimum }} ans</p>
@@ -101,7 +106,7 @@
     <div v-show="selectedTab === 'Jeux'">
       <div class="cards-container" v-if="safeJeuxCreation.length">
         <div v-for="jeu in jeuxCreation" :key="jeu.name" class="card">
-          <img :src="jeu.image" alt="Image du jeu" class="card-image" />
+          <img :src="jeu.image" alt="Image du jeu" class="card-image"/>
           <div class="card-content">
             <h2 class="card-title">{{ jeu.name }}</h2>
             <p class="card-type">Type : {{ jeu.type }}</p>
@@ -120,27 +125,27 @@
           <h2>Création du jeu </h2>
           <div class="inputBox">
             <label for="name">Nom du jeu :</label>
-            <input v-model="gameDetails.name" type="text" id="name" />
+            <input v-model="gameDetails.name" type="text" id="name"/>
           </div>
           <div class="inputBox">
             <label for="type">Type du jeu :</label>
-            <input v-model="gameDetails.type" type="text" id="type" />
+            <input v-model="gameDetails.type" type="text" id="type"/>
           </div>
           <div class="inputBox">
             <label for="playerNumber">Nombre de joueurs :</label>
-            <input v-model="gameDetails.nombre_de_joueurs" type="text" id="playerNumber" />
+            <input v-model="gameDetails.nombre_de_joueurs" type="text" id="playerNumber"/>
           </div>
           <div class="inputBox">
             <label for="minimumAge">Âge minimum :</label>
-            <input v-model="gameDetails.age_minimum" type="text" id="minimumAge" />
+            <input v-model="gameDetails.age_minimum" type="text" id="minimumAge"/>
           </div>
           <div class="inputBox">
             <label for="duration">Durée (minutes) :</label>
-            <input v-model="gameDetails.duree" type="text" id="duration" />
+            <input v-model="gameDetails.duree" type="text" id="duration"/>
           </div>
           <div class="imageBox">
             <label for="imageGame">Image du jeu :</label>
-            <input type="file" id="imageGame" />
+            <input type="file" id="imageGame"/>
           </div>
           <button @click="confirmCreation" class="confirm-button">Confirmer</button>
           <button @click="closeConfirmation" class="cancel-button">Annuler</button>
@@ -151,7 +156,7 @@
       <div v-if="mesTournois.length">
         <div class="cards-container">
           <div v-for="tournoi in mesTournois" :key="tournoi._id" class="card">
-            <img :src="tournoi.image" alt="Image du tournoi" class="card-image" />
+            <img :src="tournoi.image" alt="Image du tournoi" class="card-image"/>
             <div class="card-content">
               <h2 class="card-title">{{ tournoi.nom }}</h2>
               <p class="card-location">{{ tournoi.lieu }}</p>
@@ -175,19 +180,19 @@
           <form @submit.prevent="createTournoi">
             <div class="inputBox">
               <label for="nomTournoi">Nom du tournoi :</label>
-              <input v-model="newTournoi.nom" type="text" id="nomTournoi" required />
+              <input v-model="newTournoi.nom" type="text" id="nomTournoi" required/>
             </div>
             <div class="inputBox">
               <label for="lieuTournoi">Lieu :</label>
-              <input v-model="newTournoi.lieu" type="text" id="lieuTournoi" required />
+              <input v-model="newTournoi.lieu" type="text" id="lieuTournoi" required/>
             </div>
             <div class="inputBox">
               <label for="prixTournoi">Prix (€) :</label>
-              <input v-model="newTournoi.prix" type="number" id="prixTournoi" required />
+              <input v-model="newTournoi.prix" type="number" id="prixTournoi" required/>
             </div>
             <div class="inputBox">
               <label for="imageTournoi">Image :</label>
-              <input type="file" id="imageTournoi" @change="handleTournoiImageUpload" />
+              <input type="file" id="imageTournoi" @change="handleTournoiImageUpload"/>
             </div>
             <div class="inputBox">
               <label for="descriptionTournoi">Description :</label>
@@ -197,12 +202,12 @@
               <label>Dates :</label>
               <button @click.prevent="addDate">Ajouter une date</button>
               <div v-for="(date, index) in newTournoi.dates" :key="index" class="date-fields">
-                <input v-model="date.jour" type="number" placeholder="Jour" min="1" max="31" />
-                <input v-model="date.mois" type="number" placeholder="Mois" min="1" max="12" />
-                <input v-model="date.annee" type="number" placeholder="Année" />
-                <input v-model="date.heures" type="number" placeholder="Heures" min="0" max="23" />
-                <input v-model="date.min" type="number" placeholder="Minutes" min="0" max="59" />
-                <input v-model="date.placesRestantes" type="number" placeholder="Places restantes" min="1" />
+                <input v-model="date.jour" type="number" placeholder="Jour" min="1" max="31"/>
+                <input v-model="date.mois" type="number" placeholder="Mois" min="1" max="12"/>
+                <input v-model="date.annee" type="number" placeholder="Année"/>
+                <input v-model="date.heures" type="number" placeholder="Heures" min="0" max="23"/>
+                <input v-model="date.min" type="number" placeholder="Minutes" min="0" max="59"/>
+                <input v-model="date.placesRestantes" type="number" placeholder="Places restantes" min="1"/>
                 <button @click.prevent="removeDate(index)">Supprimer</button>
               </div>
             </div>
@@ -216,18 +221,25 @@
         <form @submit.prevent="saveStand">
           <div class="form-group">
             <label for="nom">Nom du Stand :</label>
-            <input type="text" v-model="stand.nom" id="nom" required />
+            <input type="text" v-model="stand.nom_stand" id="nom_stand" required/>
           </div>
           <div class="form-group">
-            <label for="description">Description de la prestation :</label>
-            <textarea v-model="stand.description" id="description" rows="4" placeholder="Décrivez votre prestation..."
-              required></textarea>
+            <label for="type">Type de Stand :</label>
+            <select v-model="stand.id_type" id="type" required>
+              <option v-for="type in typeStands" :key="type.id" :value="type.id">
+                {{ type.intitule }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="nom">Description du Stand :</label>
+            <input type="text" v-model="stand.description" id="description" required/>
           </div>
           <div class="form-group">
             <label for="image">Image du Stand :</label>
-            <input type="file" @change="handleImageUpload" id="image" />
-            <div v-if="stand.image">
-              <img :src="stand.image" alt="Image du stand" class="stand-image" />
+            <input type="file" @change="handleImageUpload" id="image"/>
+            <div v-if="stand.image_path">
+              <img :src="stand.image_path" alt="Image du stand" class="stand-image"/>
             </div>
           </div>
           <div class="form-group map-container">
@@ -239,11 +251,12 @@
               </select>
             </div>
             <l-map :zoom="zoom" :center="center" :max-bounds="bounds" :min-zoom="minZoom" :max-zoom="maxZoom"
-              :options="mapOptions" style="height: 500px;" @ready="mapReady">
+                    style="height: 500px;" @ready="mapReady">
               <l-tile-layer :url="layers[selectedLayer].url"
-                :attribution="layers[selectedLayer].attribution"></l-tile-layer>
-              <l-marker v-for="point in availablePoints" :key="point.id" :lat-lng="[point.coordonnees_y, point.coordonnees_x]"
-                :icon="getIconForPoint(point)" @click="selectPoint(point)">
+                            :attribution="layers[selectedLayer].attribution"></l-tile-layer>
+              <l-marker v-for="point in availablePoints" :key="point.id"
+                        :lat-lng="[point.coordonnees_y, point.coordonnees_x]"
+                        :icon="getIconForPoint(point)" @click="selectPoint(point)">
                 <l-tooltip>
                   {{ point === selectedPoint ? 'Point sélectionné' : 'Disponible - Cliquez pour sélectionner' }}
                 </l-tooltip>
@@ -272,8 +285,8 @@
 
 <script>
 import {mapActions} from "vuex";
-import { mapState } from "vuex";
-import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
+import {mapState} from "vuex";
+import {LMap, LTileLayer, LMarker, LTooltip} from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import emplacementIcon from "@/assets/icons/emplacement-icon.png";
@@ -316,12 +329,12 @@ export default {
       },
       stand: {
         id: null,
-        nom: "",
-        type: "",
-        image: "",
+        nom_stand: "",
+        id_type: "",
+        id_emplacement: null,
         description: "",
-        idPoint: null,
         comptes: [],
+        image_path: null,
       },
       selectedTab: "",
       selectedJeu: null,
@@ -365,6 +378,7 @@ export default {
     ...mapState("jeux", ["jeux"]),
     ...mapState("tournois", ["tournois"]),
     ...mapState("points", ["points"]),
+    ...mapState("stands", ["stands", "typeStands"]),
     ...mapState("user", ["comptes", "actualUser"]),
 
     availablePoints() {
@@ -440,10 +454,10 @@ export default {
       const articles = [];
       this.allStands.forEach(stand => {
         if (stand.nourritures) {
-          articles.push(...stand.nourritures.map(item => ({ ...item, type: 'Nourriture' })));
+          articles.push(...stand.nourritures.map(item => ({...item, type: 'Nourriture'})));
         }
         if (stand.boissons) {
-          articles.push(...stand.boissons.map(item => ({ ...item, type: 'Boisson' })));
+          articles.push(...stand.boissons.map(item => ({...item, type: 'Boisson'})));
         }
       });
       return articles;
@@ -455,7 +469,9 @@ export default {
   },
   async created() {
     await this.$store.dispatch("jeux/getAllJeux");
-    await this.$store.dispatch("points/getAllPoints")
+    await this.$store.dispatch("points/getAllPoints");
+    await this.$store.dispatch("stands/getAllStands");
+    await this.$store.dispatch("stands/getAllTypesStand");
     // try {
     //   // await this.initializeData();
     //   // await this.loadJeuxCreation();
@@ -568,13 +584,14 @@ export default {
     },
 
     selectPoint(point) {
-      if (!point.reserve && point.reserve !== undefined) {
+      if (point.reserve) {
         this.$toast.warning("Cet emplacement est déjà occupé");
         return;
       }
 
       this.selectedPoint = point;
-      this.stand.idPoint = point.id;
+      console.log("tranquille je vais pas ragequit:" + point.id);
+      this.stand.id_emplacement = point.id;
 
       // Force le redraw des marqueurs
       if (this.map) {
@@ -756,40 +773,40 @@ export default {
     },
 
     // Dans les méthodes de PagePrestataires.vue
-handlePaymentSuccessJeu() {
-  const currentUser = this.$store.state.user.actualUser;
-  const maxOrderNumber = Math.max(
-    ...this.$store.state.commandes.userOrders.map(order => order.orderNumber || 0),
-    0
-  );
-  
-  const newOrder = {
-    userId: currentUser.id,
-    orderNumber: maxOrderNumber + 1,
-    articles: [{
-      id: this.selectedModalJeu._id,
-      nom: this.selectedModalJeu.name,
-      prix: this.selectedModalJeu.prix,
-      image: this.selectedModalJeu.image,
-      quantite: 1
-    }],
-    type: 'boutique',
-    status: 'Confirmée'
-  };
+    handlePaymentSuccessJeu() {
+      const currentUser = this.$store.state.user.actualUser;
+      const maxOrderNumber = Math.max(
+          ...this.$store.state.commandes.userOrders.map(order => order.orderNumber || 0),
+          0
+      );
 
-  this.$store.dispatch('commandes/addArticleOrder', newOrder);
-  this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
-  
-  this.closeModalJeu();
-  this.closeConfirmationBoutique();
-  this.closePaymentModalBoutique();
-},
+      const newOrder = {
+        userId: currentUser.id,
+        orderNumber: maxOrderNumber + 1,
+        articles: [{
+          id: this.selectedModalJeu._id,
+          nom: this.selectedModalJeu.name,
+          prix: this.selectedModalJeu.prix,
+          image: this.selectedModalJeu.image,
+          quantite: 1
+        }],
+        type: 'boutique',
+        status: 'Confirmée'
+      };
+
+      this.$store.dispatch('commandes/addArticleOrder', newOrder);
+      this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
+
+      this.closeModalJeu();
+      this.closeConfirmationBoutique();
+      this.closePaymentModalBoutique();
+    },
 
     getIconForPoint(point) {
       // Vérifiez que les icônes sont bien chargées
       if (!emplacementIcon || !selectedIcon) {
         console.error('Les icônes ne sont pas chargées correctement');
-        return L.divIcon({ className: 'custom-marker' });
+        return L.divIcon({className: 'custom-marker'});
       }
 
       const isSelected = this.selectedPoint && this.selectedPoint.id === point.id;
@@ -803,64 +820,53 @@ handlePaymentSuccessJeu() {
     },
 
     async saveStand() {
-  this.loading = true;
-  this.showSuccessMessage = false; // Réinitialiser
-
-  try {
-    // Validation
-    if (!this.stand.nom || !this.stand.description) {
-      throw new Error("Veuillez remplir tous les champs obligatoires");
-    }
-
-    if (!this.selectedPoint) {
-      throw new Error("Veuillez sélectionner un emplacement sur la carte");
-    }
-
-    const standToSave = {
-      ...this.stand,
-      id: this.isNewStand ? `stand-${Date.now()}` : this.stand.id,
-      idPoint: this.selectedPoint.id,
-      comptes: [this.actualUser.id],
-      type: this.getStandType()
-    };
-
-    console.log("Envoi au store:", standToSave); // Debug
-
-    // Appel au store
-    await this.$store.dispatch('restaurants/saveStand', standToSave);
-
-    // Mise à jour des points
-    if (this.originalPointId) {
-      await this.$store.dispatch('points/updatePointAvailability', {
-        pointId: this.originalPointId,
-        isAvailable: true
-      });
-    }
-
-    await this.$store.dispatch('points/updatePointAvailability', {
-      pointId: this.stand.idPoint,
-      isAvailable: false
-    });
-
-    // Feedback utilisateur
-    this.isNewStand = false;
-    this.originalPointId = this.stand.idPoint;
-    this.showSuccessMessage = true;
-    this.$toast.success("Stand enregistré avec succès !");
-
-    // Recharger les données après un délai
-    setTimeout(async () => {
-      await this.initializeData();
+      this.loading = true;
       this.showSuccessMessage = false;
-    }, 2000);
 
-  } catch (error) {
-    console.error("Erreur:", error); // Debug
-    this.$toast.error(error.message || "Erreur lors de l'enregistrement");
-  } finally {
-    this.loading = false;
-  }
-},
+      try {
+        // Validation
+        if (!this.stand.nom_stand || !this.stand.description) {
+          throw new Error("Veuillez remplir tous les champs obligatoires");
+        }
+
+        if (!this.selectedPoint) {
+          throw new Error("Veuillez sélectionner un emplacement sur la carte");
+        }
+
+        const standData = {
+          nom: this.stand.nom_stand,
+          type: this.stand.id_type,
+          emplacement: this.stand.id_emplacement,
+          description: this.stand.description,
+          compte: [this.actualUser.id],
+          image: this.stand.image_path,
+        };
+
+        // Appel à l'API via Vuex
+        await this.$store.dispatch('stands/addStand', standData);
+
+        // Mettre à jour le statut de l'emplacement
+        // await this.$store.dispatch('points/updatePointAvailability', {
+        //   pointId: this.selectedPoint.id,
+        //   reserve: true
+        // });
+
+        this.showSuccessMessage = true;
+        this.$toast.success("Stand enregistré avec succès !");
+
+        // Recharger les données après un délai
+        setTimeout(async () => {
+          await this.$store.dispatch('stands/getAllStands');
+          this.showSuccessMessage = false;
+        }, 100);
+
+      } catch (error) {
+        console.error("Erreur:", error);
+        // this.$toast.error(error.message || "Erreur lors de l'enregistrement");
+      } finally {
+        this.loading = false;
+      }
+    },
 
     async createTournoi() {
       if (!this.validateTournoi()) return;

@@ -1,4 +1,4 @@
-import {getPrestataireService, getTypePrestataireService} from "@/services/serviceapi/prestataire";
+import {getPrestataireService, createPrestataireFromAPI, getTypePrestataireService} from "@/services/serviceapi/prestataire";
 
 export default {
   namespaced: true,
@@ -12,7 +12,10 @@ export default {
       },
       SET_TYPE_STAND(state, typeStand) {
           state.typeStands = typeStand;
-      }
+      },
+        ADD_STAND(state, stand) {
+            state.stands.push(stand);
+        },
   },
   actions: {
       async getAllStands({commit}) {
@@ -41,6 +44,18 @@ export default {
               console.log("Cas anormal dans typeStands()")
           }
       },
+      async addStand({commit}, stand) {
+            console.log("STORE: add stand")
+            let result = null
+            try {
+                result = await createPrestataireFromAPI(stand)
+                commit('ADD_STAND',result)
+                console.log(result)
+            }
+            catch(err) {
+                console.log("Cas anormal dans addStand()")
+            }
+      }
   },
   getters: {
       stands: state => state.stands || [],

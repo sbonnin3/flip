@@ -1,6 +1,6 @@
 import {getRequest, putRequest, deleteRequest, postRequest} from "@/services/serviceapi/axios.service";
 
-async function createPrestataireFromAPI(data) {
+export async function createPrestataireFromAPI(data) {
     try {
         return postRequest('/api/prestataires', data, 'CREATEPRESTATAIRE')
     } catch (error) {
