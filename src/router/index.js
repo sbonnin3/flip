@@ -148,8 +148,10 @@ router.beforeEach(async (to, from, next) => {
       }
     }
 
-    const userRole = store.getters['user/userSession']?.role
+    // Récupération du rôle normalisé depuis actualUser
+    const userRole = store.state.user.actualUser?.role || ''
 
+    // Vérification des accès
     if (to.meta.requiresAdmin && userRole !== 'administrateur') {
       return next('/Accueil')
     }
@@ -158,14 +160,16 @@ router.beforeEach(async (to, from, next) => {
       return next('/Accueil')
     }
 
-    if (to.meta.requiresPrestataire && !["restaurateur", "vendeur", "createur", "organisateur"].includes(userRole)) {
+    const prestataireRoles = ['restaurateur', 'vendeur', 'createur', 'organisateur']
+    if (to.meta.requiresPrestataire && !prestataireRoles.includes(userRole)) {
       return next('/Accueil')
     }
   }
 
+  // Redirection spécifique pour la carte
   if (to.path === '/Carte' && store.getters['user/isAuthenticated']) {
-    const userRole = store.getters['user/userSession']?.role
-    if (["restaurateur", "vendeur", "createur", "organisateur"].includes(userRole)) {
+    const userRole = store.state.user.actualUser?.role || ''
+    if (['restaurateur', 'vendeur', 'createur', 'organisateur'].includes(userRole)) {
       return next('/PrestatairesCarte')
     }
   }

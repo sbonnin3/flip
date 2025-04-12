@@ -71,16 +71,16 @@
       </div>
     </div>
     <div v-show="selectedTab === 'Catalogue'">
-      <div class="cards-container" v-if="safeJeux.length">
-        <div v-for="jeu in jeux" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
-          <img :src="jeu.image" alt="Image du jeu" class="card-image" />
+      <div class="cards-container" v-if="jeux.length">
+        <div v-for="jeu in jeux" :key="jeu.name" class="card">
+          <img :src="getJeuImage(jeu)" alt="Image du jeu" class="card-image" />
           <div class="card-content">
-            <h2 class="card-title">{{ jeu.name }}</h2>
+            <h2 class="card-title">{{ getJeuName(jeu) }}</h2>
             <p class="card-type">Type : {{ jeu.type }}</p>
-            <p class="card-players">Nombre de joueurs : {{ jeu.nombre_de_joueurs.join(', ') }}</p>
-            <p class="card-age">Âge minimum : {{ jeu.age_minimum }} ans</p>
+            <p class="card-players">Nombre de joueurs : {{ jeu.nombre_joueurs_min }}-{{ jeu.nombre_joueurs_max }}</p>
+            <p class="card-age">Âge minimum : {{ jeu.age_limite }} ans</p>
             <p class="card-duration">Durée : {{ jeu.duree }} min</p>
-            <p class="card-stand">Nom du stand : {{ jeu.nom_stand }}</p>
+            <p class="card-stand">Nom du stand : {{ getStandName(jeu) }}</p>
           </div>
         </div>
         <div v-if="selectedJeu" class="modal">
@@ -100,7 +100,7 @@
     </div>
     <div v-show="selectedTab === 'Jeux'">
       <div class="cards-container" v-if="safeJeuxCreation.length">
-        <div v-for="jeu in jeuxCreation" :key="jeu.name" class="card" @click="openJeuModal(jeu)">
+        <div v-for="jeu in jeuxCreation" :key="jeu.name" class="card">
           <img :src="jeu.image" alt="Image du jeu" class="card-image" />
           <div class="card-content">
             <h2 class="card-title">{{ jeu.name }}</h2>
@@ -242,7 +242,7 @@
               :options="mapOptions" style="height: 500px;" @ready="mapReady">
               <l-tile-layer :url="layers[selectedLayer].url"
                 :attribution="layers[selectedLayer].attribution"></l-tile-layer>
-              <l-marker v-for="point in availablePoints" :key="point.idPoint" :lat-lng="point.coordinates"
+              <l-marker v-for="point in availablePoints" :key="point.id" :lat-lng="[point.coordonnees_y, point.coordonnees_x]"
                 :icon="getIconForPoint(point)" @click="selectPoint(point)">
                 <l-tooltip>
                   {{ point === selectedPoint ? 'Point sélectionné' : 'Disponible - Cliquez pour sélectionner' }}
@@ -250,7 +250,7 @@
               </l-marker>
             </l-map>
             <p v-if="selectedPoint" class="selected-point-info">
-              Point sélectionné : {{ selectedPoint.idPoint }}
+              Point sélectionné : {{ selectedPoint.id }}
             </p>
             <p v-else class="no-selection-info">
               Veuillez sélectionner un point sur la carte
@@ -271,7 +271,8 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
+import {mapActions} from "vuex";
+import { mapState } from "vuex";
 import { LMap, LTileLayer, LMarker, LTooltip } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -361,11 +362,40 @@ export default {
     };
   },
   computed: {
-    ...mapGetters('user', ['userSession']),
-    ...mapGetters('restaurants', ['restaurantByUser', 'allStands']),
-    ...mapGetters('tournois', ['tournoisByUser']),
-    ...mapGetters('points', ['availablePoints']),
-    ...mapGetters('jeux', ['allJeux', 'jeuxCreation']), // Ajoutez jeuxCreation ici
+    ...mapState("jeux", ["jeux"]),
+    ...mapState("tournois", ["tournois"]),
+    ...mapState("points", ["points"]),
+    ...mapState("user", ["comptes", "actualUser"]),
+
+    availablePoints() {
+      return this.points
+          .filter(point => {
+            // Validation des coordonnées
+            if (!point.coordonnees_x || !point.coordonnees_y ||
+                isNaN(point.coordonnees_x) || isNaN(point.coordonnees_y)) {
+              return false;
+            }
+
+            // Conversion explicite en Number
+            const x = Number(point.coordonnees_x);
+            const y = Number(point.coordonnees_y);
+
+            // Vérification des plages de coordonnées réalistes pour Parthenay
+            if (x < -0.28 || x > -0.23 || y < 46.62 || y > 46.68) {
+              console.warn('Coordonnées invalides pour le point:', point);
+              return false;
+            }
+
+            return point.categorie === 'Emplacement' && !point.reserve;
+          })
+          .map(point => ({
+            id: point.id,
+            coordonnees_x: point.coordonnees_x,
+            coordonnees_y: point.coordonnees_y,
+            reserve: point.reserve,
+            nom: point.nom
+          }));
+    },
 
     safeJeux() {
       return this.allJeux || [];
@@ -376,28 +406,28 @@ export default {
     safePoints() {
       return this.availablePoints || [];
     },
-    jeux() {
-      return this.allJeux || [];
-    },
     userRole() {
-      return this.userSession?.role || '';
+      console.log("User session:", JSON.stringify(this.actualUser));
+      return this.actualUser?.role || '';
     },
     restaurant() {
-      return this.restaurantByUser(this.userSession?.id);
+      return []
+      // return this.restaurantByUser(this.userSession?.id);
     },
     uniqueArticles() {
-      const allArticles = [];
-      this.allStands.forEach((stand) => {
-        if (stand.nourritures) {
-          allArticles.push(
-            ...stand.nourritures.map((item) => ({ ...item, type: "Nourriture" })))
-        }
-        if (stand.boissons) {
-          allArticles.push(
-            ...stand.boissons.map((item) => ({ ...item, type: "Boisson" })))
-        }
-      });
-      return [...new Map(allArticles.map(item => [item.nom, item])).values()];
+      return []
+      // const allArticles = [];
+      // this.allStands.forEach((stand) => {
+      //   if (stand.nourritures) {
+      //     allArticles.push(
+      //       ...stand.nourritures.map((item) => ({ ...item, type: "Nourriture" })))
+      //   }
+      //   if (stand.boissons) {
+      //     allArticles.push(
+      //       ...stand.boissons.map((item) => ({ ...item, type: "Boisson" })))
+      //   }
+      // });
+      // return [...new Map(allArticles.map(item => [item.nom, item])).values()];
     },
     restaurantArticles() {
       if (!this.restaurant) return [];
@@ -419,39 +449,42 @@ export default {
       return articles;
     },
     mesTournois() {
-      return this.tournoisByUser(this.userSession?.id) || [];
+      return []
+      // return this.tournoisByUser(this.userSession?.id) || [];
     }
   },
   async created() {
-    try {
-      await this.initializeData();
-      await this.loadJeuxCreation();
-
-      if (this.userSession && this.userSession.id) {
-        // Charger le stand existant de l'utilisateur
-        const userStand = this.$store.getters['restaurants/standByUser'](this.userSession.id);
-        if (userStand) {
-          this.stand = {
-            ...userStand,
-            id: userStand.id,
-            nom: userStand.nom,
-            description: userStand.description || "",
-            image: userStand.image || "",
-            idPoint: userStand.idPoint
-          };
-          this.isNewStand = false;
-
-          // Trouver le point sélectionné
-          this.selectedPoint = this.availablePoints.find(p => p.idPoint === userStand.idPoint);
-          this.originalPointId = userStand.idPoint;
-        }
-
-        this.initializeStand();
-        this.initializeTabs();
-      }
-    } catch (error) {
-      console.error("Initialization error:", error);
-    }
+    await this.$store.dispatch("jeux/getAllJeux");
+    await this.$store.dispatch("points/getAllPoints")
+    // try {
+    //   // await this.initializeData();
+    //   // await this.loadJeuxCreation();
+    //
+    //   if (this.userSession && this.userSession.id) {
+    //     // Charger le stand existant de l'utilisateur
+    //     const userStand = this.$store.getters['restaurants/standByUser'](this.userSession.id);
+    //     if (userStand) {
+    //       this.stand = {
+    //         ...userStand,
+    //         id: userStand.id,
+    //         nom: userStand.nom,
+    //         description: userStand.description || "",
+    //         image: userStand.image || "",
+    //         idPoint: userStand.idPoint
+    //       };
+    //       this.isNewStand = false;
+    //
+    //       // Trouver le point sélectionné
+    //       // this.selectedPoint = this.availablePoints.find(p => p.idPoint === userStand.idPoint);
+    //       // this.originalPointId = userStand.idPoint;
+    //     }
+    //
+    //     this.initializeStand();
+    //     this.initializeTabs();
+    //   }
+    // } catch (error) {
+    //   console.error("Initialization error:", error);
+    // }
   },
   methods: {
     ...mapActions("restaurants", [
@@ -462,7 +495,30 @@ export default {
     ]),
     ...mapActions("tournois", ["addTournoi", "fetchTournois"]),
     ...mapActions("points", ["updatePointAvailability", "initializePoints"]),
-    ...mapActions("jeux", ["fetchJeuxCreation"]),
+    ...mapActions("jeux", ["getAllJeux"]),
+
+
+    getJeuName(jeu) {
+      return jeu.produit?.nom_produit || jeu.nom || 'Jeu sans nom';
+    },
+
+    getJeuImage(jeu) {
+      const path = jeu.produit.image_path;
+      try {
+        return require(`@/assets/images/${path}`);
+      } catch {
+        return require('@/assets/images/null.png');
+      }
+    },
+
+    getStandName(jeu) {
+      if (!jeu?.produit?.vendupar) return this.$t('unknownStand');
+      const standId = jeu.produit.vendupar;
+      const stand = this.$store.state.stands.stands.find(s =>
+          s.id === standId || s.idStand == standId
+      );
+      return stand?.nom_stand || this.$t('unknownStand');
+    },
 
     // Méthodes manquantes référencées dans le template
     openCreationConfirmation() {
@@ -476,7 +532,7 @@ export default {
         vendeur: "boutique",
         organisateur: "tournois"
       };
-      return roleMap[this.userSession.role] || "autre";
+      return roleMap[this.actualUser.role] || "autre";
     },
 
     closeConfirmation() {
@@ -512,13 +568,13 @@ export default {
     },
 
     selectPoint(point) {
-      if (!point.disponible && point.disponible !== undefined) {
+      if (!point.reserve && point.reserve !== undefined) {
         this.$toast.warning("Cet emplacement est déjà occupé");
         return;
       }
 
       this.selectedPoint = point;
-      this.stand.idPoint = point.idPoint;
+      this.stand.idPoint = point.id;
 
       // Force le redraw des marqueurs
       if (this.map) {
@@ -545,7 +601,7 @@ export default {
         const tournoiData = {
           ...this.newTournoi,
           _id: this.isEditing ? this.editingTournoiId : Date.now().toString(),
-          prestataireId: this.userSession.id
+          prestataireId: this.actualUser.id
         };
 
         if (this.isEditing) {
@@ -570,7 +626,7 @@ export default {
         const updatedTournoi = {
           ...this.newTournoi,
           _id: this.editingTournoiId,
-          prestataireId: this.userSession.id
+          prestataireId: this.actualUser.id
         };
 
         await this.$store.dispatch('tournois/updateTournoi', updatedTournoi);
@@ -609,8 +665,6 @@ export default {
           this.initializePoints()
         ]);
 
-        console.log('Points disponibles:', this.availablePoints);
-        console.log('Stands existants:', this.allStands);
 
       } catch (error) {
         console.error("Initialization error:", error);
@@ -635,7 +689,7 @@ export default {
     },
 
     initializeStand() {
-      if (!this.userSession?.id) return;
+      if (!this.actualUser?.id) return;
 
       const roleToTypeMap = {
         createur: "stand",
@@ -646,8 +700,8 @@ export default {
 
       this.stand = {
         ...this.stand,
-        type: roleToTypeMap[this.userSession.role] || "autre",
-        comptes: [this.userSession.id]
+        type: roleToTypeMap[this.actualUser.role] || "autre",
+        comptes: [this.actualUser.id]
       };
     },
 
@@ -703,7 +757,7 @@ export default {
 
     // Dans les méthodes de PagePrestataires.vue
 handlePaymentSuccessJeu() {
-  const currentUser = this.$store.state.user.userSession;
+  const currentUser = this.$store.state.user.actualUser;
   const maxOrderNumber = Math.max(
     ...this.$store.state.commandes.userOrders.map(order => order.orderNumber || 0),
     0
@@ -738,7 +792,7 @@ handlePaymentSuccessJeu() {
         return L.divIcon({ className: 'custom-marker' });
       }
 
-      const isSelected = this.selectedPoint && this.selectedPoint.idPoint === point.idPoint;
+      const isSelected = this.selectedPoint && this.selectedPoint.id === point.id;
 
       return L.icon({
         iconUrl: isSelected ? selectedIcon : emplacementIcon,
@@ -765,8 +819,8 @@ handlePaymentSuccessJeu() {
     const standToSave = {
       ...this.stand,
       id: this.isNewStand ? `stand-${Date.now()}` : this.stand.id,
-      idPoint: this.selectedPoint.idPoint,
-      comptes: [this.userSession.id],
+      idPoint: this.selectedPoint.id,
+      comptes: [this.actualUser.id],
       type: this.getStandType()
     };
 
@@ -832,7 +886,7 @@ handlePaymentSuccessJeu() {
           prix: Number(this.newTournoi.prix),
           image: imageUrl,
           description: this.newTournoi.description,
-          prestataireId: this.userSession.id,
+          prestataireId: this.actualUser.id,
           dates: this.newTournoi.dates.map(date => ({
             jour: Number(date.jour),
             mois: Number(date.mois),
@@ -984,8 +1038,8 @@ handlePaymentSuccessJeu() {
         await this.addRestaurant({
           nom: this.newRestaurantName,
           image: this.newRestaurantImage,
-          idPoint: this.selectedPoint.idPoint,
-          comptes: [this.userSession.id]
+          idPoint: this.selectedPoint.id,
+          comptes: [this.actualUser.id]
         });
         this.newRestaurantName = '';
         this.newRestaurantImage = '';

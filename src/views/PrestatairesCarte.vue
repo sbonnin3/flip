@@ -12,7 +12,7 @@
         <h3>Filtres de catégories :</h3>
         <label v-for="category in categories" :key="category">
           <input type="checkbox" :value="category" v-model="selectedCategories"
-            @change="syncEmplacementStatus(category)" />
+                 @change="syncEmplacementStatus(category)" />
           {{ category }}
         </label>
       </div>
@@ -30,13 +30,14 @@
       </div>
 
       <l-map :zoom="zoom" :center="center" :max-bounds="bounds" :max-bounds-viscosity="1.0" :min-zoom="minZoom"
-        :max-zoom="maxZoom" style="height: 700px; width: 100%;">
+             :max-zoom="maxZoom" style="height: 700px; width: 100%;">
         <l-tile-layer :url="layers[selectedLayer].url" :attribution="layers[selectedLayer].attribution"></l-tile-layer>
 
-        <l-marker v-for="(point, index) in filteredPoints" :key="index" :lat-lng="point.coordinates"
-          :icon="getIconForPoint(point)">
+        <l-marker v-for="(point, index) in filteredPoints" :key="`${index}-${point.id}`"
+                  :lat-lng="[point.coordonnees_y, point.coordonnees_x]"
+                  :icon="getIconForPoint(point)">
           <l-popup>{{ getPopupText(point) }}</l-popup>
-          <l-tooltip v-if="point.category === 'Emplacement'">{{ getTooltipText(point) }}</l-tooltip>
+          <l-tooltip>{{ getTooltipText(point) }}</l-tooltip>
         </l-marker>
       </l-map>
     </div>
@@ -47,8 +48,7 @@
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { points } from "@/datasource/data.js";
-import { mapGetters, mapActions } from "vuex"; // Import des helpers Vuex
+import { mapActions, mapState } from "vuex";
 
 // Import des icônes
 import toiletIcon from "@/assets/icons/toilet-icon.png";
@@ -69,7 +69,6 @@ export default {
     LTooltip,
   },
   data() {
-    const initialCategories = [...new Set(points.map(point => point.category))];
     return {
       zoom: 16,
       minZoom: 13,
@@ -77,10 +76,9 @@ export default {
       center: [46.648, -0.2494],
       bounds: [[46.620, -0.270], [46.680, -0.230]],
       selectedLayer: "osm",
-      points, // Points statiques (depuis data.js)
-      selectedCategories: initialCategories,
+      selectedCategories: [],
       emplacementStatus: ["available", "occupied"],
-      loading: true, // Nouvel état pour gérer le chargement
+      loading: true,
       layers: {
         osm: {
           url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -138,71 +136,92 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("stands", ["stands"]), // Récupère les stands depuis le store
+    ...mapState("points", ["points"]),
+    ...mapState("stands", ["stands", "typeStands"]),
+    ...mapState("user", ["comptes"]),
+
+    categories() {
+      return [...new Set(this.points.map(point => point.categorie))];
+    },
+
     filteredPoints() {
       return this.points.filter(point => {
-        const categoryMatch = this.selectedCategories.includes(point.category);
-        const isEmplacementAvailable =
-          point.category === 'Emplacement' &&
-          ((this.emplacementStatus.includes('available') && point.disponible) ||
-            (this.emplacementStatus.includes('occupied') && !point.disponible));
-        return categoryMatch && (point.category !== 'Emplacement' || isEmplacementAvailable);
+        if (!point.coordonnees_x || !point.coordonnees_y ||
+            isNaN(point.coordonnees_x) || isNaN(point.coordonnees_y)) {
+          return false;
+        }
+
+        const categoryMatch = this.selectedCategories.length === 0 ||
+            this.selectedCategories.includes(point.categorie);
+
+        let statusMatch = true;
+        if (point.categorie === 'Emplacement') {
+          const isOccupied = point.reserve; // Utilisation directe du booléen reserve
+
+          if (this.emplacementStatus.includes("available") && !isOccupied) {
+            statusMatch = true;
+          } else if (this.emplacementStatus.includes("occupied") && isOccupied) {
+            statusMatch = true;
+          } else {
+            statusMatch = false;
+          }
+        }
+
+        return categoryMatch && statusMatch;
       });
-    },
-    categories() {
-      return [...new Set(this.points.map(point => point.category))];
     },
   },
   methods: {
-    ...mapActions("stands", ["getAllStands"]), // Map de l'action pour charger les stands
+    ...mapActions("stands", ["getAllStands"]),
+
     getPopupText(point) {
-      const standAssocie = this.stands?.find(stand => stand.idPoint === point.idPoint); // Optional chaining pour éviter les erreurs
-      return standAssocie ? standAssocie.nom : point.name;
+      const standAssocie = this.stands?.find(stand => stand.id_emplacement === point.id);
+      return standAssocie ? standAssocie.nom_stand : point.nom;
     },
+
     getTooltipText(point) {
-      if (point.category === 'Emplacement') {
-        const standAssocie = this.stands?.find(stand => stand.idPoint === point.idPoint);
-        return point.disponible ? "Disponible" : (standAssocie ? standAssocie.nom : "Occupé");
-      }
-      return "";
-    },
-    getIconForPoint(point) {
-      if (!this.stands || !Array.isArray(this.stands)) {
-        return this.icons.Emplacement; // Fallback si les stands ne sont pas chargés
-      }
-      const standAssocie = this.stands.find(stand => stand.idPoint === point.idPoint);
-      
-      if (point.category !== "Emplacement") {
-        return this.icons[point.category] || this.icons.Emplacement;
+      if (point.categorie === 'Emplacement') {
+        return point.reserve ? "Occupé" : "Disponible"; // Basé sur reserve
       }
 
+      const standAssocie = this.stands?.find(stand => stand.id_emplacement === point.id);
+      return standAssocie ? standAssocie.nom_stand : point.nom;
+    },
+
+    getIconForPoint(point) {
+      if (point.categorie !== "Emplacement") {
+        return this.icons[point.categorie] || this.icons.Emplacement;
+      }
+
+      const standAssocie = this.stands?.find(stand => stand.id_emplacement === point.id);
       if (standAssocie) {
-        const compteId = standAssocie.comptes?.[0]; // Optional chaining
-        const compte = this.$store.state.comptes?.find((compte) => compte.id === compteId);
-        
-        if (compte) {
-          const roleToIconMap = {
-            organisateur: "Tournois",
-            createur: "Stand",
-            restaurateur: "Restauration",
-            vendeur: "Boutique",
-          };
-          const iconKey = roleToIconMap[compte.role] || "Emplacement";
-          return this.icons[iconKey];
+        const typeStand = this.typeStands?.find(type => type.id === standAssocie.id_type);
+        if (typeStand) {
+          if (typeStand.intitule.includes("Restaurant")) {
+            return this.icons.Restauration;
+          } else if (typeStand.intitule.includes("Activité")) {
+            return this.icons.Tournois;
+          } else if (typeStand.intitule.includes("Jeux")) {
+            return this.icons.Stand;
+          }
         }
+        return this.icons.Stand;
       }
       return this.icons.Emplacement;
     },
+
     changeLayer() {
       // Méthode vide (à implémenter si besoin)
     },
+
     syncCategoryCheckbox() {
-      if (!this.emplacementStatus.includes('available') && !this.emplacementStatus.includes('occupied')) {
+      if (this.emplacementStatus.length === 0) {
         this.selectedCategories = this.selectedCategories.filter(cat => cat !== 'Emplacement');
       } else if (!this.selectedCategories.includes('Emplacement')) {
         this.selectedCategories.push('Emplacement');
       }
     },
+
     syncEmplacementStatus(category) {
       if (category === 'Emplacement') {
         if (this.selectedCategories.includes('Emplacement')) {
@@ -213,9 +232,19 @@ export default {
       }
     },
   },
-  async mounted() {
-    await this.getAllStands(); // Charge les stands dès le montage
-    this.loading = false;
+  async created() {
+    try {
+      await this.$store.dispatch("points/getAllPoints");
+      await this.$store.dispatch("stands/getAllStands");
+      await this.$store.dispatch("stands/getAllTypesStand");
+
+      // Initialiser avec toutes les catégories
+      this.selectedCategories = [...this.categories];
+    } catch (error) {
+      console.error("Error loading map data:", error);
+    } finally {
+      this.loading = false;
+    }
   },
 };
 </script>
