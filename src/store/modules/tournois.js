@@ -3,7 +3,8 @@ import {
     getEditionTournoiByIdService,
     getEditionTournoiService,
     inscriptionTournoiService,
-    getInscriptionTournoisByIdUserService, getTournoiByIdService
+    getInscriptionTournoisByIdUserService, getTournoiByIdService,
+    createTournoiService, createEditionTournoiService,
 } from '@/services/serviceapi/tournaments';
 
 export default {
@@ -90,6 +91,18 @@ export default {
             }
         },
 
+        async createTournoi({commit}, tournoi) {
+            console.log("STORE: create tournoi")
+            let result = null
+            try {
+                result = await createTournoiService(tournoi);
+                commit('ADD_TOURNOI', result);
+                console.log(result);
+            } catch (err) {
+                console.log("Cas anormal dans createTournoi()")
+            }
+        },
+
         async inscriptionTournoi({commit}, dataInscription) {
             console.log("STORE: inscription tournoi")
             let result = null
@@ -114,79 +127,41 @@ export default {
             }
         },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        async updateTournoi({commit, state}, tournoi) {
-            const index = state.tournois.findIndex(t => t._id === tournoi._id);
-            if (index !== -1) {
-                commit('UPDATE_TOURNOI', {index, tournoi});
-                return tournoi;
+        async createEditionTournoi({commit}, edition) {
+            console.log("STORE: create edition tournoi")
+            let result = null
+            try {
+                result = await createEditionTournoiService(edition)
+                commit('ADD_EDITION_TOURNOI', result)
+                console.log(result)
+            } catch (err) {
+                console.log("Cas anormal dans createEditionTournoi()")
             }
-            throw new Error("Tournoi non trouvé");
         },
 
-        async addTournoi({commit}, tournoiData) {
-            try {
-                // Gestion de l'image
-                let imageUrl;
 
-                if (tournoiData.image instanceof File) {
-                    // Si c'est un fichier uploadé, créer une URL temporaire
-                    imageUrl = URL.createObjectURL(tournoiData.image);
-                } else if (tournoiData.image) {
-                    // Si c'est déjà une URL (pour l'édition)
-                    imageUrl = tournoiData.image;
-                } else {
-                    // Image par défaut
-                    imageUrl = require('@/assets/images/null.png');
-                }
 
-                // Formatage des dates
-                const formattedDates = tournoiData.dates.map(date => ({
-                    jour: Number(date.jour),
-                    mois: Number(date.mois),
-                    annee: Number(date.annee),
-                    heures: Number(date.heures),
-                    min: Number(date.min),
-                    placesRestantes: Number(date.placesRestantes)
-                }));
 
-                const newTournoi = {
-                    _id: Date.now().toString(),
-                    nom: tournoiData.nom,
-                    lieu: tournoiData.lieu,
-                    prix: Number(tournoiData.prix),
-                    image: imageUrl,
-                    description: tournoiData.description || '',
-                    prestataireId: tournoiData.prestataireId,
-                    dates: formattedDates
-                };
 
-                commit('ADD_TOURNOI', newTournoi);
-                return newTournoi;
 
-            } catch (error) {
-                console.error("Erreur lors de l'ajout du tournoi:", error);
-                throw error;
-            }
-        }
+
+
+
+
+
+
+
+
     },
     getters: {
         allTournoi: (state) => state.tournois || [],
         tournoisByUser: (state) => (userId) => {
             return state.tournois.filter(t => t.prestataireId === userId);
+        },
+        lastCreatedTournoiId: (state) => {
+            if (state.tournois.length === 0) return null;
+            // Supposons que les tournois sont triés par ordre de création (le dernier étant le plus récent)
+            return state.tournois[state.tournois.length - 1].id;
         }
     }
 };

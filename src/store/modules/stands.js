@@ -1,4 +1,4 @@
-import {getPrestataireService, createPrestataireFromAPI, getTypePrestataireService} from "@/services/serviceapi/prestataire";
+import {getPrestataireService, createPrestataireFromAPI, getTypePrestataireService, updatePrestataireService} from "@/services/serviceapi/prestataire";
 
 export default {
   namespaced: true,
@@ -9,6 +9,12 @@ export default {
   mutations: {
       SET_STANDS(state, stands) {
           state.stands = stands;
+      },
+      UPDATE_STAND(state, stand) {
+            const index = state.stands.findIndex(s => s.idStand === stand.idStand);
+            if (index !== -1) {
+                state.stands.splice(index, 1, stand);
+            }
       },
       SET_TYPE_STAND(state, typeStand) {
           state.typeStands = typeStand;
@@ -54,6 +60,18 @@ export default {
             }
             catch(err) {
                 console.log("Cas anormal dans addStand()")
+            }
+      },
+      async updateStand({commit}, { id, data }) {
+            console.log("STORE: update stand")
+            let result = null
+            try {
+                result = await updatePrestataireService(id, data)
+                commit('UPDATE_STAND',result)
+                console.log(JSON.stringify(result))
+            }
+            catch(err) {
+                console.log("Cas anormal dans updateStand()")
             }
       }
   },

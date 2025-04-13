@@ -69,6 +69,7 @@ export default {
             }
         },
 
+
         async checkSession({ commit, dispatch, state }) {
             if (localStorage.getItem('loggedOut') === 'true') {
                 commit('CLEAR_USER_SESSION');

@@ -51,7 +51,7 @@ async function updatePrestataireFromAPI(id, data) {
     }
 }
 
-async function updatePrestataireService(id, data) {
+export async function updatePrestataireService(id, data) {
     let answer = await updatePrestataireFromAPI(id, data)
     return answer
 }

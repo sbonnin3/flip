@@ -21,25 +21,24 @@
     <div v-show="selectedTab === 'MonRestaurant'">
       <template v-if="restaurant">
         <h2>Mon Restaurant</h2>
-        <p><strong>Nom :</strong> {{ restaurant.nom }}</p>
+        <p><strong>Nom :</strong> {{ restaurant.nom_stand }}</p>
         <p>
           <strong>Image :</strong>
-          <img :src="restaurant.image" alt="Image du restaurant" style="max-width: 300px;"/>
+          <img :src="restaurant.image_path" alt="Image du restaurant" style="max-width: 300px;"/>
         </p>
         <button @click="openEditRestaurantModal">Modifier le restaurant</button>
 
         <h3>Liste des Articles Disponibles</h3>
         <div class="articles-container">
-          <div v-for="(article, index) in uniqueArticles" :key="index" class="article-card"
-               :class="{ 'article-restaurant': isRestaurantArticle(article), 'article-other': !isRestaurantArticle(article) }">
-            <img :src="article.image" alt="Image de l'article" class="article-image"/>
+          <div v-for="(produit, index) in uniqueArticles" :key="index" class="article-card">
+            <img :src="getProduitImage(produit)" alt="Image de l'article" class="article-image"/>
             <div class="article-info">
-              <h4>{{ article.nom }}</h4>
-              <p>Prix : {{ article.prix }} €</p>
-              <p>Type : {{ article.type || 'Non spécifié' }}</p>
-              <button @click="toggleArticleInRestaurant(article)"
-                      :class="isRestaurantArticle(article) ? 'remove-button' : 'add-button'">
-                {{ isRestaurantArticle(article) ? 'Supprimer' : 'Ajouter' }}
+              <h4>{{ produit.nom_produit }}</h4>
+              <p>Prix : {{ produit.prix_produit }} €</p>
+              <p>Type : {{ produit.type_article || 'Non spécifié' }}</p>
+              <button @click="toggleArticleInRestaurant(produit)"
+                      :class="isRestaurantArticle(produit) ? 'remove-button' : 'add-button'">
+                {{ isRestaurantArticle(produit) ? 'Supprimer' : 'Ajouter' }}
               </button>
             </div>
           </div>
@@ -104,20 +103,22 @@
       </div>
     </div>
     <div v-show="selectedTab === 'Jeux'">
-      <div class="cards-container" v-if="safeJeuxCreation.length">
-        <div v-for="jeu in jeuxCreation" :key="jeu.name" class="card">
-          <img :src="jeu.image" alt="Image du jeu" class="card-image"/>
+      <div class="cards-container" v-if="filteredUserJeux && filteredUserJeux.length">
+        <div v-for="jeu in filteredUserJeux" :key="jeu.id" class="card">
+          <img :src="jeu.image_path || require('@/assets/images/null.png')"
+               alt="Image du jeu" class="card-image"/>
           <div class="card-content">
-            <h2 class="card-title">{{ jeu.name }}</h2>
-            <p class="card-type">Type : {{ jeu.type }}</p>
-            <p class="card-players">Nombre de joueurs : {{ jeu.nombre_de_joueurs.join(', ') }}</p>
-            <p class="card-age">Âge minimum : {{ jeu.age_minimum }} ans</p>
-            <p class="card-duration">Durée : {{ jeu.duree }} min</p>
-            <p class="card-stand">Nom du stand : {{ jeu.nom_stand }}</p>
+            <h2 class="card-title">{{ jeu.produit?.nom_produit || 'Jeu sans nom' }}</h2>
+            <p class="card-type">Type : {{ jeu.type || 'Non spécifié' }}</p>
+            <p class="card-players">Nombre de joueurs :
+              {{ jeu.nombre_joueurs_min || 'N/A' }} - {{ jeu.nombre_joueurs_max || 'N/A' }}</p>
+            <p class="card-age">Âge minimum : {{ jeu.age_limite || 'N/A' }} ans</p>
+            <p class="card-duration">Durée : {{ jeu.duree || 'N/A' }} min</p>
+            <p class="card-stand">Nom du stand : {{ userStand?.nom_stand || 'Non attribué' }}</p>
           </div>
         </div>
       </div>
-      <p v-else> Vous n'avez aucun jeux.</p>
+      <p v-else>Vous n'avez aucun jeu.</p>
       <button class="create-button" @click="openCreationConfirmation">Créer un jeu</button>
       <div v-if="showConfirmation" class="confirmation-modal">
         <div class="modal-content">
@@ -125,27 +126,39 @@
           <h2>Création du jeu </h2>
           <div class="inputBox">
             <label for="name">Nom du jeu :</label>
-            <input v-model="gameDetails.name" type="text" id="name"/>
+            <input v-model="gameDetails.nom_produit" type="text" id="name" required/>
+          </div>
+          <div class="inputBox">
+            <label for="name">Description du jeu :</label>
+            <input v-model="gameDetails.description_produit" type="text" id="name" required/>
           </div>
           <div class="inputBox">
             <label for="type">Type du jeu :</label>
-            <input v-model="gameDetails.type" type="text" id="type"/>
+            <select v-model="gameDetails.type" id="type" required>
+              <option value="" disabled>Sélectionnez un type</option>
+              <option v-for="type in uniqueGameTypes" :key="type" :value="type">{{ type }}</option>
+            </select>
           </div>
           <div class="inputBox">
-            <label for="playerNumber">Nombre de joueurs :</label>
-            <input v-model="gameDetails.nombre_de_joueurs" type="text" id="playerNumber"/>
+            <label for="playerNumber">Nombre de joueurs minimum</label>
+            <input v-model="gameDetails.nbJoueursMin" type="number" id="playerNumber" required/>
+          </div>
+          <div class="inputBox">
+            <label for="playerNumber">Nombre de joueurs maximum</label>
+            <input v-model="gameDetails.nbJoueursMax" type="number" id="playerNumber" required/>
           </div>
           <div class="inputBox">
             <label for="minimumAge">Âge minimum :</label>
-            <input v-model="gameDetails.age_minimum" type="text" id="minimumAge"/>
+            <input v-model="gameDetails.ageLimite" type="number" id="minimumAge" required min="1"/>
           </div>
           <div class="inputBox">
             <label for="duration">Durée (minutes) :</label>
-            <input v-model="gameDetails.duree" type="text" id="duration"/>
+            <input v-model="gameDetails.duree" type="number" id="duration" required min="1"/>
           </div>
           <div class="imageBox">
             <label for="imageGame">Image du jeu :</label>
-            <input type="file" id="imageGame"/>
+            <input type="file" id="imageGame" accept="image/*" required />
+            <img v-if="gameDetails.image_path" :src="gameDetails.image_path" class="image-preview" />
           </div>
           <button @click="confirmCreation" class="confirm-button">Confirmer</button>
           <button @click="closeConfirmation" class="cancel-button">Annuler</button>
@@ -153,20 +166,14 @@
       </div>
     </div>
     <div v-show="selectedTab === 'MesTournois'">
-      <div v-if="mesTournois.length">
+      <div v-if="filteredUserTournois">
         <div class="cards-container">
-          <div v-for="tournoi in mesTournois" :key="tournoi._id" class="card">
-            <img :src="tournoi.image" alt="Image du tournoi" class="card-image"/>
+          <div v-for="tournoi in filteredUserTournois" :key="tournoi.id" class="card">
+            <img :src="getTournoiImage(tournoi)" alt="Image du tournoi" class="card-image"/>
             <div class="card-content">
-              <h2 class="card-title">{{ tournoi.nom }}</h2>
+              <h2 class="card-title">{{ tournoi.nom_tournoi }}</h2>
               <p class="card-location">{{ tournoi.lieu }}</p>
-              <p class="card-price">Prix : {{ tournoi.prix }}€</p>
-              <p class="card-dates">
-                Dates :
-                <span v-for="date in tournoi.dates" :key="date">
-                  {{ formatDate(date) }} - {{ date.placesRestantes }} places
-                </span>
-              </p>
+              <p class="card-price">Prix : {{ tournoi.prix_entree }}€</p>
             </div>
           </div>
         </div>
@@ -180,7 +187,7 @@
           <form @submit.prevent="createTournoi">
             <div class="inputBox">
               <label for="nomTournoi">Nom du tournoi :</label>
-              <input v-model="newTournoi.nom" type="text" id="nomTournoi" required/>
+              <input v-model="newTournoi.nom_tournoi" type="text" id="nomTournoi" required/>
             </div>
             <div class="inputBox">
               <label for="lieuTournoi">Lieu :</label>
@@ -188,29 +195,46 @@
             </div>
             <div class="inputBox">
               <label for="prixTournoi">Prix (€) :</label>
-              <input v-model="newTournoi.prix" type="number" id="prixTournoi" required/>
+              <input v-model="newTournoi.prix_entree" type="number" id="prixTournoi" required/>
             </div>
             <div class="inputBox">
               <label for="imageTournoi">Image :</label>
-              <input type="file" id="imageTournoi" @change="handleTournoiImageUpload"/>
+              <input type="file" id="imageTournoi"/>
+            </div>
+            <div class="inputBox">
+              <label for="participantsMin">Participants minimum :</label>
+              <input v-model="newTournoi.participants_min" type="number" id="participantsMin" required/>
+            </div>
+            <div class="inputBox">
+              <label for="participantsMax">Participants maximum :</label>
+              <input v-model="newTournoi.participants_max" type="number" id="participantsMax" required/>
             </div>
             <div class="inputBox">
               <label for="descriptionTournoi">Description :</label>
-              <textarea v-model="newTournoi.description" id="descriptionTournoi" rows="4"></textarea>
+              <textarea v-model="newTournoi.description_tournoi" id="descriptionTournoi" rows="4"></textarea>
             </div>
-            <div class="inputBox">
-              <label>Dates :</label>
-              <button @click.prevent="addDate">Ajouter une date</button>
-              <div v-for="(date, index) in newTournoi.dates" :key="index" class="date-fields">
-                <input v-model="date.jour" type="number" placeholder="Jour" min="1" max="31"/>
-                <input v-model="date.mois" type="number" placeholder="Mois" min="1" max="12"/>
-                <input v-model="date.annee" type="number" placeholder="Année"/>
-                <input v-model="date.heures" type="number" placeholder="Heures" min="0" max="23"/>
-                <input v-model="date.min" type="number" placeholder="Minutes" min="0" max="59"/>
-                <input v-model="date.placesRestantes" type="number" placeholder="Places restantes" min="1"/>
-                <button @click.prevent="removeDate(index)">Supprimer</button>
+            <template>
+              <div class="inputBox">
+                <label for="dateDebut">Date de début :</label>
+                <input
+                    type="datetime-local"
+                    id="dateDebut"
+                    v-model="newTournoi.date_debut"
+                    required
+                />
               </div>
-            </div>
+
+              <div class="inputBox">
+                <label for="dateFin">Date de fin :</label>
+                <input
+                    type="datetime-local"
+                    id="dateFin"
+                    v-model="newTournoi.date_fin"
+                    required
+                />
+              </div>
+            </template>
+
             <button type="submit" class="confirm-button">Créer</button>
           </form>
         </div>
@@ -310,7 +334,6 @@ export default {
   },
   data() {
     return {
-      jeuxCreation: [],
       showEditRestaurantModal: false,
       editRestaurantDetails: {
         nom: '',
@@ -320,12 +343,15 @@ export default {
       newRestaurantImage: '',
       showTournoiModal: false,
       newTournoi: {
-        nom: '',
-        lieu: '',
-        prix: 0,
-        image: null,
-        description: '',
-        dates: [],
+        lieu: "",
+        participants_min: null,
+        participants_max: null,
+        prix_entree: null,
+        nom_tournoi: "",
+        description_tournoi: "",
+        image: "",
+        date_debut: "",
+        date_fin: "",
       },
       stand: {
         id: null,
@@ -340,15 +366,17 @@ export default {
       selectedJeu: null,
       showConfirmation: false,
       gameDetails: {
-        _id: null,
-        type: '',
-        name: '',
-        image: null,
-        nombre_de_joueurs: [],
-        age_minimum: null,
+        id: null,
+        nom_produit: "",
+        description_produit: "",
+        prix_produit: null,
+        stocks: null,
+        nbJoueursMin: null,
+        nbJoueursMax: null,
+        ageLimite: null,
+        type: "",
         duree: null,
-        nom_stand: '',
-        prix: '',
+        image_path: "",
       },
       isNewStand: true,
       selectedPoint: null,
@@ -375,11 +403,55 @@ export default {
     };
   },
   computed: {
-    ...mapState("jeux", ["jeux"]),
+    ...mapState("jeux", ["jeux", "jeuxCreation"]),
     ...mapState("tournois", ["tournois"]),
     ...mapState("points", ["points"]),
     ...mapState("stands", ["stands", "typeStands"]),
     ...mapState("user", ["comptes", "actualUser"]),
+    ...mapState("produits", ["produits"]),
+
+    lastTournamentId() {
+      return this.$store.getters['tournois/lastCreatedTournoiId'];
+    },
+
+    uniqueGameTypes() {
+      const types = new Set();
+      this.jeux.forEach(jeu => {
+        if (jeu.type) types.add(jeu.type);
+      });
+      return Array.from(types).sort();
+    },
+
+    filteredUserJeux() {
+      if (!this.userStand) return [];
+      return this.jeux.filter(jeu => {
+        return jeu.produit && jeu.produit.vendupar === this.userStand.id;
+      });
+    },
+
+    restaurants() {
+      if (!this.stands || !Array.isArray(this.stands)) return [];
+      const userId = this.actualUser.id;
+      return this.stands.filter(stand =>
+          stand.id_type === 5 &&
+          stand.comptes &&
+          stand.comptes.includes(userId)
+      );
+    },
+
+    filteredUserTournois() {
+      if (!this.userStand) return [];
+      return this.tournois.filter(tournoi => {
+        return tournoi.id_stand === this.userStand.id;
+      });
+    },
+
+    userStand() {
+      if (!this.actualUser || !this.stands) return null;
+      return this.stands.find(stand =>
+          stand.comptes.includes(this.actualUser.id)
+      );
+    },
 
     availablePoints() {
       return this.points
@@ -389,17 +461,6 @@ export default {
                 isNaN(point.coordonnees_x) || isNaN(point.coordonnees_y)) {
               return false;
             }
-
-            // Conversion explicite en Number
-            const x = Number(point.coordonnees_x);
-            const y = Number(point.coordonnees_y);
-
-            // Vérification des plages de coordonnées réalistes pour Parthenay
-            if (x < -0.28 || x > -0.23 || y < 46.62 || y > 46.68) {
-              console.warn('Coordonnées invalides pour le point:', point);
-              return false;
-            }
-
             return point.categorie === 'Emplacement' && !point.reserve;
           })
           .map(point => ({
@@ -415,7 +476,7 @@ export default {
       return this.allJeux || [];
     },
     safeJeuxCreation() { // Ajoutez cette computed property
-      return this.jeuxCreation || [];
+      return this.jeuxCreation;
     },
     safePoints() {
       return this.availablePoints || [];
@@ -425,23 +486,26 @@ export default {
       return this.actualUser?.role || '';
     },
     restaurant() {
-      return []
-      // return this.restaurantByUser(this.userSession?.id);
+      if (!this.stands || !Array.isArray(this.stands)) return null;
+      const userId = this.actualUser.id;
+      const userRestaurants = this.stands.filter(stand =>
+          stand.id_type === 5 &&
+          stand.comptes &&
+          stand.comptes.includes(userId)
+      );
+      return userRestaurants.length > 0 ? userRestaurants[0] : null;
     },
     uniqueArticles() {
-      return []
-      // const allArticles = [];
-      // this.allStands.forEach((stand) => {
-      //   if (stand.nourritures) {
-      //     allArticles.push(
-      //       ...stand.nourritures.map((item) => ({ ...item, type: "Nourriture" })))
-      //   }
-      //   if (stand.boissons) {
-      //     allArticles.push(
-      //       ...stand.boissons.map((item) => ({ ...item, type: "Boisson" })))
-      //   }
-      // });
-      // return [...new Map(allArticles.map(item => [item.nom, item])).values()];
+      if (!this.restaurant?.id || !Array.isArray(this.produits)) {
+        return [];
+      }
+      console.log("ici le test restaurant !!!" + JSON.stringify(this.produits.filter(produit =>
+          (produit.type_article === 'Nourriture' || produit.type_article === 'Boisson')
+      )))
+
+      return this.produits.filter(produit =>
+          (produit.type_article === 'Nourriture' || produit.type_article === 'Boisson')
+      );
     },
     restaurantArticles() {
       if (!this.restaurant) return [];
@@ -467,40 +531,30 @@ export default {
       // return this.tournoisByUser(this.userSession?.id) || [];
     }
   },
+
   async created() {
     await this.$store.dispatch("jeux/getAllJeux");
     await this.$store.dispatch("points/getAllPoints");
     await this.$store.dispatch("stands/getAllStands");
     await this.$store.dispatch("stands/getAllTypesStand");
-    // try {
-    //   // await this.initializeData();
-    //   // await this.loadJeuxCreation();
-    //
-    //   if (this.userSession && this.userSession.id) {
-    //     // Charger le stand existant de l'utilisateur
-    //     const userStand = this.$store.getters['restaurants/standByUser'](this.userSession.id);
-    //     if (userStand) {
-    //       this.stand = {
-    //         ...userStand,
-    //         id: userStand.id,
-    //         nom: userStand.nom,
-    //         description: userStand.description || "",
-    //         image: userStand.image || "",
-    //         idPoint: userStand.idPoint
-    //       };
-    //       this.isNewStand = false;
-    //
-    //       // Trouver le point sélectionné
-    //       // this.selectedPoint = this.availablePoints.find(p => p.idPoint === userStand.idPoint);
-    //       // this.originalPointId = userStand.idPoint;
-    //     }
-    //
-    //     this.initializeStand();
-    //     this.initializeTabs();
-    //   }
-    // } catch (error) {
-    //   console.error("Initialization error:", error);
-    // }
+    await this.$store.dispatch("user/initComptes");
+    await this.$store.dispatch("produits/getAllProduits")
+    if (this.userStand) {
+      // Remplit les champs avec le stand existant
+      this.stand = {
+        id: this.userStand.id,
+        nom_stand: this.userStand.nom_stand,
+        id_type: this.userStand.id_type,
+        id_emplacement: this.userStand.id_emplacement,
+        comptes: this.userStand.comptes,
+        image_path: this.userStand.image_path
+      };
+
+      // Trouve le point correspondant
+      this.selectedPoint = this.availablePoints.find(
+          p => p.id === this.userStand.id_emplacement
+      );
+    }
   },
   methods: {
     ...mapActions("restaurants", [
@@ -512,6 +566,48 @@ export default {
     ...mapActions("tournois", ["addTournoi", "fetchTournois"]),
     ...mapActions("points", ["updatePointAvailability", "initializePoints"]),
     ...mapActions("jeux", ["getAllJeux"]),
+
+    getProduitImage(produit) {
+      const path = produit.image_path;
+      try {
+        return require(`@/assets/images/${path}`);
+      } catch {
+        return require('@/assets/images/null.png');
+      }
+    },
+
+    getTournoiImage(tournoi) {
+      const path = tournoi.image_path;
+      try {
+        return require(`@/assets/images/${path}`);
+      } catch {
+        return require('@/assets/images/null.png');
+      }
+    },
+
+    formatForInput(date) {
+      if (!date) return '';
+      const d = new Date(date);
+      const pad = n => n.toString().padStart(2, '0');
+      const yyyy = d.getFullYear();
+      const MM = pad(d.getMonth() + 1);
+      const dd = pad(d.getDate());
+      const hh = pad(d.getHours());
+      const mm = pad(d.getMinutes());
+      return `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
+    },
+    convertToFullISOString(value) {
+      const local = new Date(value);
+      return local.toISOString(); // Ex: "2025-04-13T01:39:00.000Z"
+    },
+
+    formatDateInput(field) {
+      // Convertit la date locale en format ISO 8601
+      if (this.newTournoi[field]) {
+        const date = new Date(this.newTournoi[field]);
+        this.newTournoi[field] = date.toISOString();
+      }
+    },
 
 
     getJeuName(jeu) {
@@ -555,9 +651,49 @@ export default {
       this.showConfirmation = false;
     },
 
-    confirmCreation() {
-      // Logique de création de jeu
-      this.closeConfirmation();
+    async confirmCreation() {
+      try {
+        const jeuData = {
+          name: this.gameDetails.nom_produit,
+          description_produit: this.gameDetails.description_produit,
+          nbJoueursMin: Number(this.gameDetails.nbJoueursMin), // Conversion explicite
+          nbJoueursMax: Number(this.gameDetails.nbJoueursMax), // Conversion explicite
+          ageLimite: Number(this.gameDetails.ageLimite),       // Conversion explicite
+          type: this.gameDetails.type,
+          duree: Number(this.gameDetails.duree),              // Conversion explicite
+          id_stand: Number(this.userStand.id), // Conversion explicite si nécessaire
+          image_path: this.gameDetails.image_path,
+        };
+
+        await this.$store.dispatch('jeux/createJeu', jeuData);
+
+        // Réinitialiser le formulaire
+        this.gameDetails = {
+          id: null,
+          nom_produit: "",
+          description_produit: "",
+          prix_produit: null,
+          stocks: null,
+          nbJoueursMin: null,
+          nbJoueursMax: null,
+          ageLimite: null,
+          type: "",
+          duree: null,
+          image_path: "",
+        };
+
+        // Fermer la modal
+        this.closeConfirmation();
+
+        await this.$store.dispatch('jeux/getAllJeux');
+
+        // Afficher un message de succès
+        this.$toast.success("Jeu créé avec succès !");
+
+      } catch (error) {
+        console.error("Erreur création jeu:", error);
+        this.$toast.error("Erreur lors de la création du jeu");
+      }
     },
 
     openTournoiModal() {
@@ -821,48 +957,58 @@ export default {
 
     async saveStand() {
       this.loading = true;
-      this.showSuccessMessage = false;
 
       try {
         // Validation
-        if (!this.stand.nom_stand || !this.stand.description) {
-          throw new Error("Veuillez remplir tous les champs obligatoires");
-        }
-
-        if (!this.selectedPoint) {
-          throw new Error("Veuillez sélectionner un emplacement sur la carte");
-        }
+        if (!this.stand.nom_stand) throw new Error("Nom du stand manquant");
+        if (!this.selectedPoint) throw new Error("Pas d'emplacement sélectionné");
 
         const standData = {
           nom: this.stand.nom_stand,
           type: this.stand.id_type,
-          emplacement: this.stand.id_emplacement,
+          emplacement: this.selectedPoint.id,
           description: this.stand.description,
           compte: [this.actualUser.id],
-          image: this.stand.image_path,
+          image: this.stand.image_path
         };
 
-        // Appel à l'API via Vuex
-        await this.$store.dispatch('stands/addStand', standData);
+        // set l'userstand au stand ajoute:
 
-        // Mettre à jour le statut de l'emplacement
-        // await this.$store.dispatch('points/updatePointAvailability', {
-        //   pointId: this.selectedPoint.id,
-        //   reserve: true
-        // });
+
+
+        if (this.userStand) {
+          // Mise à jour du stand existant
+          standData.id = this.userStand.id;
+          await this.$store.dispatch('stands/updateStand', {
+            id: this.userStand.id,
+            data: {
+              nom: standData.nom_stand,
+              type: standData.id_type,
+              emplacement: standData.id_emplacement,
+              description: standData.description,
+              comptes: standData.comptes,
+              image: standData.image_path
+            }
+          });
+          alert("Stand mis à jour avec succès", "success");
+        } else {
+          // Création d'un nouveau stand
+          await this.$store.dispatch('stands/addStand', standData);
+          alert("Stand crée avec succès", "success");
+        }
+
+        // Rafraîchir les données
+        await this.$store.dispatch('stands/getAllStands');
+        await this.$store.dispatch('points/getAllPoints');
 
         this.showSuccessMessage = true;
-        this.$toast.success("Stand enregistré avec succès !");
-
-        // Recharger les données après un délai
-        setTimeout(async () => {
-          await this.$store.dispatch('stands/getAllStands');
+        setTimeout(() => {
           this.showSuccessMessage = false;
-        }, 100);
+        }, 3000);
 
       } catch (error) {
-        console.error("Erreur:", error);
-        // this.$toast.error(error.message || "Erreur lors de l'enregistrement");
+        console.error("Erreur saveStand:", error);
+        this.$toast.error("Erreur lors de l'enregistrement: " + error.message);
       } finally {
         this.loading = false;
       }
@@ -876,53 +1022,55 @@ export default {
 
         // Gestion de l'image
         if (this.newTournoi.image instanceof File) {
-          // Si c'est un fichier, convertis-le en URL
           imageUrl = URL.createObjectURL(this.newTournoi.image);
         } else if (typeof this.newTournoi.image === 'string') {
-          // Si c'est déjà une URL (édition)
           imageUrl = this.newTournoi.image;
         } else {
-          // Image par défaut
-          imageUrl = require('@/assets/images/default-tournoi.png');
+          imageUrl = require('@/assets/images/null.png');
         }
 
+        // 1. Création du tournoi principal
         const tournoiData = {
-          nom: this.newTournoi.nom,
+          id_stand: this.userStand.id,
           lieu: this.newTournoi.lieu,
-          prix: Number(this.newTournoi.prix),
-          image: imageUrl,
-          description: this.newTournoi.description,
-          prestataireId: this.actualUser.id,
-          dates: this.newTournoi.dates.map(date => ({
-            jour: Number(date.jour),
-            mois: Number(date.mois),
-            annee: Number(date.annee),
-            heures: Number(date.heures),
-            min: Number(date.min),
-            placesRestantes: Number(date.placesRestantes)
-          }))
+          participants_min: this.newTournoi.participants_min,
+          participants_max: this.newTournoi.participants_max,
+          prix_entree: this.newTournoi.prix_entree,
+          nom_tournoi: this.newTournoi.nom_tournoi,
+          description_tournoi: this.newTournoi.description_tournoi,
+          image: imageUrl
         };
 
-        await this.$store.dispatch('tournois/addTournoi', tournoiData);
+        await this.$store.dispatch('tournois/createTournoi', tournoiData);
+        await this.$store.dispatch("tournois/getAllTournois");
 
-        this.$toast.success("Tournoi créé avec succès !");
+        const editionData = {
+          id_tournoi: this.lastTournamentId, // Utilisation de l'ID du tournoi créé
+          date_debut: this.convertToFullISOString(this.newTournoi.date_debut),
+          date_fin: this.convertToFullISOString(this.newTournoi.date_fin),
+        };
+
+        await this.$store.dispatch('tournois/createEditionTournoi', editionData);
+
         this.closeTournoiModal();
 
         // Réinitialisation
         this.newTournoi = {
-          nom: '',
-          lieu: '',
-          prix: 0,
-          image: null,
-          description: '',
-          dates: []
+            lieu: "",
+            participants_min: null,
+            participants_max: null,
+            prix_entree: null,
+            nom_tournoi: "",
+            description_tournoi: "",
+            image: "",
+            date_debut: "",
+            date_fin: "",
         };
 
-        await this.$store.dispatch('tournois/fetchTournois');
+        await this.$store.dispatch('tournois/getAllTournois');
 
       } catch (error) {
         console.error("Erreur création tournoi:", error);
-        this.$toast.error("Erreur lors de la création du tournoi");
       }
     },
 
@@ -935,12 +1083,12 @@ export default {
     },
 
     validateTournoi() {
-      if (!this.newTournoi.nom) {
+      if (!this.newTournoi.nom_tournoi) {
         this.$toast.warning("Veuillez entrer un nom pour le tournoi");
         return false;
       }
 
-      if (this.newTournoi.dates.length === 0) {
+      if (this.newTournoi.date_debut.length === 0 || this.newTournoi.date_fin.length === 0) {
         this.$toast.warning("Veuillez ajouter au moins une date");
         return false;
       }

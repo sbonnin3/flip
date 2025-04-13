@@ -9,7 +9,7 @@ async function createTournoiFromAPI(data) {
     }
 }
 
-async function createTournoiService(data) {
+export async function createTournoiService(data) {
     let answer = await createTournoiFromAPI(data)
     return answer
 }
@@ -123,6 +123,20 @@ async function getInscriptionTournoisByIdUserFromAPI(id) {
 
 export async function getInscriptionTournoisByIdUserService(id) {
     let answer = await getInscriptionTournoisByIdUserFromAPI(id)
+    return answer
+}
+
+async function createEditionTournoiFromAPI(data) {
+    try {
+        return postRequest('/api/tournaments/editions', data, 'CREATEEDITIONS')
+    } catch (error) {
+        console.error('Error creating edition tournoi from API:', error);
+        throw error;
+    }
+}
+
+export async function createEditionTournoiService(data) {
+    let answer = await createEditionTournoiFromAPI(data)
     return answer
 }
 

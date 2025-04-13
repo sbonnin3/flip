@@ -9,7 +9,7 @@ async function createGameFromAPI(data) {
     }
 }
 
-async function createGameService(data) {
+export async function createGameService(data) {
     let answer = await createGameFromAPI(data)
     return answer
 }

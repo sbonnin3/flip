@@ -1,4 +1,4 @@
-import { getGamesService } from "@/services/serviceapi/games";
+import { getGamesService, createGameService } from "@/services/serviceapi/games";
 import { getArticleByIdService} from "@/services/serviceapi/article";
 // import { getPrestataireByIdService } from "@/services/serviceapi/prestataire";
 
@@ -18,6 +18,9 @@ export default {
     ADD_JEUX(state, jeux) {
       state.jeux.push(jeux);
     },
+      ADD_JEUX_CREATION(state, jeux) {
+        state.jeuxCreation.push(jeux);
+      }
   },
   actions: {
     async fetchJeuxCreation({ commit }) {
@@ -52,6 +55,18 @@ export default {
         console.error("Erreur dans getAllJeux():", err)
       }
     },
+    async createJeu({commit}, jeu) {
+        console.log("STORE: create jeu")
+        try {
+            const result = await createGameService(jeu)
+            commit('ADD_JEUX', result)
+            commit('ADD_JEUX_CREATION', result)
+            console.log("JEUX DE CREATION TMR:" + JSON.stringify(this.jeuxCreation))
+            console.log("Jeu créé:", JSON.stringify(result))
+        } catch(err) {
+            console.error("Erreur dans createJeu():", err)
+        }
+    }
   },
   getters: {
     allJeux: (state) => state.jeux || [],

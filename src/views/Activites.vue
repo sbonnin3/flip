@@ -542,7 +542,9 @@ export default {
         };
 
         const standId = this.selectedJeu.produit.vendupar;
-        const stand = this.stands[standId];
+        const stand = this.$store.state.stands.stands.find(s =>
+            s.id === standId || s.idStand === standId
+        );
         if (!stand) {
           throw new Error(this.$t('standNotFound'));
         }
