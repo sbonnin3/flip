@@ -4,7 +4,7 @@ import {
     getEditionTournoiService,
     inscriptionTournoiService,
     getInscriptionTournoisByIdUserService, getTournoiByIdService,
-    createTournoiService, createEditionTournoiService,
+    createTournoiService, createEditionTournoiService, getAllInscriptionsTournoisService,
 } from '@/services/serviceapi/tournaments';
 
 export default {
@@ -38,7 +38,10 @@ export default {
         },
         SET_INSCRIPTION_TOURNOI(state, inscriptions) {
             state.inscriptionsTournoi = inscriptions;
-        }
+        },
+        ADD_INSCRIPTION_TOURNOI(state, inscription) {
+            state.inscriptionsTournoi.push(inscription);
+        },
     },
     actions: {
         async getAllTournois({commit}) {
@@ -108,7 +111,7 @@ export default {
             let result = null
             try {
                 result = await inscriptionTournoiService(dataInscription)
-                commit('SET_INSCRIPTION_TOURNOI', result)
+                commit('ADD_INSCRIPTION_TOURNOI', result)
                 console.log(result)
             } catch (err) {
                 console.log("Cas anormal dans inscriptionTournoi()")
@@ -138,6 +141,18 @@ export default {
                 console.log("Cas anormal dans createEditionTournoi()")
             }
         },
+
+        async getAllReservationTournois({commit}) {
+            console.log("STORE: get all tournaments")
+            let result = null
+            try {
+                result = await getAllInscriptionsTournoisService()
+                commit('SET_INSCRIPTION_TOURNOI', result)
+                console.log(result)
+            } catch (err) {
+                console.log("Cas anormal dans getAllReservationTournois()")
+            }
+        }
 
 
 

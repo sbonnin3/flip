@@ -1,5 +1,9 @@
 
-import {createGameReservationService, getGameReservationByUserIdService} from "@/services/serviceapi/gamesReservation";
+import {
+    createGameReservationService,
+    getAllReservationsService,
+    getGameReservationByUserIdService
+} from "@/services/serviceapi/gamesReservation";
 
 export default {
     namespaced: true,
@@ -107,7 +111,15 @@ export default {
             } catch (err) {
                 console.log("Erreur dans getGameReservationByUserId", err);
             }
-        }
+        },
+        async getGameReversations({commit}) {
+            try {
+                const result = await getAllReservationsService();
+                commit('SET_RESERVATIONS', result);
+            } catch (err) {
+                console.log("Erreur dans getGameReservations", err);
+            }
+        },
     },
     getters: {
         allReservationsStand: state => state.allReservationsStand || [],

@@ -1,0 +1,26 @@
+Bonjour
+
+Déjà merci de nous avoir laissé un peu plus de temps pour rendre quelque chose d'un peu meilleur (même si c'est toujours médiocre)
+
+
+
+Ici vous trouvez la liste des ajouts en plus par rapport au rendu de dimanche dernier :
+
+- Carte entièrement lié / fonctionnel (carte côté utilisateur, prestataire et pour que le prestataire réserve un emplacement)
+
+- Coté créateur complétement fonctionnel (le créateur peut créer un jeu, voir les jeux qu'il a crée et qui a réservé ses jeux)
+
+- Pareil pour le coté organisateur de tournoi
+
+- Côté restaurateurs à moitié fait (version très simplifié ou le restaurateur peut créer son restaurant et y ajouter les articles qui sont disponible / pas déjà dans son restaurant, puis l'utilisateur peut commander ses articles, affichages des commandes réalisés non fait)
+PS : pour testé restaurateur, il faut sur la carte créer un stand de type restaurateur, sinon il y aura un bug, pour testé les autres rôles, il faudra s'inscrire, à part administrateur :
+identifiant : administrateur, mdp : administrateur
+
+- Côté administrateur fait comme en local hormis le modifié
+
+
+
+Voila c'est tout les ajouts, c'est pas beaucoup et en plus le code n'est ABSOLUMENT pas propre, donc encore une fois nous sommes désolés, nous n'étions vraiment pas prêt à avoir ce genre de chose qui nous arrive et devoir tout refaire, sachant que comme je l'ai expliqué par mail deux membres du groupe sont en pleine recherche de stage, et une personne n'a pas été disponible (car stage, etc...) durant le laps de temps supplémentaire que vous nous avez donné.
+
+Encore merci, Cordialement, le groupe 3
+

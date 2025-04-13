@@ -23,8 +23,8 @@
         <tbody>
           <tr v-for="reservation in reservations" :key="reservation.id">
             <td>{{ reservation.tournoiNom }}</td>
-            <td>{{ formatDate(reservation.date || reservation.dateReservation) }}</td>
-            <td>{{ reservation.teamName || 'Aucun' }}</td>
+            <td>{{ formatDateIso(reservation.date) }}</td>
+            <td>{{ reservation.teamName }}</td>
             <td>{{ reservation.participantNom }}</td>
             <td>{{ reservation.places }}</td>
             <td>{{ reservation.prix }}€</td>
@@ -36,6 +36,9 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+import {updatePrestataireService} from "../services/serviceapi/prestataire";
+
 export default {
   name: "PageReservationsPrestataire",
   data() {
@@ -44,38 +47,50 @@ export default {
     };
   },
   computed: {
+    ...mapState("stands", ["stands"]),
+    ...mapState("user", ["actualUser"]),
+    ...mapState("tournois", ["tournois", "editionsTournoi", "inscriptionsTournoi"]),
+    userStand() {
+      if (!this.actualUser || !this.stands) return null;
+      return this.stands.find(stand =>
+          stand.comptes.includes(this.actualUser.id)
+      );
+    },
     userSession() {
-      return this.$store.state.user.userSession;
+      return this.$store.state.user.actualUser;
     },
     reservations() {
-      if (!this.userSession || this.userSession.role !== "organisateur") {
-        console.warn("Accès refusé - Rôle organisateur requis");
-        return [];
-      }
-
-      // Accès direct aux données pour plus de fiabilité
-      const allReservations = this.$store.state.reservations.reservations || [];
-      const allTournois = this.$store.state.tournois.tournois || [];
-      const allComptes = this.$store.state.user.comptes || [];
-
-      return allReservations
-        .filter(reservation => {
-          const tournoi = allTournois.find(t => t._id === reservation.tournoiId);
-          return tournoi && tournoi.prestataireId === this.userSession.id;
-        })
-        .map(reservation => {
-          const tournoi = allTournois.find(t => t._id === reservation.tournoiId);
-          const participant = allComptes.find(c => c.id === reservation.userId);
-
-          return {
-            ...reservation,
-            tournoiNom: tournoi?.nom || "Tournoi inconnu",
-            participantNom: participant 
-              ? `${participant.prenom} ${participant.nom}`
-              : "Participant inconnu"
-          };
-        });
+      return this.inscriptionsTournoi?.filter(inscription =>
+          this.editionsTournoi?.some(edition =>
+              edition.id === inscription.id_edition_tournoi &&
+              this.tournois?.some(tournoi =>
+                  tournoi.id === edition.id_tournoi &&
+                  tournoi.id_stand === this.userStand?.id
+              )
+          )
+      )?.map(inscription => ({
+        id: inscription.id,
+        tournoiNom: this.tournois.find(t => t.id === this.editionsTournoi.find(e => e.id === inscription.id_edition_tournoi)?.id_tournoi)?.nom_tournoi || 'Inconnu',
+        date: this.editionsTournoi.find(e => e.id === inscription.id_edition_tournoi)?.date_edition,
+        teamName: inscription.nomequipe || 'Aucun',
+        participantNom: (this.$store.state.user.comptes?.find(c => c.id === inscription.id_utilisateur)?.prenom || '') + ' ' +
+            (this.$store.state.user.comptes?.find(c => c.id === inscription.id_utilisateur)?.nom || '') || 'Inconnu',
+        places: 1,
+        prix: this.tournois.find(t => t.id === this.editionsTournoi.find(e => e.id === inscription.id_edition_tournoi)?.id_tournoi)?.prix_entree || 0
+      })) || [];
     }
+  },
+
+  async created() {
+    await this.$store.dispatch('user/initComptes');
+    await this.$store.dispatch('tournois/getAllTournois');
+    await this.$store.dispatch('stands/getAllStands');
+    await this.$store.dispatch('tournois/getAllReservationTournois');
+    await this.$store.dispatch('tournois/getEditionTournois');
+    console.log("TEST RESERVATIONS: " + JSON.stringify(this.reservations));
+    console.log("TEST TOURNO" + JSON.stringify(this.tournois));
+    console.log("TEST EDITIONS" + JSON.stringify(this.editionsTournoi));
+    console.log("TEST INSCRIPTIONS" + JSON.stringify(this.inscriptionsTournoi));
   },
   async mounted() {
     try {
@@ -98,15 +113,20 @@ export default {
     });
   },
   methods: {
-    formatDate(date) {
-      if (!date) return "Date invalide";
+    updatePrestataireService,
+    formatDateIso(dateString) {
+      const date = new Date(dateString);
 
-      if (typeof date === 'object' && date.jour !== undefined) {
-        const { jour, mois, annee, heures, min } = date;
-        return `${jour.toString().padStart(2, '0')}/${mois.toString().padStart(2, '0')}/${annee} à ${heures?.toString().padStart(2, '0') || '00'}:${min?.toString().padStart(2, '0') || '00'}`;
-      }
+      // Options de formatage
+      const options = {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
 
-      return "Date invalide";
+      return date.toLocaleDateString('fr-FR', options).replace(',', ' à');
     }
   }
 };

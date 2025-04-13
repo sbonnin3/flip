@@ -1,6 +1,6 @@
 <template>
   <div class="mesReservations-page">
-    <h1>{{ standAttribue?.nom || 'Mon Stand' }} - Réservations de mes jeux</h1>
+    <h1>{{ this.userStand.nom_stand || 'Mon Stand' }} - Réservations de mes jeux</h1>
     <div v-if="reservationStandJeu.length === 0">
       <p>Aucune réservation pour vos jeux.</p>
     </div>
@@ -26,36 +26,65 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import {mapState} from "vuex";
 
 export default {
   name: "PagesMesReservations",
   computed: {
-    ...mapGetters('reservations', ['allReservationsStand']),
-    ...mapGetters('stands', ['getStandByUserId']),
-    ...mapGetters('jeux', ['allJeux']),
+    ...mapState("jeux", ["jeux"]),
+    ...mapState("stands", ["stands"]),
+    ...mapState("reservations", ["reservations"]),
+    ...mapState("user", ["actualUser"]),
+
+    filteredUserJeux() {
+      if (!this.userStand) return [];
+      return this.jeux.filter(jeu => {
+        return jeu.produit && jeu.produit.vendupar === this.userStand.id;
+      });
+    },
+
+    reservationStandJeu() {
+      if (!this.userStand || !this.reservations || !this.jeux) return [];
+
+      // Récupérer tous les jeux du stand
+      const jeuxStand = this.jeux.filter(jeu => {
+        return jeu.produit && jeu.produit.vendupar === this.userStand.id;
+      });
+
+      // Filtrer les réservations qui concernent ces jeux
+      return this.reservations
+          .filter(reservation => {
+            return jeuxStand.some(jeu => jeu.id === reservation.id_jeu);
+          })
+          .map(reservation => {
+            const jeu = jeuxStand.find(j => j.id === reservation.id_jeu);
+            return {
+              reservationJeuStandId: reservation.id,
+              jeuNom: jeu?.produit?.nom_produit || 'Jeu inconnu',
+              date: reservation.date_reservation,
+              status: 'Réservé' // Vous pouvez ajouter plus de logique pour le statut
+            };
+          });
+    },
+
+    userStand() {
+      if (!this.actualUser || !this.stands) return null;
+      return this.stands.find(stand =>
+          stand.comptes.includes(this.actualUser.id)
+      );
+    },
 
     currentUser() {
-      return this.$store.state.userSession;
+      return this.actualUser;
     },
-    standAttribue() {
-      if (!this.currentUser) return null;
-      return this.getStandByUserId(this.currentUser.id);
-    },
-    reservationStandJeu() {
-      if (!this.standAttribue?.idStand) return [];
-      
-      return (this.allReservationsStand || [])
-        .filter(reservation => reservation.standID === this.standAttribue.idStand)
-        .map(reservation => {
-          const jeu = this.allJeux.find(j => j._id === reservation.jeuID);
-          return {
-            ...reservation,
-            jeuNom: jeu?.name || 'Jeu inconnu',
-            status: reservation.status || 'Préparer la table',
-          };
-        });
-    },
+  },
+
+  async created() {
+    await this.$store.dispatch('user/initComptes');
+    await this.$store.dispatch('jeux/getAllJeux');
+    await this.$store.dispatch('stands/getAllStands');
+    await this.$store.dispatch('reservations/getGameReversations');
+
   },
   methods: {
     formatDate(date) {

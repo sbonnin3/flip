@@ -140,6 +140,20 @@ export async function createEditionTournoiService(data) {
     return answer
 }
 
+async function getAllInscriptionsTournoisFromAPI() {
+    try {
+        return getRequest('/api/inscription/inscriptions', 'GETALLINSCRIPTIONS')
+    } catch (error) {
+        console.error('Error getting all inscriptions tournois from API:', error);
+        throw error;
+    }
+}
+
+export async function getAllInscriptionsTournoisService() {
+    let answer = await getAllInscriptionsTournoisFromAPI()
+    return answer
+}
+
 
 
 

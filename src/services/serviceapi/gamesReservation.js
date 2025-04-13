@@ -28,6 +28,20 @@ export async function getGameReservationByUserIdService(id) {
     return answer
 }
 
+async function getAllReservationsFromAPI() {
+    try {
+        return getRequest('/api/reservJeu/reservations', 'GETALLRESERVATIONS')
+    } catch (error) {
+        console.error('Error getting all reservations from API:', error);
+        throw error;
+    }
+}
+
+export async function getAllReservationsService() {
+    let answer = await getAllReservationsFromAPI()
+    return answer
+}
+
 export default {
     createGameReservationService,
     createGameReservationFromAPI,

@@ -30,7 +30,9 @@
 
         <h3>Liste des Articles Disponibles</h3>
         <div class="articles-container">
-          <div v-for="(produit, index) in uniqueArticles" :key="index" class="article-card">
+          <div v-for="(produit, index) in uniqueArticles" :key="index"
+               class="article-card"
+               :class="{ 'article-in-restaurant': isRestaurantArticle(produit) }">
             <img :src="getProduitImage(produit)" alt="Image de l'article" class="article-image"/>
             <div class="article-info">
               <h4>{{ produit.nom_produit }}</h4>
@@ -56,6 +58,8 @@
         </div>
         <button @click="handleCreateRestaurant">Créer un restaurant</button>
       </template>
+
+      <!-- Modal d'édition du restaurant -->
       <div v-if="showEditRestaurantModal" class="modal">
         <div class="modal-content">
           <span class="close-button" @click="closeEditRestaurantModal">&times;</span>
@@ -210,26 +214,20 @@
               <input v-model="newTournoi.participants_max" type="number" id="participantsMax" required/>
             </div>
             <div class="inputBox">
+              <label for="capacite">Capacité :</label>
+              <input v-model="newTournoi.capacite" type="number" id="capacite" required/>
+            </div>
+            <div class="inputBox">
               <label for="descriptionTournoi">Description :</label>
               <textarea v-model="newTournoi.description_tournoi" id="descriptionTournoi" rows="4"></textarea>
             </div>
             <template>
               <div class="inputBox">
-                <label for="dateDebut">Date de début :</label>
+                <label for="dateDebut">Date de l'édition :</label>
                 <input
                     type="datetime-local"
                     id="dateDebut"
-                    v-model="newTournoi.date_debut"
-                    required
-                />
-              </div>
-
-              <div class="inputBox">
-                <label for="dateFin">Date de fin :</label>
-                <input
-                    type="datetime-local"
-                    id="dateFin"
-                    v-model="newTournoi.date_fin"
+                    v-model="newTournoi.date_edition"
                     required
                 />
               </div>
@@ -350,8 +348,8 @@ export default {
         nom_tournoi: "",
         description_tournoi: "",
         image: "",
-        date_debut: "",
-        date_fin: "",
+        date_edition: "",
+        capacite: null,
       },
       stand: {
         id: null,
@@ -429,6 +427,13 @@ export default {
       });
     },
 
+    filteredTournoiReserve() {
+      if (!this.userStand) return [];
+      return this.tournois.filter(tournoi => {
+        return tournoi.id_stand === this.userStand.id;
+      });
+    },
+
     restaurants() {
       if (!this.stands || !Array.isArray(this.stands)) return [];
       const userId = this.actualUser.id;
@@ -499,10 +504,6 @@ export default {
       if (!this.restaurant?.id || !Array.isArray(this.produits)) {
         return [];
       }
-      console.log("ici le test restaurant !!!" + JSON.stringify(this.produits.filter(produit =>
-          (produit.type_article === 'Nourriture' || produit.type_article === 'Boisson')
-      )))
-
       return this.produits.filter(produit =>
           (produit.type_article === 'Nourriture' || produit.type_article === 'Boisson')
       );
@@ -557,12 +558,6 @@ export default {
     }
   },
   methods: {
-    ...mapActions("restaurants", [
-      "initializeRestaurants",
-      "updateRestaurant",
-      "addRestaurant",
-      "saveStand"
-    ]),
     ...mapActions("tournois", ["addTournoi", "fetchTournois"]),
     ...mapActions("points", ["updatePointAvailability", "initializePoints"]),
     ...mapActions("jeux", ["getAllJeux"]),
@@ -858,34 +853,51 @@ export default {
       };
     },
 
-    // Restaurant methods
-    toggleArticleInRestaurant(article) {
+    async toggleArticleInRestaurant(article) {
       if (!this.restaurant) {
         alert("Veuillez créer un restaurant avant d'ajouter ou supprimer des articles.");
         return;
       }
 
-      const listKey = article.type === "Nourriture" ? "nourritures" : "boissons";
-      const updatedList = [...this.restaurant[listKey]];
-      const articleIndex = updatedList.findIndex(item => item.nom === article.nom);
+      try {
+        // Vérifie si l'article est déjà dans le restaurant
+        const isArticleInRestaurant = this.isRestaurantArticle(article);
 
-      if (articleIndex !== -1) {
-        updatedList.splice(articleIndex, 1);
-        alert(`L'article "${article.nom}" a été supprimé de votre restaurant.`);
-      } else {
-        updatedList.push(article);
-        alert(`L'article "${article.nom}" a été ajouté à votre restaurant.`);
+        // Mise à jour du produit
+        await this.$store.dispatch('produits/updateProduit', {
+          id: article.id,
+          data: {
+            nom: article.nom_produit,
+            stocks: article.stocks,
+            prix: Number(article.prix_produit),
+            type: article.type_article,
+            idStand: isArticleInRestaurant ? null : this.userStand.id, // Supprime si déjà présent, ajoute sinon
+            image: article.image_path
+          }
+        });
+
+        // Rafraîchir la liste des produits
+        await this.$store.dispatch('produits/getAllProduits');
+
+        // Feedback visuel
+        if (isArticleInRestaurant) {
+          alert("Article supprimé du restaurant");
+        } else {
+          alert("Article ajouté au restaurant");
+        }
+
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'article:", error);
+        this.$toast.error("Erreur lors de la mise à jour de l'article");
       }
-
-      this.updateRestaurant({
-        ...this.restaurant,
-        [listKey]: updatedList
-      });
     },
 
     isRestaurantArticle(article) {
-      const listKey = article.type === "Nourriture" ? "nourritures" : "boissons";
-      return this.restaurant?.[listKey]?.some(item => item.nom === article.nom) || false;
+      console.log("bonjour:" + JSON.stringify(article))
+      return this.produits.some(p =>
+          p.id === article.id &&
+          p.vendupar === this.userStand?.id
+      );
     },
 
     handleImageUpload(event) {
@@ -1038,7 +1050,7 @@ export default {
           prix_entree: this.newTournoi.prix_entree,
           nom_tournoi: this.newTournoi.nom_tournoi,
           description_tournoi: this.newTournoi.description_tournoi,
-          image: imageUrl
+          image_path: imageUrl
         };
 
         await this.$store.dispatch('tournois/createTournoi', tournoiData);
@@ -1046,8 +1058,8 @@ export default {
 
         const editionData = {
           id_tournoi: this.lastTournamentId, // Utilisation de l'ID du tournoi créé
-          date_debut: this.convertToFullISOString(this.newTournoi.date_debut),
-          date_fin: this.convertToFullISOString(this.newTournoi.date_fin),
+          date_edition: this.convertToFullISOString(this.newTournoi.date_edition),
+          capacite: this.newTournoi.capacite,
         };
 
         await this.$store.dispatch('tournois/createEditionTournoi', editionData);
@@ -1063,8 +1075,8 @@ export default {
             nom_tournoi: "",
             description_tournoi: "",
             image: "",
-            date_debut: "",
-            date_fin: "",
+            date_edition: "",
+            capacite: null,
         };
 
         await this.$store.dispatch('tournois/getAllTournois');
@@ -1088,7 +1100,7 @@ export default {
         return false;
       }
 
-      if (this.newTournoi.date_debut.length === 0 || this.newTournoi.date_fin.length === 0) {
+      if (this.newTournoi.date_edition.length === 0) {
         this.$toast.warning("Veuillez ajouter au moins une date");
         return false;
       }

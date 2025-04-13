@@ -23,51 +23,6 @@
         </div>
       </div>
       <p v-else>{{ $t('noRestaurantsAvailable') }}</p>
-      <div class="cart_section">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-lg-10 offset-lg-1">
-              <div class="cart_container">
-                <h1 class="cart_title">{{ $t('cart') }}</h1>
-                <div class="cart_items">
-                  <ul class="cart_list">
-                    <li v-for="item in nourrituresAchetes" :key="item.nom" class="cart_item">
-                      <div class="cart_item_image">
-                        <img :src="item.image" :alt="$t('productImage')" />
-                      </div>
-                      <div class="cart_item_info">
-                        <div class="cart_item_title">{{ $t('name') }}</div>
-                        <div class="cart_item_text">{{ item.nom }}</div>
-                      </div>
-                      <div class="cart_item_quantity">
-                        <div class="cart_item_title">{{ $t('quantity') }}</div>
-                        <div class="cart_item_text">{{ item.quantite }}</div>
-                      </div>
-                      <div class="cart_item_price">
-                        <div class="cart_item_title">{{ $t('price') }}</div>
-                        <div class="cart_item_text">{{ item.prix }}€</div>
-                      </div>
-                      <div class="cart_button_clear_logo" @click="deleteArticle(item)">
-                        <img src="../assets/icons/bin.png" :alt="$t('binIcon')" width="35px" height="35px" />
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-                <div class="order_total">
-                  <div class="order_total_content text-md-right">
-                    <div class="order_total_title">{{ $t('totalPrice') }}: {{nourrituresAchetes.reduce((total, item) => total + item.prix *
-                        item.quantite, 0)}}€ </div>
-                  </div>
-                </div>
-                <div class="cart_buttons">
-                  <button class="button cart_button_clear" @click="deleteCommand">{{ $t('delete') }}</button>
-                  <button class="button cart_button_checkout" @click="openCommandConfirmation">{{ $t('order') }}</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div v-if="showConfirmation" class="confirmation-modal">
         <div class="modal-content">
@@ -107,11 +62,11 @@
           <p v-else>{{ $t('noFoodAvailable') }}</p>
 
           <p><strong>{{ $t('drinks') }}:</strong></p>
-          <div v-if="filteredBoissons.length" class="items-container">
-            <div v-for="boisson in filteredBoissons.length" :key="boisson.id" class="item-card">
+          <div v-if="selectedModalRestau.boissons && selectedModalRestau.boissons.length" class="items-container">
+            <div v-for="boisson in selectedModalRestau.boissons" :key="boisson.nom" class="item-card">
               <button class="item-button-content" @click="addToCart(boisson)">
-                <img :src="getProduitImage(boisson)" :alt="$t('itemImage')" class="item-image" />
-                <p>{{ boisson.nom_produit }} - {{ boisson.prix_produit }}€</p>
+                <img :src="boisson.image" :alt="$t('itemImage')" class="item-image" />
+                <p>{{ boisson.nom }} - {{ boisson.prix }}€</p>
               </button>
             </div>
           </div>
@@ -216,10 +171,6 @@ import {mapActions, mapGetters, mapState} from 'vuex';
 import ConnexionModal from "@/components/Connexion.vue";
 import PaymentModal from "@/components/PaymentForm.vue";
 import Note from "@/components/StarRating.vue";
-
-//import article from "@/services/serviceapi/article";
-// import order from "@/store/modules/order";
-
 export default {
   name: "PagePrestataires",
   components: { PaymentModal, ConnexionModal, Note },
@@ -232,7 +183,7 @@ export default {
       addMessage: '',
       selectedModalJeu: null,
       selectedModalRestau: null,
-      //cart: [],
+      cart: [],
       orders: [],
       showConfirmation: false,
       showConfirmationBoutique: false,
@@ -253,7 +204,7 @@ export default {
     };
   },
   mounted() {
-},
+  },
   watch: {
     '$route.query.tab'(newTab) {
       if (newTab) {
@@ -268,7 +219,7 @@ export default {
     ...mapState('souvenirs', ['souvenirs']),
     ...mapState('jeux', ['jeux']),
     ...mapState('stands', ['stands']),
-    ...mapState('order', ['jeuxAchetes', 'nourrituresAchetes', 'actualBasket']),
+    ...mapState('order', ['jeuxAchetes', 'actualBasket']),
     ...mapState('produits', ['produits']),
 
     filteredSouvenirs() {
@@ -293,15 +244,7 @@ export default {
         return [];
       }
       const restaurantId = this.selectedModalRestau.id;
-      return this.produits.filter(produit => produit.vendupar === restaurantId && produit.type_article === 'Nourriture');
-    },
-
-    filteredBoissons() {
-      if (!this.selectedModalRestau?.id || !Array.isArray(this.produits)) {
-        return [];
-      }
-      const restaurantId = this.selectedModalRestau.id;
-      return this.produits.filter(produit => produit.vendupar === restaurantId && produit.type_article === 'Boisson');
+      return this.produits.filter(produit => produit.vendupar === restaurantId);
     },
 
 
@@ -319,10 +262,10 @@ export default {
     console.log("souvenirs :", JSON.stringify(this.souvenirs));
 
   },
-    stands() {
-      // Toujours retourner les restaurants du store
-      return this.restaurants || [];
-    },
+  stands() {
+    // Toujours retourner les restaurants du store
+    return this.restaurants || [];
+  },
   hasPurchased() {
     return (productId) => {
       return this.userOrders.some(order => order.articles.some(article => article.id === productId));
@@ -338,7 +281,7 @@ export default {
   methods: {
     ...mapActions('commandes', ['addArticleOrder', 'setCurrentOrder', 'resetCurrentOrder']),
     ...mapActions("jeux", ["getAllJeux"]),
-    ...mapActions("order", ["addProductToBasket", "getBasketFromUserId"]),
+    ...mapActions("order", ["addProductToBasket"]),
 
     getJeuImage(jeu) {
       const path = jeu.produit.image_path;
@@ -410,7 +353,7 @@ export default {
         this.showLoginModal = true;
         return;
       }
-      if (this.nourrituresAchetes.length === 0) {
+      if (this.cart.length === 0) {
         this.closeConfirmation();
         this.commandMessage = "Erreur : panier vide.";
       } else {
@@ -434,54 +377,53 @@ export default {
       this.commandMessage = "Connexion réussie !";
     },
     handlePaymentSuccess() {
-      // const currentUser = this.$store.state.user.userSession;
-      // if (this.cart.length > 0) {
-      //   const maxOrderNumber = Math.max(
-      //     ...this.cart.map((article) => article.orderNumber || 0),
-      //     ...this.getExistingOrderNumbers(),
-      //     0
-      //   );
-      //   const ordersByRestaurant = this.cart.reduce((acc, article) => {
-      //     const restaurantName = article.restaurant;
-      //     const orderNumber = maxOrderNumber + Object.keys(acc).length + 1;
-      //     const pickupTime = this.$refs.paymentForm.getPickupTime();
-      //     if (!acc[restaurantName]) {
-      //       acc[restaurantName] = {
-      //         userId: currentUser.id,
-      //         restaurantNom: restaurantName,
-      //         orderNumber: orderNumber,
-      //         articles: [],
-      //         pickupTime: pickupTime,
-      //       };
-      //     }
-      //     acc[restaurantName].articles.push(article);
-      //     return acc;
-      //   }, {});
-      //   const newOrders = Object.values(ordersByRestaurant);
-      //   this.setCurrentOrder(newOrders);
-      //   newOrders.forEach((restaurantOrder) => {
-      //     console.log('Commande:', restaurantOrder);
-      //     this.addArticleOrder({
-      //       ...restaurantOrder,
-      //     });
-      //   });
-      //   this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
-      //   const recap = this.$refs.paymentForm.generateRecap(newOrders);
-      //   if (recap) {
-      //     console.log(recap);
-      //     alert(recap);
-      //   }
-      //   this.$store.dispatch('commandes/resetCurrentOrder');
-      // }
-
-      this.nourrituresAchetes = [];
-      console.log("Panier vidé après paiement :", this.nourrituresAchetes);
-      this.closePaymentModal();
+      const currentUser = this.$store.state.user.userSession;
+      if (this.cart.length > 0) {
+        const maxOrderNumber = Math.max(
+            ...this.cart.map((article) => article.orderNumber || 0),
+            ...this.getExistingOrderNumbers(),
+            0
+        );
+        const ordersByRestaurant = this.cart.reduce((acc, article) => {
+          const restaurantName = article.restaurant;
+          const orderNumber = maxOrderNumber + Object.keys(acc).length + 1;
+          const pickupTime = this.$refs.paymentForm.getPickupTime();
+          if (!acc[restaurantName]) {
+            acc[restaurantName] = {
+              userId: currentUser.id,
+              restaurantNom: restaurantName,
+              orderNumber: orderNumber,
+              articles: [],
+              pickupTime: pickupTime,
+            };
+          }
+          acc[restaurantName].articles.push(article);
+          return acc;
+        }, {});
+        const newOrders = Object.values(ordersByRestaurant);
+        this.setCurrentOrder(newOrders);
+        newOrders.forEach((restaurantOrder) => {
+          console.log('Commande:', restaurantOrder);
+          this.addArticleOrder({
+            ...restaurantOrder,
+          });
+        });
+        this.commandMessage = "Paiement effectué. Votre commande a été confirmée !";
+        const recap = this.$refs.paymentForm.generateRecap(newOrders);
+        if (recap) {
+          console.log(recap);
+          alert(recap);
+        }
+        this.$store.dispatch('commandes/resetCurrentOrder');
+        this.cart = [];
+        console.log("Panier vidé après paiement :", this.cart);
+        this.closePaymentModal();
+      }
     },
     getExistingOrderNumbers() {
       return this.$store.state.commandes.userOrders
-        ? this.$store.state.commandes.userOrders.map((order) => order.orderNumber || 0)
-        : [];
+          ? this.$store.state.commandes.userOrders.map((order) => order.orderNumber || 0)
+          : [];
     },
     handlePaymentSuccessJeu() {
       const currentUser = this.$store.state.user.actualUser;
@@ -499,7 +441,7 @@ export default {
       this.closePaymentModalBoutique();
     },
     deleteCommand() {
-      this.nourrituresAchetes = [];
+      this.cart = [];
       this.commandMessage = 'Votre commande a été effacée !'
     },
     closeCommandMessage() {
@@ -532,20 +474,14 @@ export default {
         return;
       }
 
-      //const currentUser = this.$store.state.user.actualUser;
-      const itemInCart = this.nourrituresAchetes.find(item => item.nom === produit.nom_produit);
-      if (itemInCart) {
-        itemInCart.quantite += 1;
-      } else {
-        // this.cart.push({ ...order, quantite: 1, restaurant: this.selectedModalRestau.nom });
-        this.nourrituresAchetes.push({item: produit.nom_produit,  quantite: 1 });
-        console.log("Produit : ", this.nourrituresAchetes.item);
-      }
-
-
+      const currentUser = this.$store.state.user.actualUser;
 
       // Ajouter au panier via Vuex
-
+      this.addProductToBasket({
+        id_user: currentUser.id,
+        id_produit: produit.id, // Utilisez produit.id directement
+        quantite: 1,
+      });
 
       // Message de confirmation
       this.addMessage = `"${produit.nom_produit}" a été ajouté au panier !`;

@@ -51,7 +51,7 @@ async function updateArticleFromAPI(id, data) {
     }
 }
 
-async function updateArticleService(id, data) {
+export async function updateArticleService(id, data) {
     let answer = await updateArticleFromAPI(id, data)
     return answer
 }

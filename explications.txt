@@ -1,4 +1,0 @@
-nous avons fait des corrections de bugs après la soutenance et nous avons eu un problème technique avec la liaison API ce
-qui nous a obligé à revenir sur une version antérieure, ce qui donne ce travail catastrophique, nous nous en excusons.
-
-Pour tester --> inscription d'utilisateur 
